@@ -11,13 +11,24 @@ export interface IUser extends Document {
   bio?: string;
   website?: string;
   location?: string;
+  religion?: string;
+  phone?: string;
   isPrivate: boolean;
   isEmailVerified: boolean;
   isActive: boolean;
+  isVerified: boolean;
+  isAdmin?: boolean;
+  verificationRequest?: {
+    idDocument: string;
+    status: 'pending' | 'approved' | 'rejected';
+    submittedAt: Date;
+    reviewedAt?: Date;
+  };
   followersCount: number;
   followingCount: number;
   postsCount: number;
   reelsCount: number;
+  videosCount: number;
   createdAt: Date;
   updatedAt: Date;
   lastActive: Date;
@@ -74,6 +85,17 @@ const UserSchema = new Schema<IUser>({
     maxlength: [100, 'Location must be less than 100 characters'],
     default: ''
   },
+  religion: {
+    type: String,
+    maxlength: [50, 'Religion must be less than 50 characters'],
+    default: ''
+  },
+  phone: {
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true
+  },
   isPrivate: {
     type: Boolean,
     default: false
@@ -85,6 +107,32 @@ const UserSchema = new Schema<IUser>({
   isActive: {
     type: Boolean,
     default: true
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
+  verificationRequest: {
+    idDocument: {
+      type: String,
+      default: ''
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending'
+    },
+    submittedAt: {
+      type: Date,
+      default: Date.now
+    },
+    reviewedAt: {
+      type: Date
+    }
   },
   followersCount: {
     type: Number,
@@ -102,6 +150,11 @@ const UserSchema = new Schema<IUser>({
     min: 0
   },
   reelsCount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  videosCount: {
     type: Number,
     default: 0,
     min: 0

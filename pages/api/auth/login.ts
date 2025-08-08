@@ -20,52 +20,30 @@ export default async function handler(
 
     const { email, password } = req.body;
 
-    // Validation
     if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email and password are required'
-      });
+      return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
-    // Validate email format
     if (!validateEmail(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide a valid email address'
-      });
+      return res.status(400).json({ success: false, message: 'Please provide a valid email address' });
     }
 
-    // Find user by email
-    const user = await (User as any).findOne({ email });
+    const user = await (User as any).findOne({ email }).select('+password');
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials'
-      });
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Check password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials'
-      });
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Check if user is active
     if (!user.isActive) {
-      return res.status(401).json({
-        success: false,
-        message: 'Account is deactivated. Please contact support.'
-      });
+      return res.status(401).json({ success: false, message: 'Account is deactivated. Please contact support.' });
     }
 
-    // Generate JWT token
     const token = generateToken(user._id);
 
-    // Update last active
     user.lastActive = new Date();
     await user.save();
 
@@ -82,8 +60,10 @@ export default async function handler(
           bio: user.bio,
           website: user.website,
           location: user.location,
+          religion: user.religion,
           isPrivate: user.isPrivate,
           isEmailVerified: user.isEmailVerified,
+          isVerified: user.isVerified,
           followersCount: user.followersCount,
           followingCount: user.followingCount,
           postsCount: user.postsCount,
@@ -96,10 +76,6 @@ export default async function handler(
     });
   } catch (error: any) {
     console.error('Login error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    res.status(500).json({ success: false, message: 'Internal server error', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 }

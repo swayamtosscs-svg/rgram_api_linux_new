@@ -13,7 +13,15 @@ export interface IPost extends Document {
   author: mongoose.Types.ObjectId;
   content: string;
   images: string[];
-  type: 'post' | 'reel';
+  videos: string[];
+  externalUrls?: string[];
+  type: 'post' | 'reel' | 'video';
+  provider?: 'local' | 'youtube' | 'vimeo' | 'external';
+  title?: string;
+  description?: string;
+  duration?: number;
+  category?: string;
+  religion?: string;
   likes: mongoose.Types.ObjectId[];
   likesCount: number;
   comments: IComment[];
@@ -59,10 +67,48 @@ const PostSchema = new Schema<IPost>({
     type: String,
     trim: true
   }],
+  videos: [{
+    type: String,
+    trim: true
+  }],
+  externalUrls: [{
+    type: String,
+    trim: true
+  }],
   type: {
     type: String,
-    enum: ['post', 'reel'],
+    enum: ['post', 'reel', 'video'],
     default: 'post'
+  },
+  provider: {
+    type: String,
+    enum: ['local', 'youtube', 'vimeo', 'external'],
+    default: 'local'
+  },
+  title: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Title must be less than 100 characters']
+  },
+  description: {
+    type: String,
+    trim: true,
+    maxlength: [500, 'Description must be less than 500 characters']
+  },
+  duration: {
+    type: Number,
+    min: 0,
+    default: 0
+  },
+  category: {
+    type: String,
+    default: 'general',
+    enum: ['general', 'entertainment', 'education', 'news', 'sports', 'music', 'gaming', 'lifestyle', 'technology']
+  },
+  religion: {
+    type: String,
+    maxlength: [50, 'Religion must be less than 50 characters'],
+    default: ''
   },
   likes: [{
     type: Schema.Types.ObjectId,
@@ -132,9 +178,14 @@ PostSchema.pre('save', function(next) {
   next();
 });
 
-// Virtual for checking if post has content or images
+// Virtual for checking if post has content, images, or videos
 PostSchema.virtual('hasContent').get(function() {
-  return !!(this.content || (this.images && this.images.length > 0));
+  return !!(
+    this.content ||
+    (this.images && this.images.length > 0) ||
+    (this.videos && this.videos.length > 0) ||
+    (this.externalUrls && this.externalUrls.length > 0)
+  );
 });
 
 // Method to add like
