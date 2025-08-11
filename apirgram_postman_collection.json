@@ -1,0 +1,1452 @@
+{
+  "info": {
+    "name": "Apirgram API Collection",
+    "description": "Complete API collection for Apirgram social media platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "User Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "User Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"John Doe\",\n  \"username\": \"johndoe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/send-otp",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "send-otp"]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/verify-otp",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "verify-otp"]
+            }
+          }
+        },
+        {
+          "name": "Send Phone OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/otp/send",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "otp", "send"]
+            }
+          }
+        },
+        {
+          "name": "Verify Phone OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+1234567890\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/otp/verify",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "otp", "verify"]
+            }
+          }
+        },
+        {
+          "name": "Get User Info",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/user",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "user"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["posts"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This is a test post\",\n  \"images\": [],\n  \"type\": \"post\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": ["{{base_url}}"],
+              "path": ["posts"]
+            }
+          }
+        },
+        {
+          "name": "Get Post by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/POST_ID",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "POST_ID"]
+            }
+          }
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Updated post content\",\n  \"images\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/POST_ID",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "POST_ID"]
+            }
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/POST_ID",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "POST_ID"]
+            }
+          }
+        },
+        {
+          "name": "Get Posts Feed",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/feed?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "feed"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feed",
+      "item": [
+        {
+          "name": "Get Home Feed",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed/home?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["feed", "home"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Following Feed",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed/following?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["feed", "following"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Explore Feed",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed/explore?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["feed", "explore"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Videos Feed",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed/videos?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["feed", "videos"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Stories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed/stories",
+              "host": ["{{base_url}}"],
+              "path": ["feed", "stories"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Likes & Comments",
+      "item": [
+        {
+          "name": "Like/Unlike Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed/like/POST_ID",
+              "host": ["{{base_url}}"],
+              "path": ["feed", "like", "POST_ID"]
+            }
+          }
+        },
+        {
+          "name": "Add Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Great post!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/feed/comment/POST_ID",
+              "host": ["{{base_url}}"],
+              "path": ["feed", "comment", "POST_ID"]
+            }
+          }
+        },
+        {
+          "name": "Get Comments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/feed/comment/POST_ID",
+              "host": ["{{base_url}}"],
+              "path": ["feed", "comment", "POST_ID"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user/profile",
+              "host": ["{{base_url}}"],
+              "path": ["user", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Updated Name\",\n  \"bio\": \"Updated bio\",\n  \"website\": \"https://example.com\",\n  \"location\": \"New York\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/update",
+              "host": ["{{base_url}}"],
+              "path": ["user", "update"]
+            }
+          }
+        },
+        {
+          "name": "Select Religion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"religion\": \"Christianity\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/select-religion",
+              "host": ["{{base_url}}"],
+              "path": ["user", "select-religion"]
+            }
+          }
+        },
+        {
+          "name": "Request Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentType\": \"passport\",\n  \"documentNumber\": \"123456789\",\n  \"documentImage\": \"base64_encoded_image\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/verify-request",
+              "host": ["{{base_url}}"],
+              "path": ["user", "verify-request"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Follow System",
+      "item": [
+        {
+          "name": "Follow User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/follow/USER_ID",
+              "host": ["{{base_url}}"],
+              "path": ["follow", "USER_ID"]
+            }
+          }
+        },
+        {
+          "name": "Get Followers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/followers/USER_ID",
+              "host": ["{{base_url}}"],
+              "path": ["followers", "USER_ID"]
+            }
+          }
+        },
+        {
+          "name": "Get Following",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/following/USER_ID",
+              "host": ["{{base_url}}"],
+              "path": ["following", "USER_ID"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "item": [
+        {
+          "name": "Upload Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Post with media\",\n  \"images\": [\"image_url_1\", \"image_url_2\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/upload/post",
+              "host": ["{{base_url}}"],
+              "path": ["upload", "post"]
+            }
+          }
+        },
+        {
+          "name": "Upload Story",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"media\": \"story_media_url\",\n  \"type\": \"image\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/upload/story",
+              "host": ["{{base_url}}"],
+              "path": ["upload", "story"]
+            }
+          }
+        },
+        {
+          "name": "Upload Video",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My Video\",\n  \"description\": \"Video description\",\n  \"videoUrl\": \"video_url\",\n  \"thumbnail\": \"thumbnail_url\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/upload/video",
+              "host": ["{{base_url}}"],
+              "path": ["upload", "video"]
+            }
+          }
+        },
+        {
+          "name": "Upload Reel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Reel content\",\n  \"videoUrl\": \"reel_video_url\",\n  \"thumbnail\": \"thumbnail_url\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/upload/reel",
+              "host": ["{{base_url}}"],
+              "path": ["upload", "reel"]
+            }
+          }
+        },
+        {
+          "name": "Upload Media",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"media\": \"media_url\",\n  \"type\": \"image\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/upload/media",
+              "host": ["{{base_url}}"],
+              "path": ["upload", "media"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "item": [
+        {
+          "name": "Get Chat List",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat/list",
+              "host": ["{{base_url}}"],
+              "path": ["chat", "list"]
+            }
+          }
+        },
+        {
+          "name": "Get Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat/messages/USER_ID",
+              "host": ["{{base_url}}"],
+              "path": ["chat", "messages", "USER_ID"]
+            }
+          }
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receiverId\": \"USER_ID\",\n  \"content\": \"Hello!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/chat/send",
+              "host": ["{{base_url}}"],
+              "path": ["chat", "send"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"]
+            }
+          }
+        },
+        {
+          "name": "Get Notifications List",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/list",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "list"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notificationId\": \"NOTIFICATION_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications/mark-read",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "mark-read"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/search?q=search_term&type=users&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "search_term"
+                },
+                {
+                  "key": "type",
+                  "value": "users"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pages",
+      "item": [
+        {
+          "name": "Create Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Page\",\n  \"description\": \"Page description\",\n  \"category\": \"Business\",\n  \"avatar\": \"avatar_url\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pages/create",
+              "host": ["{{base_url}}"],
+              "path": ["pages", "create"]
+            }
+          }
+        },
+        {
+          "name": "Get Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pages/PAGE_ID",
+              "host": ["{{base_url}}"],
+              "path": ["pages", "PAGE_ID"]
+            }
+          }
+        },
+        {
+          "name": "Update Page",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Page Name\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pages/update/PAGE_ID",
+              "host": ["{{base_url}}"],
+              "path": ["pages", "update", "PAGE_ID"]
+            }
+          }
+        },
+        {
+          "name": "Follow Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/pages/follow/PAGE_ID",
+              "host": ["{{base_url}}"],
+              "path": ["pages", "follow", "PAGE_ID"]
+            }
+          }
+        },
+        {
+          "name": "Get Page Feed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pages/feed/PAGE_ID",
+              "host": ["{{base_url}}"],
+              "path": ["pages", "feed", "PAGE_ID"]
+            }
+          }
+        },
+        {
+          "name": "Request Page Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pageId\": \"PAGE_ID\",\n  \"documentType\": \"business_license\",\n  \"documentNumber\": \"123456789\",\n  \"documentImage\": \"base64_encoded_image\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pages/verify-request",
+              "host": ["{{base_url}}"],
+              "path": ["pages", "verify-request"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Donations",
+      "item": [
+        {
+          "name": "Send Donation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receiverId\": \"USER_ID\",\n  \"amount\": 50.00,\n  \"message\": \"Support message\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/donation/send",
+              "host": ["{{base_url}}"],
+              "path": ["donation", "send"]
+            }
+          }
+        },
+        {
+          "name": "Request Donation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Help needed\",\n  \"description\": \"I need help with medical bills\",\n  \"targetAmount\": 1000.00,\n  \"category\": \"Medical\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/donation/request",
+              "host": ["{{base_url}}"],
+              "path": ["donation", "request"]
+            }
+          }
+        },
+        {
+          "name": "Get Donation History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/donation/history",
+              "host": ["{{base_url}}"],
+              "path": ["donation", "history"]
+            }
+          }
+        },
+        {
+          "name": "Get My Donation Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/donation/my-requests",
+              "host": ["{{base_url}}"],
+              "path": ["donation", "my-requests"]
+            }
+          }
+        },
+        {
+          "name": "Get Public Donations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/donation/public/USER_ID",
+              "host": ["{{base_url}}"],
+              "path": ["donation", "public", "USER_ID"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Videos",
+      "item": [
+        {
+          "name": "Get Video by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/videos/VIDEO_ID",
+              "host": ["{{base_url}}"],
+              "path": ["videos", "VIDEO_ID"]
+            }
+          }
+        },
+        {
+          "name": "Add Video Links",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"videoId\": \"VIDEO_ID\",\n  \"links\": [\"link1\", \"link2\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/videos/add-links",
+              "host": ["{{base_url}}"],
+              "path": ["videos", "add-links"]
+            }
+          }
+        },
+        {
+          "name": "Get Video Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/videos/categories",
+              "host": ["{{base_url}}"],
+              "path": ["videos", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Get Religion Videos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/videos/religion",
+              "host": ["{{base_url}}"],
+              "path": ["videos", "religion"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stories",
+      "item": [
+        {
+          "name": "Get Stories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stories",
+              "host": ["{{base_url}}"],
+              "path": ["stories"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tags/categories",
+              "host": ["{{base_url}}"],
+              "path": ["tags", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Get Trending Tags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tags/trending",
+              "host": ["{{base_url}}"],
+              "path": ["tags", "trending"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Location",
+      "item": [
+        {
+          "name": "Search Location",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/location/search?q=New York",
+              "host": ["{{base_url}}"],
+              "path": ["location", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "New York"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get Reports",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/reports",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "reports"]
+            }
+          }
+        },
+        {
+          "name": "Verify User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/verify-user/USER_ID",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "verify-user", "USER_ID"]
+            }
+          }
+        },
+        {
+          "name": "Verify Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/verify-page/PAGE_ID",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "verify-page", "PAGE_ID"]
+            }
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/post/POST_ID",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "post", "POST_ID"]
+            }
+          }
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/comment/COMMENT_ID",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "comment", "COMMENT_ID"]
+            }
+          }
+        },
+        {
+          "name": "Approve Donation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/donation/DONATION_ID/approve",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "donation", "DONATION_ID", "approve"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
