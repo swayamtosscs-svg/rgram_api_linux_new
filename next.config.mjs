@@ -6,6 +6,10 @@ const nextConfig = {
         source: '/api/:path*',
         destination: '/api/:path*',
       },
+      {
+        source: '/api/videos/fetch-religious-reels',
+        destination: '/api/videos/religious-reels',
+      },
     ];
   },
 };

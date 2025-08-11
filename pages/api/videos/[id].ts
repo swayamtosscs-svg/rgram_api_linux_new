@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
 import Post from '../../../lib/models/Post';
+import '../../../lib/models/User'; // Import User model to register it with Mongoose
 import { verifyToken } from '../../../lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -16,7 +17,71 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ success: false, message: 'Video ID is required' });
     }
 
-    // Get video with author details
+    // Special case for fetch-religious-reels - redirect to religious-reels endpoint
+    if (id === 'fetch-religious-reels') {
+      // Extract other query parameters
+      const { religion, category, page, limit } = req.query;
+      
+      // Build query for religious videos/reels
+      const query: any = {
+        $or: [
+          { type: 'video' },
+          { type: 'reel' }
+        ],
+        isActive: true
+      };
+
+      // Filter by religion if provided
+      if (religion && religion !== 'all') {
+        query.religion = religion;
+      }
+
+      // Filter by category if provided
+      if (category) {
+        query.category = category;
+      }
+
+      // Get religious videos/reels with pagination
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = parseInt(limit as string) || 10;
+      const skip = (pageNum - 1) * limitNum;
+      
+      const religiousContent = await (Post as any)
+        .find(query)
+        .populate('author', 'username fullName avatar')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .lean();
+
+      // Get total count for pagination
+      const total = await (Post as any).countDocuments(query);
+
+      // Calculate pagination info
+      const totalPages = Math.ceil(total / limitNum);
+      const hasNextPage = pageNum < totalPages;
+      const hasPrevPage = pageNum > 1;
+
+      return res.json({
+        success: true,
+        message: 'Religious reels fetched successfully',
+        data: {
+          religiousContent,
+          religion: religion || 'all',
+          category: category || 'all',
+          pagination: {
+            currentPage: pageNum,
+            totalPages,
+            totalContent: total,
+            hasNextPage,
+            hasPrevPage,
+            limit: limitNum
+          }
+        }
+      });
+    }
+
+    // Regular video lookup by ID
     const video = await (Post as any)
       .findOne({
         _id: id,

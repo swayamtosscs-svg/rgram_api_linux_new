@@ -7,6 +7,12 @@ import { verifyToken } from '../../../lib/middleware/auth';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     await connectDB();
+    
+    // Handle the case when this endpoint is accessed directly via the URL
+    // or via the [id] route with id=religious-reels
+    if (req.query.id === 'religious-reels') {
+      delete req.query.id;
+    }
 
     if (req.method === 'GET') {
       // Get religious reels with automatic video and thumbnail fetching
@@ -97,7 +103,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const hasNextPage = pageNum < totalPages;
       const hasPrevPage = pageNum > 1;
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Religious reels fetched successfully',
         data: {
@@ -199,7 +205,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Populate author info
       await reel.populate('author', 'username fullName avatar');
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         message: 'Religious reel created successfully',
         data: {

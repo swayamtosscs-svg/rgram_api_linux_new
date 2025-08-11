@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
 import Post from '../../../lib/models/Post';
+import User from '../../../lib/models/User'; // Import User model to register it with Mongoose
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -9,6 +10,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await connectDB();
+    
+    // Check if this endpoint is being accessed via the [id] route
+    const { id } = req.query;
+    if (id === 'religion') {
+      // Remove the id parameter to avoid ObjectId casting issues
+      delete req.query.id;
+    }
 
     const { religion, page = 1, limit = 10 } = req.query;
     const pageNum = parseInt(page as string) || 1;
