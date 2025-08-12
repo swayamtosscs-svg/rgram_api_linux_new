@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Religious Videos and Images</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .media-item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .media-item:hover {
+            transform: translateY(-5px);
+        }
+        .thumbnail {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        .media-info {
+            padding: 15px;
+        }
+        .media-title {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .media-meta {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+        }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+        }
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        .filters {
+            padding: 20px;
+            background: white;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .filter-button {
+            margin: 5px;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            background: #4a90e2;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .filter-button:hover {
+            background: #357abd;
+        }
+        .filter-button.active {
+            background: #2c5282;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="filters">
+            <button class="filter-button active" data-filter="all">All</button>
+            <button class="filter-button" data-filter="video">Videos</button>
+            <button class="filter-button" data-filter="image">Images</button>
+            <button class="filter-button" data-filter="local">Local</button>
+            <button class="filter-button" data-filter="youtube">YouTube</button>
+        </div>
+        <div class="media-grid" id="mediaGrid"></div>
+    </div>
+
+    <div class="modal" id="mediaModal">
+        <span class="close">&times;</span>
+        <div class="modal-content" id="modalContent"></div>
+    </div>
+
+    <script>
+        let currentMedia = [];
+
+        async function fetchMedia(filters = {}) {
+            try {
+                const queryParams = new URLSearchParams(filters);
+                const response = await fetch(`/api/videos/media-content?${queryParams}`);
+                const data = await response.json();
+                if (data.success) {
+                    return data.data.content;
+                }
+                return [];
+            } catch (error) {
+                console.error('Error fetching media:', error);
+                return [];
+            }
+        }
+
+        function formatSize(size) {
+            return size ? `${size.toFixed(2)} MB` : 'N/A';
+        }
+
+        function createMediaElement(item) {
+            const div = document.createElement('div');
+            div.className = 'media-item';
+            div.setAttribute('data-type', item.type);
+            div.setAttribute('data-source', item.source);
+
+            const thumbnail = document.createElement('img');
+            thumbnail.className = 'thumbnail';
+            thumbnail.src = item.thumbnail || item.url;
+            thumbnail.alt = item.title;
+            thumbnail.addEventListener('click', () => openModal(item));
+
+            const info = document.createElement('div');
+            info.className = 'media-info';
+            
+            const title = document.createElement('h3');
+            title.className = 'media-title';
+            title.textContent = item.title;
+
+            const meta = document.createElement('div');
+            meta.className = 'media-meta';
+            meta.textContent = `Type: ${item.type} | Source: ${item.source}${item.size ? ` | Size: ${formatSize(item.size)}` : ''}`;
+
+            info.appendChild(title);
+            info.appendChild(meta);
+            div.appendChild(thumbnail);
+            div.appendChild(info);
+
+            return div;
+        }
+
+        function openModal(item) {
+            const modal = document.getElementById('mediaModal');
+            const content = document.getElementById('modalContent');
+            content.innerHTML = '';
+
+            if (item.type === 'video') {
+                const video = document.createElement('video');
+                video.style.maxWidth = '100%';
+                video.style.maxHeight = '80vh';
+                video.controls = true;
+                video.autoplay = true;
+                video.src = item.url;
+                content.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '80vh';
+                img.src = item.url;
+                content.appendChild(img);
+            }
+
+            modal.style.display = 'block';
+        }
+
+        document.querySelector('.close').addEventListener('click', () => {
+            document.getElementById('mediaModal').style.display = 'none';
+        });
+
+        async function updateGrid(filters = {}) {
+            const grid = document.getElementById('mediaGrid');
+            grid.innerHTML = '<p>Loading...</p>';
+            
+            currentMedia = await fetchMedia(filters);
+            grid.innerHTML = '';
+            
+            currentMedia.forEach(item => {
+                grid.appendChild(createMediaElement(item));
+            });
+        }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-button').forEach(button => {
+            button.addEventListener('click', async () => {
+                // Update active state
+                document.querySelectorAll('.filter-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                // Apply filter
+                const filter = button.getAttribute('data-filter');
+                if (filter === 'all') {
+                    await updateGrid();
+                } else if (['video', 'image'].includes(filter)) {
+                    await updateGrid({ type: filter });
+                } else {
+                    await updateGrid({ source: filter });
+                }
+            });
+        });
+
+        // Initial load
+        updateGrid();
+    </script>
+</body>
+</html>

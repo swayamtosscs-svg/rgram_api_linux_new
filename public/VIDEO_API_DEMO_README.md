@@ -1,60 +1,199 @@
 # Video API Demo
 
-## Overview
+## Admin API Documentation
 
-This demo provides an interactive way to explore the video API endpoints available in the Apirgram API. The demo includes functionality to:
+This document provides information about the admin API endpoints available in the system. These endpoints are secured and require admin authentication.
 
-1. View video categories with counts and percentages
-2. Fetch videos filtered by religion with statistics
-3. Get religious reels with filtering options
-4. Add external video links (e.g., YouTube Shorts) as video posts
+### Authentication
 
-## How to Use the Demo
+All admin API endpoints require authentication using a Bearer token in the Authorization header:
 
-### Accessing the Demo
-
-The demo is available at: [http://localhost:3000/video-api-demo.html](http://localhost:3000/video-api-demo.html)
-
-You can also access it by clicking the "Try Video API Demo" button on the homepage.
-
-### Testing API Endpoints
-
-#### 1. Video Categories
-
-Click the "Try it" button in the `/api/videos/categories` section to fetch all available video categories with their counts and percentages.
-
-#### 2. Religion Videos
-
-Select a religion from the dropdown menu and click the "Try it" button in the `/api/videos/religion` section to fetch videos filtered by the selected religion.
-
-#### 3. Religious Reels
-
-Select a religion and category from the dropdown menus and click the "Try it" button in the `/api/videos/religious-reels` section to fetch religious reels with the selected filters.
-
-#### 4. Add Video Link
-
-The demo includes a form to add a YouTube Shorts video link as a video post. The form is pre-filled with a Krishna devotional video, but you can modify the fields as needed:
-
-- **Video URL**: The YouTube Shorts URL (e.g., `https://youtube.com/shorts/aZuIkQXuIVw?si=DDWJDtjUevItgG03`)
-- **Title**: The title for the video post
-- **Description**: A description for the video post
-- **Category**: The category for the video (e.g., Inspiration, Entertainment, Education)
-- **Religion**: The religion tag for the video (e.g., Hinduism, Islam, Christianity)
-
-The thumbnail is automatically generated from the YouTube video ID and displayed in the preview section.
-
-**Note**: The "Add Video" functionality requires authentication. In a real implementation, you would need to provide a valid authentication token. The demo will show what the request would look like but may not actually add the video to the database without proper authentication.
-
-## API Documentation
-
-For more detailed information about the video API endpoints, please refer to the [VIDEO_API_DOCUMENTATION.md](../VIDEO_API_DOCUMENTATION.md) file.
-
-## Testing
-
-You can also test the video API endpoints using the provided test script:
-
-```bash
-node test-video-api.js
+```
+Authorization: Bearer <your_admin_token>
 ```
 
-This script will test various video API endpoints and display the results in the console.
+Only users with admin privileges can access these endpoints.
+
+### Admin API Endpoints
+
+#### 1. List/Search Users
+
+```
+GET /api/admin/users
+```
+
+**Query Parameters:**
+- `q` (optional): Search term for filtering users by email, username, or full name
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Users list",
+  "data": {
+    "users": [/* array of user objects */]
+  }
+}
+```
+
+#### 2. Verify User
+
+```
+PUT /api/admin/verify-user/{id}
+```
+
+**Request Body:**
+```json
+{
+  "approve": true|false
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "User verification updated",
+  "data": {
+    "isVerified": true|false
+  }
+}
+```
+
+#### 3. Verify Page
+
+```
+PUT /api/admin/verify-page/{id}
+```
+
+**Request Body:**
+```json
+{
+  "approve": true|false
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Page verification updated",
+  "data": {
+    "isVerified": true|false
+  }
+}
+```
+
+#### 4. Approve/Reject Donation
+
+```
+PUT /api/admin/donation/{id}/approve
+```
+
+**Request Body:**
+```json
+{
+  "approve": true|false
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Donation request updated",
+  "data": {
+    "status": "active"|"rejected"
+  }
+}
+```
+
+#### 5. Get Flagged Content Reports
+
+```
+GET /api/admin/reports
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Reports list",
+  "data": {
+    "flaggedPosts": [/* array of flagged post objects */],
+    "flaggedComments": [/* array of flagged comment objects */]
+  }
+}
+```
+
+#### 6. Remove Flagged Post
+
+```
+DELETE /api/admin/post/{id}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Post removed"
+}
+```
+
+#### 7. Remove Flagged Comment
+
+```
+DELETE /api/admin/comment/{id}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Comment removed"
+}
+```
+
+### Error Responses
+
+All endpoints may return the following error responses:
+
+- **401 Unauthorized**
+  ```json
+  {
+    "success": false,
+    "message": "Authentication required"
+  }
+  ```
+
+- **403 Forbidden**
+  ```json
+  {
+    "success": false,
+    "message": "Admin access required"
+  }
+  ```
+
+- **404 Not Found**
+  ```json
+  {
+    "success": false,
+    "message": "Resource not found"
+  }
+  ```
+
+- **405 Method Not Allowed**
+  ```json
+  {
+    "success": false,
+    "message": "Method not allowed"
+  }
+  ```
+
+- **500 Internal Server Error**
+  ```json
+  {
+    "success": false,
+    "message": "Internal server error"
+  }
+  ```
