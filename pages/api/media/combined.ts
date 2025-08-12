@@ -87,6 +87,36 @@ export default async function handler(
       scanDirectory(videosPath);
     }
 
+    // 3. Add external religious videos
+    const externalVideos = [
+      {
+        id: 'external_video_1',
+        type: 'video' as const,
+        url: 'https://dhaneshwaritosscs-netizen.github.io/vedios/',
+        thumbnail: imageFiles.length > 0 ? `/images/religious/hinduism/${imageFiles[0]}` : '/default-thumbnail.jpg',
+        title: 'Hindu Religious Video 1',
+        fileType: 'mp4'
+      },
+      {
+        id: 'external_video_2',
+        type: 'video' as const,
+        url: 'https://dhaneshwaritosscs-netizen.github.io/vedio2/',
+        thumbnail: imageFiles.length > 1 ? `/images/religious/hinduism/${imageFiles[1]}` : '/default-thumbnail.jpg',
+        title: 'Hindu Religious Video 2',
+        fileType: 'mp4'
+      },
+      {
+        id: 'external_video_3',
+        type: 'video' as const,
+        url: 'https://dhaneshwaritosscs-netizen.github.io/vedio3/',
+        thumbnail: imageFiles.length > 2 ? `/images/religious/hinduism/${imageFiles[2]}` : '/default-thumbnail.jpg',
+        title: 'Hindu Religious Video 3',
+        fileType: 'mp4'
+      }
+    ];
+
+    mediaItems.push(...externalVideos);
+
     // Handle pagination
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;

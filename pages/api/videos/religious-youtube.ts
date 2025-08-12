@@ -1,29 +1,93 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
 
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
-
-// Categories of religious content
+// Categories of religious content with predefined videos
 const RELIGIOUS_CATEGORIES = [
     {
         name: 'Hinduism',
-        queries: ['hindu temple worship', 'hindu bhajan', 'hindu prayers']
+        videos: [
+            {
+                id: 'hindu_video_1',
+                title: 'Hindu Religious Video 1',
+                description: 'A beautiful Hindu religious video showcasing traditions and rituals',
+                thumbnails: {
+                    default: { url: '/images/religious/hinduism/1.jpg' },
+                    medium: { url: '/images/religious/hinduism/1.jpg' },
+                    high: { url: '/images/religious/hinduism/1.jpg' }
+                },
+                publishedAt: new Date().toISOString(),
+                channelTitle: 'Hindu Channel',
+                videoUrl: 'https://dhaneshwaritosscs-netizen.github.io/vedios/',
+                embedUrl: 'https://dhaneshwaritosscs-netizen.github.io/vedios/'
+            },
+            {
+                id: 'hindu_video_2',
+                title: 'Hindu Religious Video 2',
+                description: 'Explore the rich cultural heritage of Hinduism',
+                thumbnails: {
+                    default: { url: '/images/religious/hinduism/2.jpg' },
+                    medium: { url: '/images/religious/hinduism/2.jpg' },
+                    high: { url: '/images/religious/hinduism/2.jpg' }
+                },
+                publishedAt: new Date().toISOString(),
+                channelTitle: 'Hindu Channel',
+                videoUrl: 'https://dhaneshwaritosscs-netizen.github.io/vedio2/',
+                embedUrl: 'https://dhaneshwaritosscs-netizen.github.io/vedio2/'
+            },
+            {
+                id: 'hindu_video_3',
+                title: 'Hindu Religious Video 3',
+                description: 'Sacred Hindu ceremonies and practices',
+                thumbnails: {
+                    default: { url: '/images/religious/hinduism/3.jpg' },
+                    medium: { url: '/images/religious/hinduism/3.jpg' },
+                    high: { url: '/images/religious/hinduism/3.jpg' }
+                },
+                publishedAt: new Date().toISOString(),
+                channelTitle: 'Hindu Channel',
+                videoUrl: 'https://dhaneshwaritosscs-netizen.github.io/vedio3/',
+                embedUrl: 'https://dhaneshwaritosscs-netizen.github.io/vedio3/'
+            }
+        ]
     },
     {
         name: 'Islam',
-        queries: ['islamic prayers', 'quran recitation', 'islamic lectures']
+        videos: [
+            {
+                id: 'islam_video_1',
+                title: 'Islamic Prayers',
+                description: 'Beautiful Islamic prayers and recitations',
+                thumbnails: {
+                    default: { url: '/images/religious/hinduism/4.jpg' },
+                    medium: { url: '/images/religious/hinduism/4.jpg' },
+                    high: { url: '/images/religious/hinduism/4.jpg' }
+                },
+                publishedAt: new Date().toISOString(),
+                channelTitle: 'Islamic Channel',
+                videoUrl: 'https://dhaneshwaritosscs-netizen.github.io/vedios/',
+                embedUrl: 'https://dhaneshwaritosscs-netizen.github.io/vedios/'
+            }
+        ]
     },
     {
         name: 'Christianity',
-        queries: ['christian worship songs', 'christian prayers', 'bible study']
-    },
-    {
-        name: 'Sikhism',
-        queries: ['sikh kirtan', 'gurdwara live', 'sikh prayers']
-    },
-    {
-        name: 'Buddhism',
-        queries: ['buddhist meditation', 'buddhist chants', 'buddhist teachings']
+        videos: [
+            {
+                id: 'christian_video_1',
+                title: 'Christian Worship',
+                description: 'Christian worship songs and prayers',
+                thumbnails: {
+                    default: { url: '/images/religious/hinduism/5.jpg' },
+                    medium: { url: '/images/religious/hinduism/5.jpg' },
+                    high: { url: '/images/religious/hinduism/5.jpg' }
+                },
+                publishedAt: new Date().toISOString(),
+                channelTitle: 'Christian Channel',
+                videoUrl: 'https://dhaneshwaritosscs-netizen.github.io/vedio2/',
+                embedUrl: 'https://dhaneshwaritosscs-netizen.github.io/vedio2/'
+            }
+        ]
     }
 ];
 
@@ -42,35 +106,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 cat.name.toLowerCase() === String(category).toLowerCase())
             : RELIGIOUS_CATEGORIES;
 
-        // Fetch videos for each category
+        // Get videos from each category
         for (const categoryData of categoriesToSearch) {
-            // Get random query from category's queries
-            const randomQuery = categoryData.queries[Math.floor(Math.random() * categoryData.queries.length)];
-            
-            const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
-                params: {
-                    part: 'snippet',
-                    q: randomQuery,
-                    maxResults: Math.ceil(Number(maxResults) / categoriesToSearch.length),
-                    type: 'video',
-                    videoDuration: 'medium', // Medium length videos
-                    key: YOUTUBE_API_KEY
-                }
-            });
-
-            const videos = response.data.items.map(item => ({
-                id: item.id.videoId,
-                title: item.snippet.title,
-                description: item.snippet.description,
-                thumbnails: item.snippet.thumbnails,
-                publishedAt: item.snippet.publishedAt,
-                channelTitle: item.snippet.channelTitle,
-                category: categoryData.name,
-                videoUrl: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-                embedUrl: `https://www.youtube.com/embed/${item.id.videoId}`
-            }));
-
-            videosToReturn = [...videosToReturn, ...videos];
+            videosToReturn = [...videosToReturn, ...categoryData.videos];
         }
 
         // Randomize the order of videos
