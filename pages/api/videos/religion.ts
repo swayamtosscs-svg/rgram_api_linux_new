@@ -1,10 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
 import Post from '../../../lib/models/Post';
-<<<<<<< HEAD
 import User from '../../../lib/models/User'; // Import User model to register it with Mongoose
-=======
->>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -13,7 +10,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await connectDB();
-<<<<<<< HEAD
     
     // Check if this endpoint is being accessed via the [id] route
     const { id } = req.query;
@@ -21,8 +17,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Remove the id parameter to avoid ObjectId casting issues
       delete req.query.id;
     }
-=======
->>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182
 
     const { religion, page = 1, limit = 10 } = req.query;
     const pageNum = parseInt(page as string) || 1;

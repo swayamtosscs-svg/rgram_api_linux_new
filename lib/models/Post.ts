@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import mongoose, { Document, Schema, Model } from 'mongoose';
-=======
-import mongoose, { Document, Schema } from 'mongoose';
->>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182
 
 export interface IComment {
   _id: string;
@@ -32,15 +28,12 @@ export interface IPost extends Document {
   commentsCount: number;
   shares: mongoose.Types.ObjectId[];
   sharesCount: number;
-<<<<<<< HEAD
   reported?: boolean;
   reportedAt?: Date;
   isRemoved?: boolean;
   removedReason?: string;
   removedBy?: mongoose.Types.ObjectId;
   removedAt?: Date;
-=======
->>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182
   saves: mongoose.Types.ObjectId[];
   savesCount: number;
   isActive: boolean;
@@ -236,9 +229,5 @@ PostSchema.methods.removeComment = function(commentId: string) {
   return this.save();
 };
 
-<<<<<<< HEAD
 const Post: Model<IPost> = mongoose.models.Post || mongoose.model<IPost>('Post', PostSchema);
 export default Post;
-=======
-export default mongoose.models.Post || mongoose.model<IPost>('Post', PostSchema);
->>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182

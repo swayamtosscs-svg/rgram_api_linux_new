@@ -2,10 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { verifyToken } from '../../../lib/middleware/auth';
 import connectDB from '../../../lib/database';
 import User from '../../../lib/models/User';
-<<<<<<< HEAD
 import Post from '../../../lib/models/Post';
-=======
->>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ success: false, message: 'Method not allowed' });
@@ -17,7 +14,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!decoded) return res.status(401).json({ success: false, message: 'Invalid token' });
     const me = await (User as any).findById(decoded.userId).lean();
     if (!me?.isAdmin) return res.status(403).json({ success: false, message: 'Admin access required' });
-<<<<<<< HEAD
     // Get flagged posts
     const flaggedPosts = await (Post as any).find({ 
       'flags.0': { $exists: true } // Posts with at least one flag
@@ -56,9 +52,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         flaggedComments 
       } 
     });
-=======
-    res.json({ success: true, message: 'Reports list', data: { reports: [] } });
->>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182
   } catch (error: any) {
     console.error('Admin reports error:', error);
     res.status(500).json({ success: false, message: 'Internal server error', error: process.env.NODE_ENV === 'development' ? error.message : undefined });

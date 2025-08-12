@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import mongoose, { Document, Schema, Model } from 'mongoose';
-=======
-import mongoose, { Document, Schema } from 'mongoose';
->>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182
 import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
@@ -209,9 +205,5 @@ UserSchema.methods.updateLastActive = function() {
   return this.save();
 };
 
-<<<<<<< HEAD
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 export default User;
-=======
-export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
->>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182
