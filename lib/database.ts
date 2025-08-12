@@ -33,11 +33,14 @@ async function connectDB() {
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       console.log('✅ Connected to MongoDB');
+<<<<<<< HEAD
       
       // Ensure models are registered
       require('./models/User');
       require('./models/Post');
       
+=======
+>>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182
       return mongoose;
     }).catch((error) => {
       console.error('❌ MongoDB connection error:', error);

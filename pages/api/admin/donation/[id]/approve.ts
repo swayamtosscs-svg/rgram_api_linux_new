@@ -21,12 +21,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const donation = await (Donation as any).findById(id);
     if (!donation) return res.status(404).json({ success: false, message: 'Donation request not found' });
 
+<<<<<<< HEAD
     if (approve === true) {
       // When approved, the donation becomes active for receiving funds
       donation.status = 'active';
     } else {
       donation.status = 'rejected';
     }
+=======
+    donation.status = approve ? 'approved' : 'rejected';
+>>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182
     await donation.save();
     res.json({ success: true, message: 'Donation request updated', data: { status: donation.status } });
   } catch (error: any) {

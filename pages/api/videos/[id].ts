@@ -1,7 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
 import Post from '../../../lib/models/Post';
+<<<<<<< HEAD
 import '../../../lib/models/User'; // Import User model to register it with Mongoose
+=======
+>>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182
 import { verifyToken } from '../../../lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -17,6 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ success: false, message: 'Video ID is required' });
     }
 
+<<<<<<< HEAD
     // Special case for fetch-religious-reels - redirect to religious-reels endpoint
     if (id === 'fetch-religious-reels') {
       // Extract other query parameters
@@ -82,6 +86,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Regular video lookup by ID
+=======
+    // Get video with author details
+>>>>>>> ba5531e9b34f056c52f9ae9afb3f554ffeef1182
     const video = await (Post as any)
       .findOne({
         _id: id,
