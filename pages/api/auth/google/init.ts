@@ -62,7 +62,7 @@ export default async function handler(
     if (useMockAuth) {
       console.log('Using mock Google auth URL');
       // Create a URL that will hit our test callback endpoint
-      const mockAuthUrl = `/api/auth/google/callback?test=true&format=json`;
+      const mockAuthUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3001'}/api/auth/google/callback?test=true&format=json&code=mock_authorization_code_12345`;
       
       return res.json({
         success: true,
