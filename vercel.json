@@ -1,10 +1,12 @@
 {
   "env": {
-    "MOCK_GOOGLE_AUTH": "true"
+    "MOCK_GOOGLE_AUTH": "false",
+    "GOOGLE_CALLBACK_URL": "https://your-vercel-domain.vercel.app/api/auth/google/callback"
   },
   "build": {
     "env": {
-      "MOCK_GOOGLE_AUTH": "true"
+      "MOCK_GOOGLE_AUTH": "false",
+      "GOOGLE_CALLBACK_URL": "https://your-vercel-domain.vercel.app/api/auth/google/callback"
     }
   }
 }
