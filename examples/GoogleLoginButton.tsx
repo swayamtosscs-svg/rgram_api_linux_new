@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { initGoogleAuth } from '../lib/utils/googleAuth';
 
 /**
  * Example Google Login Button component
@@ -7,6 +8,8 @@ import axios from 'axios';
  * react-google-login or @react-oauth/google for a more robust implementation.
  */
 const GoogleLoginButton: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   useEffect(() => {
     // Load Google API script
     const loadGoogleScript = () => {
