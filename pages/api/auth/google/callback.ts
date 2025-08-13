@@ -43,76 +43,74 @@ export default async function handler(
     const { code } = req.query;
     const isDev = process.env.NODE_ENV === 'development';
 
-    // Allow testing without a code if MOCK_GOOGLE_AUTH is enabled or in dev mode with test=true
-    if (!code) {
-      if ((process.env.MOCK_GOOGLE_AUTH === 'true' || isDev) && req.query.test === 'true') {
-        console.log(`Using mock data for Google auth (MOCK_GOOGLE_AUTH=${process.env.MOCK_GOOGLE_AUTH}, NODE_ENV=${process.env.NODE_ENV})`);
-        // Skip the Google API calls and use mock data
-        try {
-          await connectDB();
-          console.log('Database connection successful');
+    // Allow testing with a mock code or without a code if MOCK_GOOGLE_AUTH is enabled or in dev mode with test=true
+    if (process.env.MOCK_GOOGLE_AUTH === 'true' || (isDev && req.query.test === 'true')) {
+      console.log(`Using mock data for Google auth (MOCK_GOOGLE_AUTH=${process.env.MOCK_GOOGLE_AUTH}, NODE_ENV=${process.env.NODE_ENV})`);
+      // Skip the Google API calls and use mock data
+      try {
+        await connectDB();
+        console.log('Database connection successful');
+        
+        // Check if mock user already exists
+        let user = await User.findOne({ email: MOCK_USER_DATA.email });
+        console.log('User search result:', user ? 'User found' : 'User not found');
+        
+        if (!user) {
+          // Create mock user
+          const username = MOCK_USER_DATA.email.split('@')[0] + Math.floor(Math.random() * 1000);
           
-          // Check if mock user already exists
-          let user = await User.findOne({ email: MOCK_USER_DATA.email });
-          console.log('User search result:', user ? 'User found' : 'User not found');
-          
-          if (!user) {
-            // Create mock user
-            const username = MOCK_USER_DATA.email.split('@')[0] + Math.floor(Math.random() * 1000);
-            
-            user = await User.create({
-              email: MOCK_USER_DATA.email,
-              googleId: MOCK_USER_DATA.googleId,
-              fullName: MOCK_USER_DATA.name,
-              username,
-              password: Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10),
-              avatar: MOCK_USER_DATA.avatar || '',
-              isEmailVerified: true,
-            });
-            console.log('New user created:', username);
-          }
-          
-          // Update last active
-          user.lastActive = new Date();
-          await user.save();
-          console.log('User last active updated');
-          
-          // Generate token
-          const token = generateToken(user._id);
-          console.log('JWT token generated');
-          
-          // For testing purposes, return JSON instead of redirect
-          if (req.query.format === 'json') {
-            return res.status(200).json({
-              success: true,
-              message: 'Mock Google authentication successful',
-              user: {
-                id: user._id,
-                email: user.email,
-                username: user.username,
-                fullName: user.fullName,
-                avatar: user.avatar
-              },
-              token
-            });
-          }
-          
-          // Redirect to frontend with token
-          return res.redirect(`${process.env.CORS_ORIGIN || 'http://localhost:3000'}/auth/social-callback?token=${token}`);
-        } catch (dbError) {
-          console.error('Database error during mock auth:', dbError);
-          return res.status(500).json({
-            success: false,
-            message: 'Database connection error',
-            error: dbError instanceof Error ? dbError.message : 'Unknown database error'
+          user = await User.create({
+            email: MOCK_USER_DATA.email,
+            googleId: MOCK_USER_DATA.googleId,
+            fullName: MOCK_USER_DATA.name,
+            username,
+            password: Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10),
+            avatar: MOCK_USER_DATA.avatar || '',
+            isEmailVerified: true,
+          });
+          console.log('New user created:', username);
+        }
+        
+        // Update last active
+        user.lastActive = new Date();
+        await user.save();
+        console.log('User last active updated');
+        
+        // Generate token
+        const token = generateToken(user._id);
+        console.log('JWT token generated');
+        
+        // For testing purposes, return JSON instead of redirect
+        if (req.query.format === 'json') {
+          return res.status(200).json({
+            success: true,
+            message: 'Mock Google authentication successful',
+            user: {
+              id: user._id,
+              email: user.email,
+              username: user.username,
+              fullName: user.fullName,
+              avatar: user.avatar
+            },
+            token
           });
         }
-      } else {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Authorization code is required' 
+        
+        // Redirect to frontend with token
+        return res.redirect(`${process.env.CORS_ORIGIN || 'http://localhost:3000'}/auth/social-callback?token=${token}`);
+      } catch (dbError) {
+        console.error('Database error during mock auth:', dbError);
+        return res.status(500).json({
+          success: false,
+          message: 'Database connection error',
+          error: dbError instanceof Error ? dbError.message : 'Unknown database error'
         });
       }
+    } else if (!code) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Authorization code is required' 
+      });
     }
     
     // Check if Google APIs are accessible
@@ -134,7 +132,7 @@ export default async function handler(
     const tokenResponse = await axiosWithTimeout.post(
       'https://oauth2.googleapis.com/token',
       {
-        code,
+        code: code as string,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
         redirect_uri: process.env.GOOGLE_CALLBACK_URL,
