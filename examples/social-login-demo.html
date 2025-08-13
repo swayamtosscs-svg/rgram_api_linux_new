@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Login Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 500px;
+      width: 100%;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      background-color: white;
+    }
+    
+    .title {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #333;
+    }
+    
+    .error {
+      background-color: #ffebee;
+      color: #c62828;
+      padding: 0.75rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      text-align: center;
+      display: none;
+    }
+    
+    .login-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .login-button {
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .login-button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    .google-button {
+      background-color: #4285f4;
+      color: white;
+    }
+    
+    .google-button:hover:not(:disabled) {
+      background-color: #3367d6;
+    }
+    
+    .mock-button {
+      background-color: #34a853;
+      color: white;
+    }
+    
+    .mock-button:hover:not(:disabled) {
+      background-color: #2e8b57;
+    }
+    
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: #757575;
+      margin: 0.5rem 0;
+    }
+    
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .divider::before {
+      margin-right: 0.5rem;
+    }
+    
+    .divider::after {
+      margin-left: 0.5rem;
+    }
+    
+    .profile-container {
+      display: none;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #f5f5f5;
+    }
+    
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    
+    .user-info h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #333;
+    }
+    
+    .user-info p {
+      margin: 0;
+      color: #757575;
+    }
+    
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      padding: 1rem 0;
+      border-top: 1px solid #f5f5f5;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .stat-number {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .stat-label {
+      font-size: 0.875rem;
+      color: #757575;
+    }
+    
+    .logout-button {
+      padding: 0.75rem 1rem;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 1rem;
+    }
+    
+    .logout-button:hover {
+      background-color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">Social Login Demo</h1>
+    
+    <div id="error" class="error"></div>
+    
+    <div id="login-container" class="login-container">
+      <button 
+        id="google-login-btn"
+        class="login-button google-button"
+      >
+        Login with Google
+      </button>
+      
+      <div class="divider">OR</div>
+      
+      <button 
+        id="mock-login-btn"
+        class="login-button mock-button"
+      >
+        Login with Mock Google Account
+      </button>
+    </div>
+    
+    <div id="profile-container" class="profile-container">
+      <div class="profile-header">
+        <img 
+          id="user-avatar"
+          src="https://via.placeholder.com/150" 
+          alt="User Avatar" 
+          class="avatar"
+        />
+        <div class="user-info">
+          <h2 id="user-name">User Name</h2>
+          <p id="user-username">@username</p>
+          <p id="user-email">user@example.com</p>
+        </div>
+      </div>
+      
+      <div class="stats">
+        <div class="stat">
+          <span id="followers-count" class="stat-number">0</span>
+          <span class="stat-label">Followers</span>
+        </div>
+        <div class="stat">
+          <span id="following-count" class="stat-number">0</span>
+          <span class="stat-label">Following</span>
+        </div>
+        <div class="stat">
+          <span id="posts-count" class="stat-number">0</span>
+          <span class="stat-label">Posts</span>
+        </div>
+      </div>
+      
+      <button 
+        id="logout-btn"
+        class="logout-button"
+      >
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const errorElement = document.getElementById('error');
+    const loginContainer = document.getElementById('login-container');
+    const profileContainer = document.getElementById('profile-container');
+    const googleLoginBtn = document.getElementById('google-login-btn');
+    const mockLoginBtn = document.getElementById('mock-login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const userAvatar = document.getElementById('user-avatar');
+    const userName = document.getElementById('user-name');
+    const userUsername = document.getElementById('user-username');
+    const userEmail = document.getElementById('user-email');
+    const followersCount = document.getElementById('followers-count');
+    const followingCount = document.getElementById('following-count');
+    const postsCount = document.getElementById('posts-count');
+
+    // Check if user is already logged in
+    function checkLoggedInStatus() {
+      const token = localStorage.getItem('auth_token');
+      const userData = localStorage.getItem('user_data');
+      
+      if (token && userData) {
+        try {
+          const user = JSON.parse(userData);
+          displayUserProfile(user);
+        } catch (e) {
+          console.error('Error parsing user data', e);
+          showLoginForm();
+        }
+      } else {
+        showLoginForm();
+      }
+    }
+
+    // Display user profile
+    function displayUserProfile(user) {
+      userAvatar.src = user.avatar || 'https://via.placeholder.com/150';
+      userAvatar.alt = user.fullName;
+      userName.textContent = user.fullName;
+      userUsername.textContent = `@${user.username}`;
+      userEmail.textContent = user.email;
+      followersCount.textContent = user.followersCount;
+      followingCount.textContent = user.followingCount;
+      postsCount.textContent = user.postsCount;
+      
+      loginContainer.style.display = 'none';
+      profileContainer.style.display = 'flex';
+    }
+
+    // Show login form
+    function showLoginForm() {
+      loginContainer.style.display = 'flex';
+      profileContainer.style.display = 'none';
+    }
+
+    // Show error message
+    function showError(message) {
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+      setTimeout(() => {
+        errorElement.style.display = 'none';
+      }, 5000);
+    }
+
+    // Handle Google Login
+    googleLoginBtn.addEventListener('click', async () => {
+      try {
+        googleLoginBtn.disabled = true;
+        googleLoginBtn.textContent = 'Loading...';
+        
+        // In a real app, this would redirect to Google OAuth
+        // For demo, we'll simulate the redirect
+        showError('This would redirect to Google in a real app');
+        
+        // Reset button
+        googleLoginBtn.disabled = false;
+        googleLoginBtn.textContent = 'Login with Google';
+      } catch (err) {
+        console.error('Google login error:', err);
+        showError('Failed to initialize Google login');
+        googleLoginBtn.disabled = false;
+        googleLoginBtn.textContent = 'Login with Google';
+      }
+    });
+
+    // Handle Mock Google Login
+    mockLoginBtn.addEventListener('click', async () => {
+      try {
+        mockLoginBtn.disabled = true;
+        mockLoginBtn.textContent = 'Loading...';
+        
+        // Mock Google user data
+        const mockGoogleUser = {
+          email: 'test.google@example.com',
+          name: 'Test Google User',
+          googleId: 'google_' + Math.random().toString(36).substring(2, 15),
+          avatar: 'https://example.com/avatar.jpg'
+        };
+        
+        // Simulate API call
+        setTimeout(() => {
+          // Mock response data
+          const responseData = {
+            success: true,
+            message: 'Google login successful (MOCK)',
+            data: {
+              user: {
+                id: 'mock-user-id-123',
+                email: 'test.google@example.com',
+                username: 'testgoogle123',
+                fullName: 'Test Google User',
+                avatar: 'https://example.com/avatar.jpg',
+                bio: 'This is a mock user for testing',
+                website: 'https://example.com',
+                location: 'Test Location',
+                religion: 'Test Religion',
+                isPrivate: false,
+                isEmailVerified: true,
+                isVerified: false,
+                followersCount: 10,
+                followingCount: 20,
+                postsCount: 5,
+                reelsCount: 2,
+                createdAt: '2023-01-01T00:00:00.000Z',
+                lastActive: new Date().toISOString()
+              },
+              token: 'mock_jwt_token_' + Math.random().toString(36).substring(2, 15)
+            }
+          };
+          
+          // Save user data and token
+          const { user, token } = responseData.data;
+          localStorage.setItem('auth_token', token);
+          localStorage.setItem('user_data', JSON.stringify(user));
+          
+          displayUserProfile(user);
+          
+          // Reset button
+          mockLoginBtn.disabled = false;
+          mockLoginBtn.textContent = 'Login with Mock Google Account';
+        }, 1000);
+      } catch (err) {
+        console.error('Mock Google login error:', err);
+        showError('Failed to login with mock Google account');
+        mockLoginBtn.disabled = false;
+        mockLoginBtn.textContent = 'Login with Mock Google Account';
+      }
+    });
+
+    // Handle Logout
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_data');
+      showLoginForm();
+    });
+
+    // Initialize
+    checkLoggedInStatus();
+  </script>
+</body>
+</html>

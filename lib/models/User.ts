@@ -13,6 +13,7 @@ export interface IUser extends Document {
   location?: string;
   religion?: string;
   phone?: string;
+  googleId?: string;
   isPrivate: boolean;
   isEmailVerified: boolean;
   isActive: boolean;
@@ -49,6 +50,11 @@ const UserSchema = new Schema<IUser>({
     required: true,
     minlength: [6, 'Password must be at least 6 characters'],
     select: false
+  },
+  googleId: {
+    type: String,
+    sparse: true,
+    unique: true
   },
   username: {
     type: String,

@@ -59,6 +59,60 @@ Authorization: Bearer <your_jwt_token>
 ### 2. User Login
 **POST** `/auth/login`
 
+### 3. Google OAuth Initialization
+**GET** `/auth/google/init`
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "authUrl": "https://accounts.google.com/o/oauth2/v2/auth?client_id=...&redirect_uri=...&response_type=code&scope=profile%20email&access_type=offline&prompt=consent"
+  }
+}
+```
+
+### 4. Google OAuth Callback
+**GET** `/auth/google/callback?code={authorization_code}`
+
+Redirects to frontend with token:
+```
+{FRONTEND_URL}/auth/social-callback?token={jwt_token}
+```
+
+### 5. Direct Google Authentication
+**POST** `/auth/google`
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "name": "User Name",
+  "googleId": "google_user_id",
+  "avatar": "https://example.com/profile.jpg" // optional
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Google login successful",
+  "data": {
+    "user": {
+      "id": "user_id",
+      "email": "user@example.com",
+      "username": "username",
+      "fullName": "User Name",
+      "avatar": "https://example.com/profile.jpg",
+      "isEmailVerified": true,
+      // other user fields...
+    },
+    "token": "jwt_token_here"
+  }
+}
+```
+
 **Request Body:**
 ```json
 {
