@@ -42,11 +42,20 @@ export default async function handler(
   try {
     const { code } = req.query;
     const isDev = process.env.NODE_ENV === 'development';
+    const isTest = req.query.test === 'true';
 
-    // Allow testing with a mock code or without a code if MOCK_GOOGLE_AUTH is enabled or in dev mode with test=true
-    if (process.env.MOCK_GOOGLE_AUTH === 'true' || (isDev && req.query.test === 'true')) {
+    // If no code is provided and not in test mode, return error
+    if (!code && !isTest) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Authorization code is required' 
+      });
+    }
+
+    // Use mock data for testing or when MOCK_GOOGLE_AUTH is enabled
+    if (process.env.MOCK_GOOGLE_AUTH === 'true' || (isDev && isTest)) {
       console.log(`Using mock data for Google auth (MOCK_GOOGLE_AUTH=${process.env.MOCK_GOOGLE_AUTH}, NODE_ENV=${process.env.NODE_ENV})`);
-      // Skip the Google API calls and use mock data
+      // Return mock response for test scenario
       try {
         await connectDB();
         console.log('Database connection successful');
@@ -107,6 +116,7 @@ export default async function handler(
         });
       }
     } else if (!code) {
+      // Only return an error if we're not in mock mode and code is missing
       return res.status(400).json({ 
         success: false, 
         message: 'Authorization code is required' 
