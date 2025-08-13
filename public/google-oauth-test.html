@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        button {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background-color: #357AE8;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .error {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #388e3c;
+            background-color: #e8f5e9;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info-box {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Google OAuth Test</h1>
+        
+        <div class="info-box">
+            <h3>How to Use This Page</h3>
+            <p>This page helps you test your Google OAuth configuration:</p>
+            <ol>
+                <li>Click the "Initiate Google Login" button to start the OAuth flow</li>
+                <li>You'll be redirected to Google's login page</li>
+                <li>After successful authentication, you'll be redirected back to your application</li>
+                <li>Check the URL parameters and console for any errors</li>
+            </ol>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="success" class="success" style="display: none;"></div>
+        
+        <button id="loginButton">Initiate Google Login</button>
+        
+        <div>
+            <h3>Current Configuration</h3>
+            <p>Redirect URI: <code id="redirectUri">Loading...</code></p>
+        </div>
+        
+        <div id="resultContainer" style="display: none;">
+            <h3>Result</h3>
+            <div id="result" class="result"></div>
+        </div>
+
+        <div class="info-box">
+            <h3>Troubleshooting</h3>
+            <p><strong>If you see a "redirect_uri_mismatch" error:</strong></p>
+            <ol>
+                <li>Go to the <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a></li>
+                <li>Find your OAuth 2.0 Client ID</li>
+                <li>Add the redirect URI shown above to the list of authorized redirect URIs</li>
+                <li>Save your changes and try again</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display current redirect URI
+            const redirectUri = window.location.origin + '/api/auth/google/callback';
+            document.getElementById('redirectUri').textContent = redirectUri;
+            
+            // Check for error or success in URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            const token = urlParams.get('token');
+            
+            if (error) {
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = 'Error: ' + error;
+                errorDiv.style.display = 'block';
+            }
+            
+            if (token) {
+                const successDiv = document.getElementById('success');
+                successDiv.textContent = 'Successfully authenticated! Token received.';
+                successDiv.style.display = 'block';
+                
+                const resultDiv = document.getElementById('result');
+                resultDiv.textContent = 'Token: ' + token;
+                document.getElementById('resultContainer').style.display = 'block';
+            }
+            
+            // Handle login button click
+            document.getElementById('loginButton').addEventListener('click', function() {
+                fetch('/api/auth/google/init')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.data.authUrl) {
+                            window.location.href = data.data.authUrl;
+                        } else {
+                            throw new Error(data.message || 'Failed to get auth URL');
+                        }
+                    })
+                    .catch(err => {
+                        const errorDiv = document.getElementById('error');
+                        errorDiv.textContent = 'Error: ' + err.message;
+                        errorDiv.style.display = 'block';
+                    });
+            });
+        });
+    </script>
+</body>
+</html>

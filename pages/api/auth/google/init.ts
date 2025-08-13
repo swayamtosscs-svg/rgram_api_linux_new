@@ -8,10 +8,10 @@ const dnsLookup = promisify(dns.lookup);
 // Function to check if Google APIs are accessible
 async function checkGoogleApiAccess(): Promise<boolean> {
   // If MOCK_GOOGLE_AUTH is enabled, skip the actual DNS check
-  if (process.env.MOCK_GOOGLE_AUTH === 'true') {
-    console.log('MOCK_GOOGLE_AUTH is enabled, skipping DNS check');
-    return true;
-  }
+  // if ("true" === 'true') {
+  //   console.log('MOCK_GOOGLE_AUTH is enabled, skipping DNS check');
+  //   return true;
+  // }
 
   try {
     await dnsLookup('accounts.google.com');
@@ -62,12 +62,18 @@ export default async function handler(
     if (useMockAuth) {
       console.log('Using mock Google auth URL');
       // Create a URL that will hit our test callback endpoint
-      const mockAuthUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3001'}/api/auth/google/callback?test=true&format=json&code=mock_authorization_code_12345`;
-      
+      // const mockAuthUrl = `/api/auth/google/callback?test=true&format=json`;
+      const scope = encodeURIComponent('profile email');
+      const responseType = 'code';
+      const accessType = 'offline';
+      const prompt = 'consent';
+
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${scope}&access_type=${accessType}&prompt=${prompt}`;
+
       return res.json({
         success: true,
         data: {
-          authUrl: mockAuthUrl,
+          authUrl: authUrl,
           isMock: true
         }
       });
@@ -78,12 +84,8 @@ export default async function handler(
     const responseType = 'code';
     const accessType = 'offline';
     const prompt = 'consent';
-    
-    // Ensure we have valid values for clientId and redirectUri
-    const safeClientId = clientId || '';
-    const safeRedirectUri = redirectUri || '';
 
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${safeClientId}&redirect_uri=${encodeURIComponent(safeRedirectUri)}&response_type=${responseType}&scope=${scope}&access_type=${accessType}&prompt=${prompt}`;
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${scope}&access_type=${accessType}&prompt=${prompt}`;
 
     res.json({
       success: true,
