@@ -7,6 +7,12 @@ const dnsLookup = promisify(dns.lookup);
 
 // Function to check if Google APIs are accessible
 async function checkGoogleApiAccess(): Promise<boolean> {
+  // If MOCK_GOOGLE_AUTH is enabled, skip the actual DNS check
+  if (process.env.MOCK_GOOGLE_AUTH === 'true') {
+    console.log('MOCK_GOOGLE_AUTH is enabled, skipping DNS check');
+    return true;
+  }
+  
   try {
     await dnsLookup('accounts.google.com');
     return true;
@@ -28,17 +34,21 @@ export default async function handler(
   }
 
   try {
+    // Check if we're using mock Google auth
+    const useMockAuth = process.env.MOCK_GOOGLE_AUTH === 'true';
+    console.log('MOCK_GOOGLE_AUTH setting:', process.env.MOCK_GOOGLE_AUTH);
+    
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const redirectUri = process.env.GOOGLE_CALLBACK_URL;
 
-    if (!clientId || !redirectUri) {
+    if (!useMockAuth && (!clientId || !redirectUri)) {
       return res.status(500).json({ 
         success: false, 
         message: 'Google OAuth configuration is missing' 
       });
     }
     
-    // Check if Google APIs are accessible
+    // Check if Google APIs are accessible (skipped if mock auth is enabled)
     const isGoogleAccessible = await checkGoogleApiAccess();
     if (!isGoogleAccessible) {
       return res.status(503).json({
@@ -48,7 +58,22 @@ export default async function handler(
       });
     }
 
-    // Generate Google OAuth URL
+    // If mock auth is enabled, return a mock URL that points to our test callback
+    if (useMockAuth) {
+      console.log('Using mock Google auth URL');
+      // Create a URL that will hit our test callback endpoint
+      const mockAuthUrl = `/api/auth/google/callback?test=true&format=json`;
+      
+      return res.json({
+        success: true,
+        data: {
+          authUrl: mockAuthUrl,
+          isMock: true
+        }
+      });
+    }
+    
+    // Generate real Google OAuth URL
     const scope = encodeURIComponent('profile email');
     const responseType = 'code';
     const accessType = 'offline';

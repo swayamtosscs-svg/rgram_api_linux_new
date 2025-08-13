@@ -43,10 +43,10 @@ export default async function handler(
     const { code } = req.query;
     const isDev = process.env.NODE_ENV === 'development';
 
-    // In development mode, allow testing without a code
+    // Allow testing without a code if MOCK_GOOGLE_AUTH is enabled or in dev mode with test=true
     if (!code) {
-      if (isDev && req.query.test === 'true') {
-        console.log('Using mock data for Google auth in development mode');
+      if ((process.env.MOCK_GOOGLE_AUTH === 'true' || isDev) && req.query.test === 'true') {
+        console.log(`Using mock data for Google auth (MOCK_GOOGLE_AUTH=${process.env.MOCK_GOOGLE_AUTH}, NODE_ENV=${process.env.NODE_ENV})`);
         // Skip the Google API calls and use mock data
         try {
           await connectDB();

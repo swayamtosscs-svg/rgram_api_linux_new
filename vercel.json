@@ -1,0 +1,10 @@
+{
+  "env": {
+    "MOCK_GOOGLE_AUTH": "true"
+  },
+  "build": {
+    "env": {
+      "MOCK_GOOGLE_AUTH": "true"
+    }
+  }
+}

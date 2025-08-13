@@ -68,7 +68,15 @@ export const initGoogleAuth = async (): Promise<string> => {
     const response = await axiosWithTimeout.get('/api/auth/google/init');
     
     if (response.data.success && response.data.data.authUrl) {
-      return response.data.data.authUrl;
+      // Check if this is a mock URL (starts with /api instead of https://)
+      const authUrl = response.data.data.authUrl;
+      
+      // If it's a mock URL and doesn't include the origin, add the current origin
+      if (authUrl.startsWith('/api') && typeof window !== 'undefined') {
+        return `${window.location.origin}${authUrl}`;
+      }
+      
+      return authUrl;
     } else {
       throw new Error('Failed to initialize Google authentication');
     }
