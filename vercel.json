@@ -1,11 +1,11 @@
 {
   "env": {
-    "MOCK_GOOGLE_AUTH": "false",
+    "MOCK_GOOGLE_AUTH": "true",
     "GOOGLE_CALLBACK_URL": "https://api-rgram1.vercel.app/api/auth/google/callback"
   },
   "build": {
     "env": {
-      "MOCK_GOOGLE_AUTH": "false",
+      "MOCK_GOOGLE_AUTH": "true",
       "GOOGLE_CALLBACK_URL": "https://api-rgram1.vercel.app/api/auth/google/callback"
     }
   }
