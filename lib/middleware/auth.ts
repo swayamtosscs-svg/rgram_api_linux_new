@@ -1,4 +1,6 @@
 import jwt from 'jsonwebtoken';
+import BlacklistedToken from '../models/BlacklistedToken';
+import connectDB from '../database';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 const JWT_EXPIRE = process.env.JWT_EXPIRE || '30d';
@@ -23,11 +25,23 @@ export const generateToken = (userId: string): string => {
 };
 
 /**
- * Verify JWT token
+ * Verify JWT token and check if it's blacklisted
  */
-export const verifyToken = (token: string): JWTPayload | null => {
+export const verifyToken = async (token: string): Promise<JWTPayload | null> => {
   try {
+    // First verify the token signature and expiration
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    
+    // Connect to the database
+    await connectDB();
+    
+    // Check if the token is blacklisted
+    const blacklistedToken = await BlacklistedToken.findOne({ token });
+    if (blacklistedToken) {
+      console.log('Token is blacklisted');
+      return null;
+    }
+    
     return decoded;
   } catch (error) {
     console.error('Token verification error:', error);
@@ -74,5 +88,44 @@ export const getTokenExpiration = (token: string): Date | null => {
     return new Date(decoded.exp * 1000);
   } catch (error) {
     return null;
+  }
+};
+
+/**
+ * Blacklist a token
+ */
+export const blacklistToken = async (token: string, userId: string): Promise<boolean> => {
+  try {
+    await connectDB();
+    
+    // Get token expiration time
+    const expiresAt = getTokenExpiration(token);
+    if (!expiresAt) return false;
+    
+    // Add token to blacklist
+    await BlacklistedToken.create({
+      token,
+      userId,
+      expiresAt,
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Token blacklisting error:', error);
+    return false;
+  }
+};
+
+/**
+ * Check if a token is blacklisted
+ */
+export const isTokenBlacklisted = async (token: string): Promise<boolean> => {
+  try {
+    await connectDB();
+    const blacklistedToken = await BlacklistedToken.findOne({ token });
+    return !!blacklistedToken;
+  } catch (error) {
+    console.error('Token blacklist check error:', error);
+    return false;
   }
 };

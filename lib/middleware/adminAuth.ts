@@ -18,7 +18,7 @@ export async function adminMiddleware(
     }
 
     // Verify token and get user ID
-    const decoded = verifyToken(token);
+    const decoded = await verifyToken(token);
     if (!decoded || !decoded.userId) {
       return res.status(401).json({ message: 'Invalid token' });
     }
