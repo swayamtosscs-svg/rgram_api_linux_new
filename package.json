@@ -6,8 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "verify-oauth": "node scripts/verify-google-oauth.js"
+    "start1": "next start -p 80 -H 0.0.0.0",
+    "lint": "next lint"
   },
   "dependencies": {
     "@auth/core": "0.34.2",
