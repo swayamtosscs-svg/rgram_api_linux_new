@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectDB();
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) return res.status(401).json({ success: false, message: 'Authentication required' });
-    const decoded = verifyToken(token);
+    const decoded = await verifyToken(token);
     if (!decoded) return res.status(401).json({ success: false, message: 'Invalid token' });
     const me = await (User as any).findById(decoded.userId).lean();
     if (!me?.isAdmin) return res.status(403).json({ success: false, message: 'Admin access required' });

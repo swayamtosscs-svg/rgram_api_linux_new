@@ -160,7 +160,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(401).json({ success: false, message: 'Authentication required' });
       }
 
-      const decoded = verifyToken(token);
+      const decoded = await verifyToken(token);
       if (!decoded) {
         return res.status(401).json({ success: false, message: 'Invalid token' });
       }

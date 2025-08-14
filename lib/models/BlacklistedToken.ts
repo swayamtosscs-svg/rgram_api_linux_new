@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema, Model } from 'mongoose';
 
 export interface BlacklistedTokenDocument extends Document {
   token: string;
@@ -39,5 +39,11 @@ BlacklistedTokenSchema.index({ userId: 1 });
 // Create a TTL index to automatically remove expired tokens
 BlacklistedTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-export default mongoose.models.BlacklistedToken ||
-  mongoose.model<BlacklistedTokenDocument>('BlacklistedToken', BlacklistedTokenSchema);
+// Define the model interface
+export interface BlacklistedTokenModel extends Model<BlacklistedTokenDocument> {}
+
+// Check if the model exists before creating a new one
+const BlacklistedToken = (mongoose.models.BlacklistedToken as BlacklistedTokenModel) ||
+  mongoose.model<BlacklistedTokenDocument, BlacklistedTokenModel>('BlacklistedToken', BlacklistedTokenSchema);
+
+export default BlacklistedToken;

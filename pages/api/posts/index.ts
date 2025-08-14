@@ -51,7 +51,7 @@ export default async function handler(
         });
       }
 
-      const decoded = verifyToken(token);
+      const decoded = await verifyToken(token);
       if (!decoded) {
         return res.status(401).json({
           success: false,

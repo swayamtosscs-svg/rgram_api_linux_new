@@ -114,7 +114,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (token) {
-      const decoded = verifyToken(token);
+      const decoded = await verifyToken(token);
       if (decoded) {
         isLiked = video.likes.includes(decoded.userId);
         isSaved = video.saves.includes(decoded.userId);

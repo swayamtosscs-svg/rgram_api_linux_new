@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectDB();
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) return res.status(401).json({ success: false, message: 'Authentication required' });
-    const decoded = verifyToken(token);
+    const decoded = await verifyToken(token);
     if (!decoded) return res.status(401).json({ success: false, message: 'Invalid token' });
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
