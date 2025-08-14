@@ -42,6 +42,26 @@ export const verifyToken = async (token: string): Promise<JWTPayload | null> => 
       return null;
     }
     
+    // Check if there are any special blacklist entries for this user
+    // These would be entries created when an admin logs out a user
+    const userId = decoded.userId;
+    const specialLogoutEntries = await BlacklistedToken.find({
+      userId,
+      token: { $regex: `^LOGOUT_ALL_${userId}_` }
+    });
+    
+    if (specialLogoutEntries && specialLogoutEntries.length > 0) {
+      // Check if any of the special entries were created after this token was issued
+      const tokenIssuedAt = new Date(decoded.iat * 1000);
+      
+      for (const entry of specialLogoutEntries) {
+        if (entry.createdAt > tokenIssuedAt) {
+          console.log('User was forcibly logged out after this token was issued');
+          return null;
+        }
+      }
+    }
+    
     return decoded;
   } catch (error) {
     console.error('Token verification error:', error);
