@@ -51,6 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { base64, filename } = req.body;
     if (!base64 || !filename) {
+      // Check if both required parameters are provided
       return res.status(400).json({ success: false, message: 'base64 and filename are required' });
     }
 
