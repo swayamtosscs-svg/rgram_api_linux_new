@@ -1,10 +1,30 @@
 import { NextResponse } from 'next/server';
 import cloudinary from '@/utils/cloudinary';
 
-// This route must be dynamic since it handles file uploads
+// Configure route options
 export const dynamic = 'force-dynamic';
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
 
-// Remove edge runtime to use Node.js features
+// Handle OPTIONS requests for CORS
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRF-Token',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
+
+// Handle POST requests
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
