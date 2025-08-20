@@ -46,8 +46,8 @@ export default async function handler(
 
     // 2. Get all videos recursively from videos folder
     const videosPath = path.join(basePublicPath, 'videos');
+    const scanDirectory = (dirPath: string) => {
     if (fs.existsSync(videosPath)) {
-      function scanDirectory(dirPath: string) {
         const items = fs.readdirSync(dirPath);
         
         items.forEach(item => {

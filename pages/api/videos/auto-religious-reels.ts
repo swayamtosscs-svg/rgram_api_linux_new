@@ -126,7 +126,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Get available religious video sources
       const { religion, category } = req.query;
 
-      let availableVideos = [];
+      let availableVideos: any[] = [];
 
       if (religion && religion !== 'all') {
         const religionData = RELIGIOUS_VIDEO_SOURCES[religion as keyof typeof RELIGIOUS_VIDEO_SOURCES];

@@ -91,6 +91,28 @@ const RELIGIOUS_CATEGORIES = [
     }
 ];
 
+interface YoutubeVideo {
+    id: string;
+    title: string;
+    description: string;
+    thumbnails: {
+        default: { url: string };
+        medium: { url: string };
+        high: { url: string };
+    };
+    publishedAt: string;
+    channelTitle: string;
+    videoUrl: string;
+    embedUrl: string;
+}
+
+interface ProcessedVideo {
+    id: string;
+    title: string;
+    description: string;
+    thumbnail: string;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'GET') {
         return res.status(405).json({ success: false, message: 'Method not allowed' });
@@ -98,7 +120,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
         const { category, maxResults = 10 } = req.query;
-        let videosToReturn = [];
+        let allVideos: YoutubeVideo[] = [];
 
         // If category is specified, filter categories
         const categoriesToSearch = category 
@@ -108,8 +130,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Get videos from each category
         for (const categoryData of categoriesToSearch) {
-            videosToReturn = [...videosToReturn, ...categoryData.videos];
+            allVideos = [...allVideos, ...categoryData.videos];
         }
+
+        // Process videos to match the expected format
+        let videosToReturn: ProcessedVideo[] = allVideos.map(video => ({
+            id: video.id,
+            title: video.title,
+            description: video.description,
+            thumbnail: video.thumbnails.medium.url
+        }));
 
         // Randomize the order of videos
         videosToReturn = videosToReturn.sort(() => Math.random() - 0.5);
@@ -129,12 +159,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         });
 
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('Error fetching religious videos:', error);
         return res.status(500).json({
             success: false,
             message: 'Error fetching religious videos',
-            error: error.message
+            error: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 }

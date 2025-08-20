@@ -38,8 +38,8 @@ export default async function handler(
     const useMockAuth = process.env.MOCK_GOOGLE_AUTH === 'true';
     console.log('MOCK_GOOGLE_AUTH setting:', process.env.MOCK_GOOGLE_AUTH);
 
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const redirectUri = process.env.GOOGLE_CALLBACK_URL;
+    const clientId = process.env.GOOGLE_CLIENT_ID || '';
+    const redirectUri = process.env.GOOGLE_CALLBACK_URL || '';
 
     if (!useMockAuth && (!clientId || !redirectUri)) {
       return res.status(500).json({

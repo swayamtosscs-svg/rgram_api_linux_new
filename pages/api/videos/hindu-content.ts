@@ -3,7 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import { fetchReligiousVideos } from '../../../lib/utils/videoFetcher';
 
-// Define types for our content
 interface HinduContent {
   type: 'image' | 'video';
   url: string;
@@ -178,12 +177,12 @@ export default async function handler(
       }
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error fetching Hindu content:', error);
     return res.status(500).json({
       success: false,
       message: 'Error fetching Hindu content',
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 }

@@ -38,7 +38,7 @@ async function getPendingContent(req: NextApiRequest, res: NextApiResponse) {
     const limitNumber = parseInt(limit as string);
     const skip = (pageNumber - 1) * limitNumber;
 
-    let content = [];
+    let content: any[] = [];
     let total = 0;
 
     if (type === 'all' || type === 'posts') {

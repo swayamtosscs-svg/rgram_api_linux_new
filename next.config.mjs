@@ -1,16 +1,35 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Add React strict mode to help catch issues during development
   reactStrictMode: true,
-  
-  // Suppress hydration warnings
-  onDemandEntries: {
-    // Period (in ms) where the server will keep pages in the buffer
-    maxInactiveAge: 25 * 1000,
-    // Number of pages that should be kept simultaneously without being disposed
-    pagesBufferLength: 2,
+
+  // Configure image optimization
+  images: {
+    domains: ['res.cloudinary.com', 'storage.googleapis.com'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
-  
+
+  // Enable static exports for pages that don't require server-side rendering
+  output: 'standalone',
+
+  // Configure webpack for optimizations
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Don't resolve 'fs' module on the client to prevent this error on build --> Error: Can't resolve 'fs'
+      config.resolve.fallback = {
+        fs: false,
+        stream: false,
+        crypto: false,
+        os: false,
+        path: false,
+      };
+    }
+    return config;
+  },
+
+  // Configure page extensions
+  pageExtensions: ['tsx', 'ts', 'jsx', 'js', 'mjs'],
+
   async rewrites() {
     return [
       {

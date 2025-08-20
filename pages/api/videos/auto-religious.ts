@@ -113,12 +113,12 @@ export default async function handler(
       }
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in auto-religious videos API:', error);
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 }
