@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
-  // Get the pathname of the request
   const path = request.nextUrl.pathname;
 
   // Handle OPTIONS request for CORS
@@ -16,7 +14,16 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // Handle API routes
+  // Static assets and public files
+  if (
+    path.startsWith('/_next') || 
+    path.startsWith('/static') ||
+    path.includes('.')
+  ) {
+    return NextResponse.next();
+  }
+
+  // Handle API routes - Keep them dynamic
   if (path.startsWith('/api/')) {
     const response = NextResponse.next();
     // Add CORS headers
