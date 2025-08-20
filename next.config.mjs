@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  // Use pages directory
+  useFileSystemPublicRoutes: true,
+
   // Configure image optimization
   images: {
     domains: ['res.cloudinary.com', 'storage.googleapis.com'],

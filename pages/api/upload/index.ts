@@ -31,17 +31,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const form = formidable();
-    const [fields, files] = await new Promise((resolve, reject) => {
+    const formData = await new Promise<{ fields: formidable.Fields; files: formidable.Files }>((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
         if (err) reject(err);
-        resolve([fields, files]);
+        resolve({ fields, files });
       });
     });
 
-    const file = files.file;
-    if (!file) {
+    const fileField = formData.files['file'];
+    if (!fileField || !Array.isArray(fileField) || fileField.length === 0) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
+
+    const file = fileField[0];
 
     // Upload to Cloudinary
     const result = await new Promise((resolve, reject) => {
@@ -53,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       );
 
-      createReadStream(file[0].filepath).pipe(upload);
+      createReadStream(file.filepath).pipe(upload);
     });
 
     return res.status(200).json(result);
