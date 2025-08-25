@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cleanup-stories": "node scripts/cleanup-expired-stories.js",
+    "cleanup-scheduled": "node scripts/scheduled-cleanup.js"
   },
   "dependencies": {
     "@types/formidable": "^3.4.5",
