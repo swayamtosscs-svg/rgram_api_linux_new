@@ -44,68 +44,70 @@ export default async function handler(
     // Get the authenticated user ID from the decoded token
     const authenticatedUserId = decoded.userId;
     
-    // Check if a specific userId is provided in the request body
-    const { userId } = req.body;
+    // Check if a specific userId is provided in the request body OR headers
+    // Support both methods for flexibility
+    const { userId: bodyUserId } = req.body;
+    const headerUserId = req.headers.userid || req.headers['user-id'];
     
-    // If userId is provided, check if the authenticated user has permission to log out another user
-    // For now, we'll just allow it (you might want to add admin check here)
+    const userId = bodyUserId || headerUserId;
+    
+    // Determine the target user ID
     const targetUserId = userId || authenticatedUserId;
     
-    // If a specific userId is provided (either logging out another user or self with userId)
-     if (userId) {
-      // Find the user to ensure they exist
-      const userExists = await User.findById(userId);
-      if (!userExists) {
+    // If logging out another user, check if the authenticated user has permission
+    if (userId && userId !== authenticatedUserId) {
+      // Check if the authenticated user is an admin
+      const authenticatedUser = await User.findById(authenticatedUserId);
+      if (!authenticatedUser || !authenticatedUser.isAdmin) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. Only admins can logout other users.'
+        });
+      }
+      
+      // Verify the target user exists
+      const targetUser = await User.findById(targetUserId);
+      if (!targetUser) {
         return res.status(404).json({
           success: false,
-          message: 'User not found'
+          message: 'Target user not found'
         });
       }
       
-      // Update the user's lastActive timestamp
-      await User.findByIdAndUpdate(targetUserId, { lastActive: new Date() });
+      // Log the admin action
+      console.log(`Admin user ${authenticatedUserId} logged out user ${targetUserId}`);
+    }
+    
+    // Update the target user's lastActive timestamp
+    await User.findByIdAndUpdate(targetUserId, { 
+      lastActive: new Date() 
+    });
+    
+    if (userId && userId !== authenticatedUserId) {
+      // Logging out another user - create a special blacklist entry
+      // This will invalidate all future tokens for this user
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30); // 30 days from now
       
-      // For logging out a specific user, we'll invalidate their current token
-      // This is a simplified approach - in a production environment, you might want to 
-      // implement more sophisticated token tracking for invalidating all user tokens
+      await BlacklistedToken.create({
+        token: `LOGOUT_ALL_${targetUserId}_${Date.now()}`,
+        userId: targetUserId,
+        expiresAt,
+        createdAt: new Date()
+      });
       
-      // If we're logging out ourselves, blacklist our current token
-      if (userId === authenticatedUserId) {
-        const blacklisted = await blacklistToken(token, targetUserId);
-        
-        if (!blacklisted) {
-          return res.status(500).json({
-            success: false,
-            message: 'Failed to invalidate token'
-          });
+      return res.status(200).json({
+        success: true,
+        message: `User ${targetUserId} has been logged out successfully`,
+        data: {
+          loggedOutUserId: targetUserId,
+          loggedOutBy: authenticatedUserId,
+          timestamp: new Date()
         }
-      } else {
-        // We're logging out another user - create a special blacklist entry that will invalidate all tokens
-        // for this user until they log in again
-        
-        // Calculate an expiration date (e.g., 30 days from now)
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 30);
-        
-        // Create a special blacklist entry with a null token to indicate all tokens for this user are invalid
-        // In a real implementation, you might want to use a more sophisticated approach
-        await BlacklistedToken.create({
-          token: `LOGOUT_ALL_${targetUserId}_${Date.now()}`, // Unique token identifier
-          userId: targetUserId,
-          expiresAt,
-          createdAt: new Date()
-        });
-        
-        // Log the action
-        console.log(`Admin user ${authenticatedUserId} logged out user ${targetUserId}`);
-      }
+      });
     } else {
-      // Regular logout - just the current user with the current token
-      // Update the user's lastActive timestamp
-      await User.findByIdAndUpdate(authenticatedUserId, { lastActive: new Date() });
-      
-      // Add the token to the blacklist
-      const blacklisted = await blacklistToken(token, authenticatedUserId);
+      // Regular logout - blacklist the current token
+      const blacklisted = await blacklistToken(token, targetUserId);
       
       if (!blacklisted) {
         return res.status(500).json({
@@ -113,18 +115,17 @@ export default async function handler(
           message: 'Failed to invalidate token'
         });
       }
-    }
-
-    // Return success response with appropriate message
-    let message = 'Logged out successfully';
-    if (userId && userId !== authenticatedUserId) {
-      message = `User ${userId} has been logged out successfully`;
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Logged out successfully',
+        data: {
+          loggedOutUserId: targetUserId,
+          timestamp: new Date()
+        }
+      });
     }
     
-    return res.status(200).json({
-      success: true,
-      message
-    });
   } catch (error: any) {
     console.error('Logout error:', error);
     return res.status(500).json({ 

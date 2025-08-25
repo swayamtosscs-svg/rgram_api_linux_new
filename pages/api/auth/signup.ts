@@ -5,6 +5,13 @@ import { generateToken } from '../../../lib/middleware/auth';
 import { sendWelcomeEmail } from '../../../lib/utils/email';
 import { validateEmail, validatePassword } from '../../../lib/utils/validation';
 
+// Valid religion options
+const VALID_RELIGIONS = [
+  'hinduism', 'islam', 'christianity', 'buddhism', 'sikhism', 'judaism',
+  'jainism', 'zoroastrianism', 'bahai', 'shinto', 'taoism', 'confucianism',
+  'other', 'none'
+];
+
 /**
  * Generate unique username
  */
@@ -24,6 +31,24 @@ const generateUniqueUsername = async (baseUsername: string): Promise<string> => 
   return finalUsername;
 };
 
+/**
+ * Validate religion selection
+ */
+const validateReligion = (religion: string): { isValid: boolean; message?: string } => {
+  if (!religion) {
+    return { isValid: false, message: 'Religion selection is required' };
+  }
+  
+  if (!VALID_RELIGIONS.includes(religion.toLowerCase())) {
+    return { 
+      isValid: false, 
+      message: `Invalid religion. Please choose from: ${VALID_RELIGIONS.join(', ')}` 
+    };
+  }
+  
+  return { isValid: true };
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -38,13 +63,22 @@ export default async function handler(
   try {
     await connectDB();
 
-    const { email, password, fullName, username } = req.body;
+    const { email, password, fullName, username, religion } = req.body;
 
     // Validation
     if (!email || !password || !fullName) {
       return res.status(400).json({
         success: false,
         message: 'Email, password, and full name are required'
+      });
+    }
+
+    // Validate religion
+    const religionValidation = validateReligion(religion);
+    if (!religionValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: religionValidation.message
       });
     }
 
@@ -86,6 +120,7 @@ export default async function handler(
       password,
       fullName,
       username: finalUsername,
+      religion: religion.toLowerCase(), // Store religion in lowercase
       isEmailVerified: false,
       isActive: true,
       createdAt: new Date(),
@@ -111,6 +146,7 @@ export default async function handler(
           email: user.email,
           username: user.username,
           fullName: user.fullName,
+          religion: user.religion,
           avatar: user.avatar,
           bio: user.bio,
           website: user.website,
