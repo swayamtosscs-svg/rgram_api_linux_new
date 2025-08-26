@@ -1,53 +1,190 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Privacy Settings API - Instagram-like Social Media Platform
 
-## Getting Started
+A comprehensive API system for managing user privacy settings in a social media platform, built with Next.js, TypeScript, and MongoDB.
 
-First, run the development server:
+## 🚀 **Features**
 
+### **Privacy Management APIs**
+- **Toggle Privacy**: Automatically switch between public/private
+- **Set Specific Privacy**: Force public or private status
+- **User ID Based**: Change any user's privacy using their ID
+- **Authentication Required**: Secure JWT-based authentication
+- **Real-time Updates**: Instant privacy status changes
+
+### **Core APIs**
+- User authentication (login/signup)
+- Profile management
+- Media upload and management
+- Story and post management
+- Follow/unfollow system
+- Donation system
+- Admin panel
+
+## 📁 **Project Structure**
+
+```
+api_rgram1/
+├── pages/api/           # API endpoints
+│   ├── user/           # User management APIs
+│   │   ├── privacy-settings.ts      # Comprehensive privacy management
+│   │   ├── toggle-privacy.ts        # Simple privacy toggle
+│   │   ├── toggle-privacy-by-id.ts  # Toggle privacy by user ID
+│   │   └── set-privacy-by-id.ts     # Set privacy by user ID
+│   ├── auth/           # Authentication APIs
+│   ├── admin/          # Admin panel APIs
+│   └── ...             # Other API endpoints
+├── lib/                # Core libraries
+│   ├── models/         # Database models
+│   ├── middleware/     # Authentication middleware
+│   └── utils/          # Utility functions
+├── public/             # Static files
+└── ...                 # Configuration files
+```
+
+## 🔐 **Privacy APIs**
+
+### **1. Toggle Privacy (Simple)**
 ```bash
+PUT /api/user/toggle-privacy
+Authorization: Bearer <jwt-token>
+```
+
+### **2. Privacy Settings (Comprehensive)**
+```bash
+GET /api/user/privacy-settings          # Get current settings
+PUT /api/user/privacy-settings          # Update settings
+Authorization: Bearer <jwt-token>
+Body: {"action": "toggle"} or {"action": "set", "isPrivate": true/false}
+```
+
+### **3. Toggle Privacy by User ID**
+```bash
+PUT /api/user/toggle-privacy-by-id
+Authorization: Bearer <jwt-token>
+Body: {"userId": "user_id_here"}
+```
+
+### **4. Set Privacy by User ID**
+```bash
+PUT /api/user/set-privacy-by-id
+Authorization: Bearer <jwt-token>
+Body: {"userId": "user_id_here", "isPrivate": true/false}
+```
+
+## 🛠️ **Setup Instructions**
+
+### **Prerequisites**
+- Node.js 16+ 
+- MongoDB
+- npm or yarn
+
+### **Installation**
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd api_rgram1
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp env-template.txt .env
+# Edit .env with your configuration
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### **Environment Variables**
+Create a `.env` file based on `env-template.txt`:
+```env
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+NEXTAUTH_SECRET=your_nextauth_secret
+# Add other required environment variables
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 🧪 **Testing the APIs**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Environment Variables
-
-This project uses environment variables for configuration. To set up your local environment:
-
-1. Copy the `.env.example` file to a new file named `.env.local`
-2. Fill in your own values for each environment variable
-
+### **Get JWT Token**
 ```bash
-cp .env.example .env.local
+# Login to get token
+curl -X POST "http://localhost:3000/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "your_email", "password": "your_password"}'
 ```
 
-**Important:** Never commit `.env.local` or any other files containing real API keys or secrets to the repository.
+### **Test Privacy APIs**
+```bash
+# Toggle privacy
+curl -X PUT "http://localhost:3000/api/user/toggle-privacy" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json"
 
-## Deploy on Vercel
+# Set specific privacy
+curl -X PUT "http://localhost:3000/api/user/set-privacy-by-id" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "user_id", "isPrivate": false}'
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📚 **Documentation**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Privacy API**: `PRIVACY_API_README.md`
+- **Media Upload**: `MEDIA_UPLOAD_API_README.md`
+- **DP API**: `DP_API_README.md`
+- **Story API**: `STORY_MEDIA_API_README.md`
 
-## AWS Deployment
+## 🔒 **Security Features**
 
-For AWS deployment instructions and best practices for handling environment variables, see the [AWS Deployment Guide](./AWS_DEPLOYMENT.md).
+- JWT-based authentication
+- User isolation (users can only modify their own data)
+- Input validation and sanitization
+- Rate limiting support
+- Secure password hashing with bcrypt
+
+## 🚀 **Deployment**
+
+### **Vercel (Recommended)**
+```bash
+npm install -g vercel
+vercel
+```
+
+### **Other Platforms**
+- Heroku
+- DigitalOcean
+- AWS
+- Google Cloud
+
+## 🤝 **Contributing**
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 **License**
+
+This project is licensed under the MIT License.
+
+## 🆘 **Support**
+
+For support and questions:
+- Create an issue in the repository
+- Check the documentation files
+- Review the API examples
+
+## 🔄 **Changelog**
+
+### **Latest Updates**
+- ✅ Added comprehensive privacy management APIs
+- ✅ User ID based privacy controls
+- ✅ Enhanced security and validation
+- ✅ Improved error handling
+- ✅ Added Postman collections for testing
+
+---
+
+**Built with ❤️ using Next.js, TypeScript, and MongoDB**

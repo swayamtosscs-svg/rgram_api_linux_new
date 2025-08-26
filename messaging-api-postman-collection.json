@@ -1,0 +1,387 @@
+{
+  "info": {
+    "name": "API Rgram - Messaging APIs",
+    "description": "Complete messaging system API collection for API Rgram application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "target_user_id_here",
+      "type": "string"
+    },
+    {
+      "key": "thread_id",
+      "value": "chat_thread_id_here",
+      "type": "string"
+    },
+    {
+      "key": "message_id",
+      "value": "message_id_here",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Send Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"toUserId\": \"{{user_id}}\",\n  \"content\": \"Hello! This is a test message.\",\n  \"messageType\": \"text\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/send",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "send"]
+        },
+        "description": "Send a new message to a user. Creates a new chat thread if one doesn't exist."
+      },
+      "response": []
+    },
+    {
+      "name": "Send Media Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"toUserId\": \"{{user_id}}\",\n  \"content\": \"Check out this image!\",\n  \"messageType\": \"image\",\n  \"mediaUrl\": \"https://example.com/image.jpg\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/send",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "send"]
+        },
+        "description": "Send a media message (image, video, audio, file, or location)."
+      },
+      "response": []
+    },
+    {
+      "name": "Reply to Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"toUserId\": \"{{user_id}}\",\n  \"content\": \"This is a reply to your message.\",\n  \"messageType\": \"text\",\n  \"replyTo\": \"{{message_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/send",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "send"]
+        },
+        "description": "Reply to a specific message in a conversation."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Chat Threads List",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/chat/list?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "list"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Page number"
+            },
+            {
+              "key": "limit",
+              "value": "20",
+              "description": "Number of threads per page"
+            }
+          ]
+        },
+        "description": "Get a list of all chat threads for the authenticated user with pagination."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Messages by Thread ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/chat/thread/{{thread_id}}?page=1&limit=50",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "thread", "{{thread_id}}"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Page number"
+            },
+            {
+              "key": "limit",
+              "value": "50",
+              "description": "Number of messages per page"
+            }
+          ]
+        },
+        "description": "Get all messages in a specific chat thread with pagination. Messages are automatically marked as read."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Messages by User ID (Legacy)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/chat/messages/{{user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "messages", "{{user_id}}"]
+        },
+        "description": "Legacy endpoint to get messages between the authenticated user and another specific user."
+      },
+      "response": []
+    },
+    {
+      "name": "Mark Messages as Read",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"threadId\": \"{{thread_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/mark-read",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "mark-read"]
+        },
+        "description": "Mark all unread messages in a thread as read. Optionally specify message IDs to mark only specific messages."
+      },
+      "response": []
+    },
+    {
+      "name": "Mark Specific Messages as Read",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"threadId\": \"{{thread_id}}\",\n  \"messageIds\": [\"{{message_id}}\"]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/mark-read",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "mark-read"]
+        },
+        "description": "Mark specific messages as read by providing their IDs."
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Message",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"messageId\": \"{{message_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/delete-message",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "delete-message"]
+        },
+        "description": "Delete a message (soft delete). Only the sender can delete their own messages."
+      },
+      "response": []
+    },
+    {
+      "name": "Search Messages",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/chat/search?q=hello&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "search"],
+          "query": [
+            {
+              "key": "q",
+              "value": "hello",
+              "description": "Search query (required)"
+            },
+            {
+              "key": "threadId",
+              "value": "{{thread_id}}",
+              "description": "Optional: limit search to specific thread"
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Page number"
+            },
+            {
+              "key": "limit",
+              "value": "20",
+              "description": "Results per page"
+            }
+          ]
+        },
+        "description": "Search through messages using text search. Can be limited to a specific thread or search across all user threads."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Unread Count",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/chat/unread-count",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "unread-count"]
+        },
+        "description": "Get unread message counts for all threads and total unread count."
+      },
+      "response": []
+    },
+    {
+      "name": "Add Reaction to Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"messageId\": \"{{message_id}}\",\n  \"emoji\": \"👍\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/reaction",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "reaction"]
+        },
+        "description": "Add or update a reaction on a message. If the user already has a reaction, it will be updated."
+      },
+      "response": []
+    },
+    {
+      "name": "Remove Reaction from Message",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"messageId\": \"{{message_id}}\",\n  \"emoji\": \"👍\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/reaction",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "reaction"]
+        },
+        "description": "Remove a reaction from a message."
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set environment variables or perform pre-request tasks",
+          "console.log('Making request to:', pm.request.url);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Test response and set variables",
+          "pm.test('Response status is 200 or 201', function () {",
+          "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+          "});",
+          "",
+          "pm.test('Response has success field', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response).to.have.property('success');",
+          "});",
+          "",
+          "// Extract useful data for other requests",
+          "if (pm.response.code === 200 || pm.response.code === 201) {",
+          "    const response = pm.response.json();",
+          "    if (response.data && response.data.threadId) {",
+          "        pm.collectionVariables.set('thread_id', response.data.threadId);",
+          "    }",
+          "    if (response.data && response.data.message && response.data.message._id) {",
+          "        pm.collectionVariables.set('message_id', response.data.message._id);",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  ]
+}
