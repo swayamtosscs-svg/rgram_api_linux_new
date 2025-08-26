@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DP API Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 DP API Debug Tool</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Basic API</h3>
+        <button onclick="testBasicAPI()">Test /api/dp/test</button>
+        <div id="basicResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test Database Connection</h3>
+        <button onclick="testDatabase()">Test Database</button>
+        <div id="dbResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Cloudinary</h3>
+        <button onclick="testCloudinary()">Test Cloudinary</button>
+        <div id="cloudinaryResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Test Upload (Simple)</h3>
+        <input type="text" id="testUserId" placeholder="Enter User ID" value="test123">
+        <input type="file" id="testFile" accept="image/*">
+        <button onclick="testUpload()">Test Upload</button>
+        <div id="uploadResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>5. Test Retrieve</h3>
+        <input type="text" id="retrieveUserId" placeholder="Enter User ID" value="test123">
+        <button onclick="testRetrieve()">Test Retrieve</button>
+        <div id="retrieveResult" class="result"></div>
+    </div>
+
+    <script>
+        function showResult(elementId, data, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        }
+
+        async function testBasicAPI() {
+            try {
+                const response = await fetch('/api/dp/test');
+                const data = await response.json();
+                showResult('basicResult', data, response.ok);
+            } catch (error) {
+                showResult('basicResult', `Error: ${error.message}`, false);
+            }
+        }
+
+        async function testDatabase() {
+            try {
+                // Try to connect to database by calling an endpoint that uses it
+                const response = await fetch('/api/dp/retrieve?userId=test123');
+                const data = await response.json();
+                
+                if (response.status === 404 && data.error === 'User not found') {
+                    showResult('dbResult', '✅ Database connection working (user not found is expected)', true);
+                } else if (response.status === 500 && data.error.includes('Database')) {
+                    showResult('dbResult', `❌ Database error: ${data.error}`, false);
+                } else {
+                    showResult('dbResult', `✅ Database connection working: ${JSON.stringify(data)}`, true);
+                }
+            } catch (error) {
+                showResult('dbResult', `❌ Database test failed: ${error.message}`, false);
+            }
+        }
+
+        async function testCloudinary() {
+            try {
+                // This will test if Cloudinary is configured properly
+                const response = await fetch('/api/dp/test');
+                const data = await response.json();
+                
+                if (data.environment && data.environment.cloudinaryConfigured) {
+                    showResult('cloudinaryResult', '✅ Cloudinary configured properly', true);
+                } else {
+                    showResult('cloudinaryResult', '❌ Cloudinary not configured - check environment variables', false);
+                }
+            } catch (error) {
+                showResult('cloudinaryResult', `❌ Cloudinary test failed: ${error.message}`, false);
+            }
+        }
+
+        async function testUpload() {
+            const userId = document.getElementById('testUserId').value;
+            const fileInput = document.getElementById('testFile');
+            const file = fileInput.files[0];
+            
+            if (!userId || !file) {
+                showResult('uploadResult', '❌ Please enter User ID and select a file', false);
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('dp', file);
+                formData.append('userId', userId);
+                
+                console.log('Testing upload with:', { userId, fileName: file.name, fileSize: file.size });
+                
+                const response = await fetch('/api/dp/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                console.log('Upload response:', data);
+                
+                if (response.ok) {
+                    showResult('uploadResult', `✅ Upload successful: ${JSON.stringify(data)}`, true);
+                } else {
+                    showResult('uploadResult', `❌ Upload failed: ${JSON.stringify(data)}`, false);
+                }
+            } catch (error) {
+                showResult('uploadResult', `❌ Upload error: ${error.message}`, false);
+            }
+        }
+
+        async function testRetrieve() {
+            const userId = document.getElementById('retrieveUserId').value;
+            
+            if (!userId) {
+                showResult('retrieveResult', '❌ Please enter User ID', false);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/dp/retrieve?userId=${userId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('retrieveResult', `✅ Retrieve successful: ${JSON.stringify(data)}`, true);
+                } else {
+                    showResult('retrieveResult', `❌ Retrieve failed: ${JSON.stringify(data)}`, false);
+                }
+            } catch (error) {
+                showResult('retrieveResult', `❌ Retrieve error: ${error.message}`, false);
+            }
+        }
+
+        // Auto-run basic test on load
+        window.addEventListener('load', () => {
+            testBasicAPI();
+        });
+    </script>
+</body>
+</html>

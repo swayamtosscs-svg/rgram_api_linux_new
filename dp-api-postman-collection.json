@@ -1,0 +1,150 @@
+{
+  "info": {
+    "name": "DP (Profile Picture) Management API",
+    "description": "Collection for testing user profile picture management APIs with Cloudinary integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload Profile Picture",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "multipart/form-data"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "dp",
+              "type": "file",
+              "src": []
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/dp/upload",
+          "host": ["{{base_url}}"],
+          "path": ["api", "dp", "upload"]
+        },
+        "description": "Upload a new profile picture for the authenticated user. Requires authentication via session cookie."
+      },
+      "response": []
+    },
+    {
+      "name": "Retrieve Profile Picture",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/dp/retrieve",
+          "host": ["{{base_url}}"],
+          "path": ["api", "dp", "retrieve"]
+        },
+        "description": "Get the current user's profile picture. Requires authentication via session cookie."
+      },
+      "response": []
+    },
+    {
+      "name": "Retrieve DP by User ID",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{user_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/dp/retrieve",
+          "host": ["{{base_url}}"],
+          "path": ["api", "dp", "retrieve"]
+        },
+        "description": "Get a specific user's profile picture by their ID. This is a public endpoint."
+      },
+      "response": []
+    },
+    {
+      "name": "Replace Profile Picture",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "multipart/form-data"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "dp",
+              "type": "file",
+              "src": []
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/dp/replace",
+          "host": ["{{base_url}}"],
+          "path": ["api", "dp", "replace"]
+        },
+        "description": "Replace the current user's profile picture with a new one. Requires authentication via session cookie."
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Profile Picture",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/dp/delete",
+          "host": ["{{base_url}}"],
+          "path": ["api", "dp", "delete"]
+        },
+        "description": "Remove the current user's profile picture. Requires authentication via session cookie."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "your_test_user_id_here",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "noauth"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Add session cookie to all requests if available",
+          "if (pm.environment.get('session_cookie')) {",
+          "    pm.request.headers.add({",
+          "        key: 'Cookie',",
+          "        value: `session=${pm.environment.get('session_cookie')}`",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ]
+}

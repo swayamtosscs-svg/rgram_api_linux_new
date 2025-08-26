@@ -4,6 +4,7 @@ import User from '../../../lib/models/User';
 import { generateToken } from '../../../lib/middleware/auth';
 import { sendWelcomeEmail } from '../../../lib/utils/email';
 import { validateEmail, validatePassword } from '../../../lib/utils/validation';
+import { ensureUserMediaFolders } from '../../../utils/mediaLibrary';
 
 // Valid religion options
 const VALID_RELIGIONS = [
@@ -126,6 +127,15 @@ export default async function handler(
       createdAt: new Date(),
       lastActive: new Date()
     });
+
+    // Create Media Library folders for the new user
+    try {
+      await ensureUserMediaFolders(finalUsername);
+      console.log(`Media Library folders created for user: ${finalUsername}`);
+    } catch (folderError) {
+      console.error('Failed to create Media Library folders:', folderError);
+      // Don't fail signup if folder creation fails
+    }
 
     // Generate JWT token
     const token = generateToken(user._id);
