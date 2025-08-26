@@ -1,0 +1,284 @@
+{
+  "info": {
+    "name": "Messaging CRUD API",
+    "description": "Complete messaging system with send, receive, edit, and delete functionality",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Send Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"toUserId\": \"{{recipient_user_id}}\",\n  \"content\": \"Hello! How are you?\",\n  \"messageType\": \"text\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/quick-message",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "quick-message"]
+        },
+        "description": "Send a text message to another user"
+      },
+      "response": []
+    },
+    {
+      "name": "Send Media Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"toUserId\": \"{{recipient_user_id}}\",\n  \"content\": \"Check out this image!\",\n  \"messageType\": \"image\",\n  \"mediaUrl\": \"https://example.com/image.jpg\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/quick-message",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "quick-message"]
+        },
+        "description": "Send a media message (image, video, audio, file, location)"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Messages",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/chat/quick-message?threadId={{thread_id}}&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "quick-message"],
+          "query": [
+            {
+              "key": "threadId",
+              "value": "{{thread_id}}"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "Get messages from a specific chat thread"
+      },
+      "response": []
+    },
+    {
+      "name": "Edit Message",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"messageId\": \"{{message_id}}\",\n  \"content\": \"Updated message content\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/quick-message",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "quick-message"]
+        },
+        "description": "Edit an existing message (24-hour limit)"
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Message (Soft)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"messageId\": \"{{message_id}}\",\n  \"deleteType\": \"soft\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/quick-message",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "quick-message"]
+        },
+        "description": "Soft delete message (shows '[Message deleted]')"
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Message (Hard)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"messageId\": \"{{message_id}}\",\n  \"deleteType\": \"hard\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/quick-message",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "quick-message"]
+        },
+        "description": "Permanently delete message from database"
+      },
+      "response": []
+    },
+    {
+      "name": "Send Message (Comprehensive API)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"toUserId\": \"{{recipient_user_id}}\",\n  \"content\": \"Hello from comprehensive API!\",\n  \"messageType\": \"text\",\n  \"replyTo\": \"{{reply_message_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/message-crud",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "message-crud"]
+        },
+        "description": "Send message using comprehensive API with reply support"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Messages (Comprehensive API)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/chat/message-crud?threadId={{thread_id}}&limit=50&before={{timestamp}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "chat", "message-crud"],
+          "query": [
+            {
+              "key": "threadId",
+              "value": "{{thread_id}}"
+            },
+            {
+              "key": "limit",
+              "value": "50"
+            },
+            {
+              "key": "before",
+              "value": "{{timestamp}}"
+            }
+          ]
+        },
+        "description": "Get messages with pagination using comprehensive API"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api-rgram1.vercel.app",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "key": "recipient_user_id",
+      "value": "68ad57cdceb840899bef3404",
+      "type": "string"
+    },
+    {
+      "key": "thread_id",
+      "value": "your_chat_thread_id_here",
+      "type": "string"
+    },
+    {
+      "key": "message_id",
+      "value": "your_message_id_here",
+      "type": "string"
+    },
+    {
+      "key": "reply_message_id",
+      "value": "message_id_to_reply_to",
+      "type": "string"
+    },
+    {
+      "key": "timestamp",
+      "value": "2024-01-15T10:30:00.000Z",
+      "type": "string"
+    }
+  ]
+}
