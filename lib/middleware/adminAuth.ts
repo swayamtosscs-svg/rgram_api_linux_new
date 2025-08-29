@@ -2,9 +2,10 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import User from '../models/User';
 import dbConnect from '../database';
 import { verifyToken } from './auth';
+import { NextApiRequestWithUser } from '../types/next';
 
 export async function adminMiddleware(
-  req: NextApiRequest,
+  req: NextApiRequestWithUser,
   res: NextApiResponse,
   next: () => Promise<void>
 ) {

@@ -1,57 +1,82 @@
 {
   "info": {
-    "name": "DP (Profile Picture) Management API",
-    "description": "Collection for testing user profile picture management APIs with Cloudinary integration",
+    "name": "DP API Collection - No Auth Required",
+    "description": "Collection for testing Display Picture (DP) API endpoints without authentication",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
   "item": [
     {
-      "name": "Upload Profile Picture",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "multipart/form-data"
-          }
-        ],
-        "body": {
-          "mode": "formdata",
-          "formdata": [
-            {
-              "key": "dp",
-              "type": "file",
-              "src": []
-            }
-          ]
-        },
-        "url": {
-          "raw": "{{base_url}}/api/dp/upload",
-          "host": ["{{base_url}}"],
-          "path": ["api", "dp", "upload"]
-        },
-        "description": "Upload a new profile picture for the authenticated user. Requires authentication via session cookie."
-      },
-      "response": []
-    },
-    {
-      "name": "Retrieve Profile Picture",
+      "name": "Get DP API Info",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{base_url}}/api/dp/retrieve",
-          "host": ["{{base_url}}"],
-          "path": ["api", "dp", "retrieve"]
+          "raw": "{{baseUrl}}/api/dp",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "dp"]
         },
-        "description": "Get the current user's profile picture. Requires authentication via session cookie."
-      },
-      "response": []
+        "description": "Get information about all available DP API endpoints"
+      }
     },
     {
-      "name": "Retrieve DP by User ID",
+      "name": "Upload Display Picture",
       "request": {
         "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "userId",
+              "value": "demo_user",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/dp/upload",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "dp", "upload"]
+        },
+        "description": "Upload a new display picture using real image files. Select an image file and optionally provide a userId."
+      }
+    },
+    {
+      "name": "Retrieve Display Picture",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/dp/retrieve?userId=demo_user",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "dp", "retrieve"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "demo_user",
+              "description": "User ID to find their DP"
+            }
+          ]
+        },
+        "description": "Get display picture information by userId, publicId, or imageUrl. Modify the query parameters to use different search methods."
+      }
+    },
+    {
+      "name": "Delete Display Picture",
+      "request": {
+        "method": "DELETE",
         "header": [
           {
             "key": "Content-Type",
@@ -60,90 +85,19 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"userId\": \"{{user_id}}\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/api/dp/retrieve",
-          "host": ["{{base_url}}"],
-          "path": ["api", "dp", "retrieve"]
-        },
-        "description": "Get a specific user's profile picture by their ID. This is a public endpoint."
-      },
-      "response": []
-    },
-    {
-      "name": "Replace Profile Picture",
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "multipart/form-data"
-          }
-        ],
-        "body": {
-          "mode": "formdata",
-          "formdata": [
-            {
-              "key": "dp",
-              "type": "file",
-              "src": []
+          "raw": "{\n  \"publicId\": \"user/demo_user/dp/dp_demo_user_timestamp\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
             }
-          ]
+          }
         },
         "url": {
-          "raw": "{{base_url}}/api/dp/replace",
-          "host": ["{{base_url}}"],
-          "path": ["api", "dp", "replace"]
-        },
-        "description": "Replace the current user's profile picture with a new one. Requires authentication via session cookie."
-      },
-      "response": []
-    },
-    {
-      "name": "Delete Profile Picture",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/api/dp/delete",
-          "host": ["{{base_url}}"],
+          "raw": "{{baseUrl}}/api/dp/delete",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "dp", "delete"]
         },
-        "description": "Remove the current user's profile picture. Requires authentication via session cookie."
-      },
-      "response": []
-    }
-  ],
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:3000",
-      "type": "string"
-    },
-    {
-      "key": "user_id",
-      "value": "your_test_user_id_here",
-      "type": "string"
-    }
-  ],
-  "auth": {
-    "type": "noauth"
-  },
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          "// Add session cookie to all requests if available",
-          "if (pm.environment.get('session_cookie')) {",
-          "    pm.request.headers.add({",
-          "        key: 'Cookie',",
-          "        value: `session=${pm.environment.get('session_cookie')}`",
-          "    });",
-          "}"
-        ]
+        "description": "Delete a display picture by publicId, imageUrl, or userId. Modify the body to use different deletion methods."
       }
     }
   ]

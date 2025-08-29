@@ -3,517 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DP (Profile Picture) API Demo</title>
+    <title>DP API Demo</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
+            font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .section {
-            margin-bottom: 30px;
             padding: 20px;
-            border: 1px solid #e1e5e9;
-            border-radius: 10px;
-            background: #f8f9fa;
+            background-color: #f5f5f5;
         }
-
-        .section h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.3em;
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
-
         .form-group {
             margin-bottom: 15px;
         }
-
-        .form-group label {
+        label {
             display: block;
             margin-bottom: 5px;
-            font-weight: 600;
-            color: #555;
+            font-weight: bold;
         }
-
-        .form-group input[type="file"] {
+        input[type="file"], input[type="text"] {
             width: 100%;
-            padding: 10px;
-            border: 2px dashed #ddd;
-            border-radius: 5px;
-            background: #fafafa;
-        }
-
-        .form-group input[type="text"] {
-            width: 100%;
-            padding: 12px;
+            padding: 8px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        button {
+            background-color: #007bff;
             color: white;
+            padding: 10px 20px;
             border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
             margin-right: 10px;
-            margin-bottom: 10px;
         }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        button:hover {
+            background-color: #0056b3;
         }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
+        .delete-btn {
+            background-color: #dc3545;
         }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        .delete-btn:hover {
+            background-color: #c82333;
         }
-
-        .btn-success {
-            background: linear-gradient(135deg, #2ed573 0%, #1e90ff 100%);
-        }
-
         .result {
-            margin-top: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
             padding: 15px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 13px;
+            margin-top: 15px;
             white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .image-preview {
+            max-width: 200px;
             max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .result.success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-
-        .result.error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-
-        .result.info {
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
-            color: #0c5460;
-        }
-
-        .current-avatar {
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .current-avatar img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #fff;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .current-avatar .no-avatar {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 4px solid #fff;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            color: #999;
-            font-size: 14px;
-        }
-
-        .status {
-            text-align: center;
-            margin: 20px 0;
-            padding: 10px;
-            border-radius: 5px;
-            font-weight: 600;
-        }
-
-        .status.connected {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status.disconnected {
-            background: #f8d7da;
-            color: #721c24;
+            margin-top: 10px;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
+    <h1>🖼️ DP API Demo</h1>
+    <p>Test the Display Picture API endpoints without authentication</p>
+
+    <!-- Upload Section -->
     <div class="container">
-        <div class="header">
-            <h1>📸 DP API Demo</h1>
-            <p>Test Profile Picture Management APIs with Cloudinary Integration</p>
-        </div>
-
-        <div class="content">
-            <!-- Connection Status -->
-            <div class="status" id="connectionStatus">
-                Checking connection...
-            </div>
-
-            <!-- Current Avatar Display -->
-            <div class="current-avatar" id="currentAvatar">
-                <div class="no-avatar">No Profile Picture</div>
-            </div>
-
-                    <!-- Upload Section -->
-        <div class="section">
-            <h3>📤 Upload Profile Picture</h3>
+        <h2>📤 Upload Display Picture</h2>
+        <form id="uploadForm">
             <div class="form-group">
-                <label for="userId">User ID:</label>
-                <input type="text" id="uploadUserId" placeholder="Enter user ID">
+                <label for="imageFile">Select Image:</label>
+                <input type="file" id="imageFile" accept="image/*" required>
             </div>
             <div class="form-group">
-                <label for="uploadFile">Select Image File:</label>
-                <input type="file" id="uploadFile" accept="image/*">
+                <label for="userId">User ID (optional):</label>
+                <input type="text" id="userId" placeholder="default_user" value="demo_user">
             </div>
-            <button class="btn" onclick="uploadDP()">Upload DP</button>
-            <div class="result" id="uploadResult" style="display: none;"></div>
+            <button type="submit">Upload DP</button>
+        </form>
+        <div id="uploadResult" class="result" style="display: none;"></div>
+        <img id="imagePreview" class="image-preview" style="display: none;">
+    </div>
+
+    <!-- Retrieve Section -->
+    <div class="container">
+        <h2>🔍 Retrieve Display Picture</h2>
+        <div class="form-group">
+            <label for="retrieveUserId">User ID:</label>
+            <input type="text" id="retrieveUserId" placeholder="Enter user ID" value="demo_user">
         </div>
+        <button onclick="retrieveDP()">Get DP Info</button>
+        <div id="retrieveResult" class="result" style="display: none;"></div>
+    </div>
 
-            <!-- Retrieve Section -->
-            <div class="section">
-                <h3>👁️ Retrieve Profile Picture</h3>
-                <div class="form-group">
-                    <label for="retrieveUserId">User ID:</label>
-                    <input type="text" id="retrieveUserId" placeholder="Enter user ID">
-                </div>
-                <button class="btn btn-success" onclick="retrieveDP()">Get DP</button>
-                <div class="result" id="retrieveResult" style="display: none;"></div>
-            </div>
-
-            <!-- Retrieve by User ID Section -->
-            <div class="section">
-                <h3>🔍 Retrieve DP by User ID</h3>
-                <div class="form-group">
-                    <label for="userId">User ID:</label>
-                    <input type="text" id="userId" placeholder="Enter user ID">
-                </div>
-                <button class="btn btn-success" onclick="retrieveDPById()">Get DP by ID</button>
-                <div class="result" id="retrieveByIdResult" style="display: none;"></div>
-            </div>
-
-            <!-- Replace Section -->
-            <div class="section">
-                <h3>🔄 Replace Profile Picture</h3>
-                <div class="form-group">
-                    <label for="replaceUserId">User ID:</label>
-                    <input type="text" id="replaceUserId" placeholder="Enter user ID">
-                </div>
-                <div class="form-group">
-                    <label for="replaceFile">Select New Image File:</label>
-                    <input type="file" id="replaceFile" accept="image/*">
-                </div>
-                <button class="btn" onclick="replaceDP()">Replace DP</button>
-                <div class="result" id="replaceResult" style="display: none;"></div>
-            </div>
-
-            <!-- Delete Section -->
-            <div class="section">
-                <h3>🗑️ Delete Profile Picture</h3>
-                <div class="form-group">
-                    <label for="deleteUserId">User ID:</label>
-                    <input type="text" id="deleteUserId" placeholder="Enter user ID">
-                </div>
-                <button class="btn btn-danger" onclick="deleteDP()">Delete DP</button>
-                <div class="result" id="deleteResult" style="display: none;"></div>
-            </div>
+    <!-- Delete Section -->
+    <div class="container">
+        <h2>🗑️ Delete Display Picture</h2>
+        <div class="form-group">
+            <label for="deletePublicId">Public ID:</label>
+            <input type="text" id="deletePublicId" placeholder="Enter Cloudinary public ID">
         </div>
+        <div class="form-group">
+            <label for="deleteImageUrl">Image URL:</label>
+            <input type="text" id="deleteImageUrl" placeholder="Enter full image URL">
+        </div>
+        <div class="form-group">
+            <label for="deleteUserId">User ID:</label>
+            <input type="text" id="deleteUserId" placeholder="Enter user ID">
+        </div>
+        <button class="delete-btn" onclick="deleteDP()">Delete DP</button>
+        <div id="deleteResult" class="result" style="display: none;"></div>
+    </div>
+
+    <!-- API Info Section -->
+    <div class="container">
+        <h2>ℹ️ API Information</h2>
+        <button onclick="getAPIInfo()">Get API Info</button>
+        <div id="apiInfoResult" class="result" style="display: none;"></div>
     </div>
 
     <script>
         const API_BASE = '/api/dp';
-        
-        // Check connection status
-        async function checkConnection() {
-            try {
-                const response = await fetch('/api/test');
-                if (response.ok) {
-                    document.getElementById('connectionStatus').className = 'status connected';
-                    document.getElementById('connectionStatus').textContent = '✅ Connected to API';
-                } else {
-                    throw new Error('API not responding');
-                }
-            } catch (error) {
-                document.getElementById('connectionStatus').className = 'status disconnected';
-                document.getElementById('connectionStatus').textContent = '❌ Not connected to API';
-            }
-        }
-
-        // Show result
-        function showResult(elementId, data, type = 'info') {
-            const element = document.getElementById(elementId);
-            element.style.display = 'block';
-            element.className = `result ${type}`;
-            element.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
-        }
-
-        // Hide result
-        function hideResult(elementId) {
-            document.getElementById(elementId).style.display = 'none';
-        }
-
-        // Update avatar display
-        function updateAvatarDisplay(avatarUrl) {
-            const avatarContainer = document.getElementById('currentAvatar');
-            if (avatarUrl) {
-                avatarContainer.innerHTML = `<img src="${avatarUrl}" alt="Profile Picture" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
-            } else {
-                avatarContainer.innerHTML = '<div class="no-avatar">No Profile Picture</div>';
-            }
-        }
 
         // Upload DP
-        async function uploadDP() {
-            const fileInput = document.getElementById('uploadFile');
-            const userIdInput = document.getElementById('uploadUserId');
-            const file = fileInput.files[0];
-            const userId = userIdInput.value.trim();
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            if (!userId) {
-                showResult('uploadResult', 'Please enter a user ID first.', 'error');
-                return;
-            }
+            const imageFile = document.getElementById('imageFile').files[0];
+            const userId = document.getElementById('userId').value || 'default_user';
             
-            if (!file) {
-                showResult('uploadResult', 'Please select a file first.', 'error');
+            if (!imageFile) {
+                showResult('uploadResult', 'Please select an image file', 'error');
                 return;
             }
 
-            hideResult('uploadResult');
-            
+            const formData = new FormData();
+            formData.append('image', imageFile);
+            formData.append('userId', userId);
+
             try {
-                const formData = new FormData();
-                formData.append('dp', file);
-                formData.append('userId', userId);
-
                 const response = await fetch(`${API_BASE}/upload`, {
                     method: 'POST',
                     body: formData
                 });
 
-                const data = await response.json();
+                const result = await response.json();
                 
-                if (data.success) {
-                    showResult('uploadResult', data, 'success');
-                    updateAvatarDisplay(data.data.avatar);
-                    // Refresh current avatar
-                    retrieveDP();
+                if (result.success) {
+                    showResult('uploadResult', JSON.stringify(result, null, 2), 'success');
+                    
+                    // Show image preview
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = result.data.avatar;
+                    preview.style.display = 'block';
+                    
+                    // Auto-fill delete fields
+                    document.getElementById('deletePublicId').value = result.data.publicId;
+                    document.getElementById('deleteImageUrl').value = result.data.avatar;
+                    document.getElementById('deleteUserId').value = userId;
                 } else {
-                    showResult('uploadResult', data, 'error');
+                    showResult('uploadResult', JSON.stringify(result, null, 2), 'error');
                 }
             } catch (error) {
                 showResult('uploadResult', `Error: ${error.message}`, 'error');
             }
-        }
+        });
 
         // Retrieve DP
         async function retrieveDP() {
-            const userIdInput = document.getElementById('retrieveUserId');
-            const userId = userIdInput.value.trim();
+            const userId = document.getElementById('retrieveUserId').value;
             
             if (!userId) {
-                showResult('retrieveResult', 'Please enter a user ID first.', 'error');
+                showResult('retrieveResult', 'Please enter a user ID', 'error');
                 return;
             }
-            
-            hideResult('retrieveResult');
-            
+
             try {
-                const response = await fetch(`${API_BASE}/retrieve?userId=${userId}`);
-                const data = await response.json();
+                const response = await fetch(`${API_BASE}/retrieve?userId=${encodeURIComponent(userId)}`);
+                const result = await response.json();
                 
-                if (data.success) {
-                    showResult('retrieveResult', data, 'success');
-                    updateAvatarDisplay(data.data.avatar);
+                if (result.success) {
+                    showResult('retrieveResult', JSON.stringify(result, null, 2), 'success');
                 } else {
-                    showResult('retrieveResult', data, 'error');
+                    showResult('retrieveResult', JSON.stringify(result, null, 2), 'error');
                 }
             } catch (error) {
                 showResult('retrieveResult', `Error: ${error.message}`, 'error');
             }
         }
 
-        // Retrieve DP by User ID
-        async function retrieveDPById() {
-            const userId = document.getElementById('userId').value.trim();
-            
-            if (!userId) {
-                showResult('retrieveByIdResult', 'Please enter a user ID.', 'error');
-                return;
-            }
-
-            hideResult('retrieveByIdResult');
-            
-            try {
-                const response = await fetch(`${API_BASE}/retrieve`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ userId })
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    showResult('retrieveByIdResult', data, 'success');
-                } else {
-                    showResult('retrieveByIdResult', data, 'error');
-                }
-            } catch (error) {
-                showResult('retrieveByIdResult', `Error: ${error.message}`, 'error');
-            }
-        }
-
-        // Replace DP
-        async function replaceDP() {
-            const fileInput = document.getElementById('replaceFile');
-            const userIdInput = document.getElementById('replaceUserId');
-            const file = fileInput.files[0];
-            const userId = userIdInput.value.trim();
-            
-            if (!userId) {
-                showResult('replaceResult', 'Please enter a user ID first.', 'error');
-                return;
-            }
-            
-            if (!file) {
-                showResult('replaceResult', 'Please select a file first.', 'error');
-                return;
-            }
-
-            hideResult('replaceResult');
-            
-            try {
-                const formData = new FormData();
-                formData.append('dp', file);
-                formData.append('userId', userId);
-
-                const response = await fetch(`${API_BASE}/replace`, {
-                    method: 'PUT',
-                    body: formData
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    showResult('replaceResult', data, 'success');
-                    updateAvatarDisplay(data.data.avatar);
-                    // Refresh current avatar
-                    retrieveDP();
-                } else {
-                    showResult('replaceResult', data, 'error');
-                }
-            } catch (error) {
-                showResult('replaceResult', `Error: ${error.message}`, 'error');
-            }
-        }
-
         // Delete DP
         async function deleteDP() {
-            const userIdInput = document.getElementById('deleteUserId');
-            const userId = userIdInput.value.trim();
+            const publicId = document.getElementById('deletePublicId').value;
+            const imageUrl = document.getElementById('deleteImageUrl').value;
+            const userId = document.getElementById('deleteUserId').value;
             
-            if (!userId) {
-                showResult('deleteResult', 'Please enter a user ID first.', 'error');
-                return;
-            }
-            
-            if (!confirm('Are you sure you want to delete this profile picture?')) {
+            if (!publicId && !imageUrl && !userId) {
+                showResult('deleteResult', 'Please provide either publicId, imageUrl, or userId', 'error');
                 return;
             }
 
-            hideResult('deleteResult');
-            
+            const body = {};
+            if (publicId) body.publicId = publicId;
+            if (imageUrl) body.imageUrl = imageUrl;
+            if (userId) body.userId = userId;
+
             try {
                 const response = await fetch(`${API_BASE}/delete`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ userId })
+                    body: JSON.stringify(body)
                 });
 
-                const data = await response.json();
+                const result = await response.json();
                 
-                if (data.success) {
-                    showResult('deleteResult', data, 'success');
-                    updateAvatarDisplay(null);
-                    // Refresh current avatar
-                    retrieveDP();
+                if (result.success) {
+                    showResult('deleteResult', JSON.stringify(result, null, 2), 'success');
+                    // Clear fields after successful deletion
+                    document.getElementById('deletePublicId').value = '';
+                    document.getElementById('deleteImageUrl').value = '';
+                    document.getElementById('deleteUserId').value = '';
                 } else {
-                    showResult('deleteResult', data, 'error');
+                    showResult('deleteResult', JSON.stringify(result, null, 2), 'error');
                 }
             } catch (error) {
                 showResult('deleteResult', `Error: ${error.message}`, 'error');
             }
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            checkConnection();
+        // Get API Info
+        async function getAPIInfo() {
+            try {
+                const response = await fetch(API_BASE);
+                const result = await response.json();
+                showResult('apiInfoResult', JSON.stringify(result, null, 2), 'success');
+            } catch (error) {
+                showResult('apiInfoResult', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Helper function to show results
+        function showResult(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            element.className = `result ${type}`;
+        }
+
+        // File preview
+        document.getElementById('imageFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
         });
     </script>
 </body>
 </html>
+
