@@ -1,0 +1,248 @@
+{
+  "info": {
+    "name": "Follow Request API Collection",
+    "description": "Complete collection for testing the Follow Request API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "target_user_id_here",
+      "type": "string"
+    },
+    {
+      "key": "follow_request_id",
+      "value": "follow_request_id_here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Follow Request - Send",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"targetUserId\": \"{{user_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/follow-request/send",
+          "host": ["{{base_url}}"],
+          "path": ["api", "follow-request", "send"]
+        },
+        "description": "Send a follow request to another user"
+      }
+    },
+    {
+      "name": "Follow Request - Accept",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"followRequestId\": \"{{follow_request_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/follow-request/accept",
+          "host": ["{{base_url}}"],
+          "path": ["api", "follow-request", "accept"]
+        },
+        "description": "Accept an incoming follow request"
+      }
+    },
+    {
+      "name": "Follow Request - Reject",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"followRequestId\": \"{{follow_request_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/follow-request/reject",
+          "host": ["{{base_url}}"],
+          "path": ["api", "follow-request", "reject"]
+        },
+        "description": "Reject an incoming follow request"
+      }
+    },
+    {
+      "name": "Follow Request - Get Pending",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/follow-request/pending?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["api", "follow-request", "pending"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "Get all pending follow requests for the authenticated user"
+      }
+    },
+    {
+      "name": "Follow Request - Get Sent",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/follow-request/sent?page=1&limit=20&status=pending",
+          "host": ["{{base_url}}"],
+          "path": ["api", "follow-request", "sent"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "status",
+              "value": "pending"
+            }
+          ]
+        },
+        "description": "Get all follow requests sent by the authenticated user"
+      }
+    },
+    {
+      "name": "Follow Request - Cancel",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/follow-request/cancel?followRequestId={{follow_request_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "follow-request", "cancel"],
+          "query": [
+            {
+              "key": "followRequestId",
+              "value": "{{follow_request_id}}"
+            }
+          ]
+        },
+        "description": "Cancel a follow request sent by the authenticated user"
+      }
+    },
+    {
+      "name": "Follow/Unfollow User",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/follow/{{user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "follow", "{{user_id}}"]
+        },
+        "description": "Follow a user (handles both public and private accounts)"
+      }
+    },
+    {
+      "name": "Unfollow User",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/follow/{{user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "follow", "{{user_id}}"]
+        },
+        "description": "Unfollow a user"
+      }
+    },
+    {
+      "name": "Get Followers",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/followers/{{user_id}}?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["api", "followers", "{{user_id}}"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "Get all accepted followers for a user"
+      }
+    },
+    {
+      "name": "Get Following",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/following/{{user_id}}?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["api", "following", "{{user_id}}"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "Get all accepted following relationships for a user"
+      }
+    }
+  ]
+}

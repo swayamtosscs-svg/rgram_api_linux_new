@@ -1,47 +1,58 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
 import Follow from '../../../lib/models/Follow';
+import { verifyToken } from '../../../lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ success: false, message: 'Method not allowed' });
   }
-  
+
   try {
     await connectDB();
-    const { user_id } = req.query;
-    if (!user_id || typeof user_id !== 'string') {
-      return res.status(400).json({ success: false, message: 'User ID is required' });
+    
+    // Verify authentication
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
     }
     
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+      return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+
+    const currentUserId = decoded.userId;
     const { page = 1, limit = 20 } = req.query;
+    
     const pageNum = parseInt(page as string) || 1;
     const limitNum = parseInt(limit as string) || 20;
     const skip = (pageNum - 1) * limitNum;
 
-    // Only get accepted following relationships
-    const following = await Follow.find({ 
-      follower: user_id,
-      status: 'accepted'
+    // Get pending follow requests for the current user
+    const pendingRequests = await Follow.find({
+      following: currentUserId,
+      status: 'pending'
     })
-    .populate('following', 'username fullName avatar bio')
-    .sort({ createdAt: -1 })
+    .populate('follower', 'username fullName avatar bio')
+    .sort({ requestedAt: -1 })
     .skip(skip)
     .limit(limitNum)
     .lean();
 
     // Get total count for pagination
-    const totalCount = await Follow.countDocuments({ 
-      follower: user_id,
-      status: 'accepted'
+    const totalCount = await Follow.countDocuments({
+      following: currentUserId,
+      status: 'pending'
     });
+
     const totalPages = Math.ceil(totalCount / limitNum);
 
-    res.json({ 
-      success: true, 
-      message: 'Following retrieved', 
-      data: { 
-        following: following.map((f: any) => f.following),
+    return res.status(200).json({
+      success: true,
+      message: 'Pending follow requests retrieved successfully',
+      data: {
+        pendingRequests,
         pagination: {
           currentPage: pageNum,
           totalPages,
@@ -51,8 +62,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
     });
+
   } catch (error: any) {
-    console.error('Following list error:', error);
+    console.error('Get pending follow requests error:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Internal server error', 
