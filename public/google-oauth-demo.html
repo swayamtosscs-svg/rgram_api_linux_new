@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth Demo - RGram API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .google-btn {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .google-btn:hover {
+            border-color: #4285f4;
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .google-btn img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .loading {
+            display: none;
+            margin: 1rem 0;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4285f4;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .user-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .user-info h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .user-info p {
+            margin: 0.25rem 0;
+            color: #666;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 1rem;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        .api-info {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #e9ecef;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">R</div>
+        <h1>RGram API</h1>
+        <p class="subtitle">Google OAuth Login Demo</p>
+        
+        <button id="googleLoginBtn" class="google-btn">
+            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+            Sign in with Google
+        </button>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Authenticating...</p>
+        </div>
+
+        <div id="status"></div>
+        <div id="userInfo" class="user-info" style="display: none;"></div>
+        
+        <div class="api-info">
+            <strong>API Endpoint:</strong> https://api-rgram1.vercel.app<br>
+            <strong>OAuth Flow:</strong> Google OAuth 2.0<br>
+            <strong>Redirect URI:</strong> /api/auth/google/callback
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api-rgram1.vercel.app';
+        let currentUser = null;
+
+        // Check if user is already logged in
+        function checkAuthStatus() {
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                // Verify token and show user info
+                verifyToken(token);
+            }
+        }
+
+        // Initialize Google OAuth
+        async function initGoogleAuth() {
+            try {
+                showStatus('Initializing Google OAuth...', 'info');
+                showLoading(true);
+
+                const response = await fetch(`${API_BASE}/api/auth/google/init`);
+                const data = await response.json();
+
+                if (data.success && data.data.authUrl) {
+                    // Redirect to Google OAuth
+                    window.location.href = data.data.authUrl;
+                } else {
+                    throw new Error(data.message || 'Failed to initialize Google OAuth');
+                }
+            } catch (error) {
+                console.error('Google OAuth init error:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+                showLoading(false);
+            }
+        }
+
+        // Handle OAuth callback
+        function handleOAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            if (token) {
+                localStorage.setItem('auth_token', token);
+                verifyToken(token);
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        // Verify JWT token and get user info
+        async function verifyToken(token) {
+            try {
+                showStatus('Verifying authentication...', 'info');
+                
+                const response = await fetch(`${API_BASE}/api/auth/user`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    currentUser = userData.data;
+                    showUserInfo(currentUser);
+                    showStatus('Successfully authenticated!', 'success');
+                } else {
+                    throw new Error('Invalid token');
+                }
+            } catch (error) {
+                console.error('Token verification error:', error);
+                localStorage.removeItem('auth_token');
+                showStatus('Authentication failed. Please try again.', 'error');
+            }
+        }
+
+        // Display user information
+        function showUserInfo(user) {
+            const userInfoDiv = document.getElementById('userInfo');
+            userInfoDiv.innerHTML = `
+                <h3>Welcome, ${user.fullName || user.username}!</h3>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Username:</strong> ${user.username}</p>
+                <p><strong>Verified:</strong> ${user.isEmailVerified ? 'Yes' : 'No'}</p>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            `;
+            userInfoDiv.style.display = 'block';
+            
+            // Hide login button
+            document.getElementById('googleLoginBtn').style.display = 'none';
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('auth_token');
+            currentUser = null;
+            
+            // Show login button again
+            document.getElementById('googleLoginBtn').style.display = 'flex';
+            
+            // Hide user info
+            document.getElementById('userInfo').style.display = 'none';
+            
+            // Clear status
+            showStatus('Logged out successfully', 'info');
+            
+            // Clear status after 3 seconds
+            setTimeout(() => {
+                document.getElementById('status').innerHTML = '';
+            }, 3000);
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Show/hide loading spinner
+        function showLoading(show) {
+            const loadingDiv = document.getElementById('loading');
+            loadingDiv.style.display = show ? 'block' : 'none';
+        }
+
+        // Event listeners
+        document.getElementById('googleLoginBtn').addEventListener('click', initGoogleAuth);
+
+        // Check auth status on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthStatus();
+            handleOAuthCallback();
+        });
+
+        // Handle page visibility change (for OAuth callback)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                handleOAuthCallback();
+            }
+        });
+    </script>
+</body>
+</html>
