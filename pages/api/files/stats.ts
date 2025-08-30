@@ -49,16 +49,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Get user's file statistics from Cloudinary
-    const stats = await new Promise((resolve, reject) => {
-      cloudinary.search
-        .expression(`tags:rgram AND tags:user AND tags:${user._id}`)
-        .max_results(1000) // Get all user files for stats
-        .execute((error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        });
-    });
+         // Get user's file statistics from Cloudinary
+     const stats: any = await new Promise((resolve, reject) => {
+       cloudinary.search
+         .expression(`tags:rgram AND tags:user AND tags:${user._id}`)
+         .max_results(1000) // Get all user files for stats
+         .execute()
+         .then((result) => resolve(result))
+         .catch((error) => reject(error));
+     });
 
     // Calculate statistics
     const files = stats.resources || [];

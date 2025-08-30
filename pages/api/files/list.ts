@@ -70,6 +70,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (folder !== 'all') {
       searchQuery += ` AND folder:rgram/users/${user._id}/${folder}`;
     }
+
+    console.log('Search query:', searchQuery);
+    console.log('User ID:', user._id.toString());
     
     if (type !== 'all') {
       searchQuery += ` AND resource_type:${type}`;
@@ -80,17 +83,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Get files from Cloudinary
-    const cloudinaryResult = await new Promise((resolve, reject) => {
-      cloudinary.search
-        .expression(searchQuery)
-        .sort_by(sortBy as string, sortOrder as string)
-        .max_results(limitNum)
-        .next_cursor(skip > 0 ? skip.toString() : undefined)
-        .execute((error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        });
-    });
+         const cloudinaryResult: any = await new Promise((resolve, reject) => {
+       cloudinary.search
+         .expression(searchQuery)
+         .sort_by(sortBy as string, sortOrder as 'asc' | 'desc')
+         .max_results(limitNum)
+         .execute()
+         .then((result) => resolve(result))
+         .catch((error) => reject(error));
+     });
 
     // Format the response
     const files = cloudinaryResult.resources.map((resource: any) => ({
@@ -110,16 +111,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       preview: resource.preview_url
     }));
 
-    // Get total count for pagination
-    const totalResult = await new Promise((resolve, reject) => {
-      cloudinary.search
-        .expression(searchQuery)
-        .max_results(1)
-        .execute((error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        });
-    });
+         // Get total count for pagination
+     const totalResult: any = await new Promise((resolve, reject) => {
+       cloudinary.search
+         .expression(searchQuery)
+         .max_results(1)
+         .execute()
+         .then((result) => resolve(result))
+         .catch((error) => reject(error));
+     });
 
     const total = totalResult.total_count;
 

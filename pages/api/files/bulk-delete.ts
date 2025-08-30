@@ -65,7 +65,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const results = {
+    const results: {
+      successful: Array<{
+        publicId: string;
+        resourceType: string;
+        deletedAt: Date;
+        cloudinaryResult: any;
+      }>;
+      failed: Array<{
+        publicId: string;
+        error: string;
+      }>;
+    } = {
       successful: [],
       failed: []
     };
@@ -83,14 +94,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           continue;
         }
 
-        // Verify the file belongs to the user
-        try {
-          const fileInfo = await new Promise((resolve, reject) => {
-            cloudinary.api.resource(publicId, { resource_type: resourceType }, (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            });
-          });
+                 // Verify the file belongs to the user
+         try {
+           const fileInfo: any = await new Promise((resolve, reject) => {
+             cloudinary.api.resource(publicId, { resource_type: resourceType }, (error, result) => {
+               if (error) reject(error);
+               else resolve(result);
+             });
+           });
 
           // Check if file has user tag and belongs to user's folder
           if (!fileInfo.tags || !fileInfo.tags.includes(user._id.toString()) || !fileInfo.tags.includes('user')) {
@@ -102,10 +113,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
           
           // Additional check: verify file is in user's folder
-          if (!fileInfo.folder || !fileInfo.folder.includes(`users/${user._id}`)) {
+          // Since Cloudinary might not always return folder, we'll check the public_id structure instead
+          const expectedPattern = `rgram/users/${user._id}`;
+          
+          // Check if public_id starts with expected pattern
+          if (!fileInfo.public_id || !fileInfo.public_id.startsWith(expectedPattern)) {
             results.failed.push({
               publicId,
-              error: 'Access denied - file not in your folder'
+              error: `Access denied - file not in your folder. Expected: ${expectedPattern}, Got: ${fileInfo.public_id}`
+            });
+            continue;
+          }
+
+          // Additional validation: check if the user ID in the public_id matches the authenticated user
+          const publicIdParts = fileInfo.public_id.split('/');
+          if (publicIdParts.length < 4 || publicIdParts[2] !== user._id.toString()) {
+            results.failed.push({
+              publicId,
+              error: `Access denied - file public_id structure invalid or user ID mismatch`
             });
             continue;
           }
