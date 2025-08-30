@@ -3,6 +3,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { verifyToken } from '../../../lib/middleware/auth';
 import connectDB from '../../../lib/database';
 import User from '../../../lib/models/User';
+import formidable from 'formidable';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -56,7 +57,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Parse multipart form data
-    const formidable = require('formidable');
     const form = formidable({
       maxFileSize: 100 * 1024 * 1024, // 100MB max file size
       allowEmptyFiles: false,
@@ -74,12 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
-    const [fields, files] = await new Promise((resolve, reject) => {
-      form.parse(req, (err: any, fields: any, files: any) => {
-        if (err) reject(err);
-        else resolve([fields, files]);
-      });
-    });
+    const [fields, files] = await form.parse(req);
 
     if (!files.file || !Array.isArray(files.file)) {
       return res.status(400).json({ 
