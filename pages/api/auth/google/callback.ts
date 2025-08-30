@@ -105,8 +105,8 @@ export default async function handler(
           });
         }
         
-        // Redirect to frontend with token
-        return res.redirect(`${process.env.CORS_ORIGIN || 'http://localhost:3000'}/auth/social-callback?token=${token}`);
+        // Redirect to demo page with token
+        return res.redirect(`${process.env.CORS_ORIGIN || 'http://localhost:3000'}/google-oauth-demo.html?token=${token}`);
       } catch (dbError) {
         console.error('Database error during mock auth:', dbError);
         return res.status(500).json({
@@ -200,8 +200,8 @@ export default async function handler(
     // Generate token
     const token = generateToken(user._id);
 
-    // Redirect to frontend with token
-    res.redirect(`${process.env.CORS_ORIGIN || 'http://localhost:3000'}/auth/social-callback?token=${token}`);
+    // Redirect to demo page with token
+    res.redirect(`${process.env.CORS_ORIGIN || 'http://localhost:3000'}/google-oauth-demo.html?token=${token}`);
   } catch (error: any) {
     console.error('Google callback error:', error);
     res.status(500).json({ 
