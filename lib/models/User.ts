@@ -33,6 +33,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   lastActive: Date;
+  passwordChangedAt?: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -168,6 +169,9 @@ const UserSchema = new Schema<IUser>({
   lastActive: {
     type: Date,
     default: Date.now
+  },
+  passwordChangedAt: {
+    type: Date
   }
 }, {
   timestamps: true,

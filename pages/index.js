@@ -55,10 +55,58 @@ export default function Home() {
             textDecoration: 'none', 
             borderRadius: '4px',
             fontWeight: 'bold',
-            marginBottom: '20px'
+            marginBottom: '20px',
+            marginRight: '10px'
           }}
         >
           Try Video API Demo
+        </a>
+        <a 
+          href="/chat" 
+          style={{ 
+            display: 'inline-block', 
+            backgroundColor: '#9C27B0', 
+            color: 'white', 
+            padding: '12px 20px', 
+            textDecoration: 'none', 
+            borderRadius: '4px',
+            fontWeight: 'bold',
+            marginBottom: '20px',
+            marginRight: '10px'
+          }}
+        >
+          Open Chat
+        </a>
+        <a 
+          href="/chat-demo" 
+          style={{ 
+            display: 'inline-block', 
+            backgroundColor: '#FF9800', 
+            color: 'white', 
+            padding: '12px 20px', 
+            textDecoration: 'none', 
+            borderRadius: '4px',
+            fontWeight: 'bold',
+            marginBottom: '20px',
+            marginRight: '10px'
+          }}
+        >
+          Try Demo Chat
+        </a>
+        <a 
+          href="/auth/forgot-password" 
+          style={{ 
+            display: 'inline-block', 
+            backgroundColor: '#E91E63', 
+            color: 'white', 
+            padding: '12px 20px', 
+            textDecoration: 'none', 
+            borderRadius: '4px',
+            fontWeight: 'bold',
+            marginBottom: '20px'
+          }}
+        >
+          Forgot Password Demo
         </a>
         <p style={{ color: '#999', fontSize: '14px' }}>
           For more information, please refer to the API documentation.
