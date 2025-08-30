@@ -67,11 +67,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       });
 
-      // Check if file has user tag
-      if (!fileInfo.tags || !fileInfo.tags.includes(user._id.toString())) {
+      // Check if file has user tag and belongs to user's folder
+      if (!fileInfo.tags || !fileInfo.tags.includes(user._id.toString()) || !fileInfo.tags.includes('user')) {
         return res.status(403).json({ 
           success: false, 
           message: 'You can only delete your own files' 
+        });
+      }
+      
+      // Additional check: verify file is in user's folder
+      if (!fileInfo.folder || !fileInfo.folder.includes(`users/${user._id}`)) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Access denied - file not in your folder' 
         });
       }
 

@@ -102,18 +102,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         else if (file.mimetype?.includes('application/pdf')) folder = 'documents';
         else if (file.mimetype?.includes('application/')) folder = 'documents';
 
-        // Upload to Cloudinary
+        // Upload to Cloudinary with user ID organization
         const result = await new Promise((resolve, reject) => {
           cloudinary.uploader.upload_stream(
             {
-              folder: `rgram/${folder}`,
+              folder: `rgram/users/${user._id}/${folder}`,
               resource_type: 'auto',
               public_id: `${user._id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-              tags: ['rgram', user._id.toString()],
+              tags: ['rgram', 'user', user._id.toString(), user.username],
               context: {
                 uploaded_by: user._id.toString(),
                 username: user.username,
-                upload_date: new Date().toISOString()
+                fullName: user.fullName,
+                upload_date: new Date().toISOString(),
+                user_folder: `users/${user._id}`
               }
             },
             (error, result) => {

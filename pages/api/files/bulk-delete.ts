@@ -92,11 +92,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             });
           });
 
-          // Check if file has user tag
-          if (!fileInfo.tags || !fileInfo.tags.includes(user._id.toString())) {
+          // Check if file has user tag and belongs to user's folder
+          if (!fileInfo.tags || !fileInfo.tags.includes(user._id.toString()) || !fileInfo.tags.includes('user')) {
             results.failed.push({
               publicId,
               error: 'Access denied - file does not belong to user'
+            });
+            continue;
+          }
+          
+          // Additional check: verify file is in user's folder
+          if (!fileInfo.folder || !fileInfo.folder.includes(`users/${user._id}`)) {
+            results.failed.push({
+              publicId,
+              error: 'Access denied - file not in your folder'
             });
             continue;
           }

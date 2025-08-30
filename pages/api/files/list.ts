@@ -64,11 +64,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const limitNum = parseInt(limit as string);
     const skip = (pageNum - 1) * limitNum;
 
-    // Build search query for Cloudinary
-    let searchQuery = `tags:rgram AND tags:${user._id}`;
+    // Build search query for Cloudinary - user-specific files only
+    let searchQuery = `tags:rgram AND tags:user AND tags:${user._id}`;
     
     if (folder !== 'all') {
-      searchQuery += ` AND folder:rgram/${folder}`;
+      searchQuery += ` AND folder:rgram/users/${user._id}/${folder}`;
     }
     
     if (type !== 'all') {

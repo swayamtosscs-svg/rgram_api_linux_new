@@ -187,6 +187,12 @@ Authorization: Bearer JWT_TOKEN
 Content-Type: application/json
 ```
 
+### 5. **Get User File Statistics**
+```
+GET /api/files/stats
+Authorization: Bearer JWT_TOKEN
+```
+
 **Request Body:**
 ```json
 {
@@ -231,6 +237,54 @@ Content-Type: application/json
 }
 ```
 
+**Response:**
+```json
+{
+  "success": true,
+  "message": "User file statistics retrieved successfully",
+  "data": {
+    "user": {
+      "userId": "689c463f3b52aad73e878d1f",
+      "username": "username",
+      "fullName": "Full Name"
+    },
+    "statistics": {
+      "totalFiles": 25,
+      "totalSize": 52428800,
+      "totalSizeMB": 50.0,
+      "fileTypes": {
+        "image": 15,
+        "video": 5,
+        "document": 5
+      },
+      "folders": {
+        "images": 15,
+        "videos": 5,
+        "documents": 5
+      }
+    },
+    "storage": {
+      "used": 52428800,
+      "usedMB": 50.0,
+      "limit": 10737418240,
+      "limitMB": 10240,
+      "percentage": 0.5
+    },
+    "recentUploads": [
+      {
+        "id": "rgram/users/689c463f3b52aad73e878d1f/images/file1",
+        "url": "https://res.cloudinary.com/...",
+        "format": "jpg",
+        "size": 1024000,
+        "folder": "images",
+        "uploadedAt": "2025-01-29T..."
+      }
+    ],
+    "folderStructure": "rgram/users/689c463f3b52aad73e878d1f/"
+  }
+}
+```
+
 ## 🔐 **Authentication**
 
 All endpoints require a valid JWT token in the Authorization header:
@@ -241,15 +295,29 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ## 📁 **Folder Structure**
 
-Files are automatically organized in Cloudinary:
+Files are automatically organized in Cloudinary by user ID:
 
 ```
 rgram/
-├── images/          # All image files
-├── videos/          # All video files
-├── audio/           # All audio files
-├── documents/       # PDFs, docs, text files
-└── general/         # Other file types
+└── users/
+    └── {USER_ID}/
+        ├── images/          # User's image files
+        ├── videos/          # User's video files
+        ├── audio/           # User's audio files
+        ├── documents/       # User's PDFs, docs, text files
+        └── general/         # User's other file types
+```
+
+**Example for user ID `689c463f3b52aad73e878d1f`:**
+```
+rgram/users/689c463f3b52aad73e878d1f/
+├── images/
+│   ├── profile.jpg
+│   └── cover.png
+├── videos/
+│   └── intro.mp4
+└── documents/
+    └── resume.pdf
 ```
 
 ## 🧪 **Testing with Curl**
@@ -286,10 +354,16 @@ curl -X DELETE "https://api-rgram1.vercel.app/api/files/bulk-delete" \
   -H "Content-Type: application/json" \
   -d '{
     "files": [
-      {"publicId": "rgram/images/file1", "resourceType": "image"},
-      {"publicId": "rgram/videos/file2", "resourceType": "video"}
+      {"publicId": "rgram/users/YOUR_USER_ID/images/file1", "resourceType": "image"},
+      {"publicId": "rgram/users/YOUR_USER_ID/videos/file2", "resourceType": "video"}
     ]
   }'
+```
+
+### Get User File Statistics:
+```bash
+curl -X GET "https://api-rgram1.vercel.app/api/files/stats" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ## 🔧 **Environment Variables Required**
@@ -425,6 +499,7 @@ const useFileList = (token: string, filters = {}) => {
 - **Base URL**: https://api-rgram1.vercel.app
 - **Upload**: `/api/files/upload`
 - **List**: `/api/files/list`
+- **Stats**: `/api/files/stats`
 - **Delete**: `/api/files/delete`
 - **Bulk Delete**: `/api/files/bulk-delete`
 
