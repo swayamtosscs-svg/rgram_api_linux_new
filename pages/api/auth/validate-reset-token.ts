@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
+import { validateResetToken } from './forgot-password';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -18,11 +18,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Import the validation function from the forgot-password API
-    const { validateResetToken } = await import('./forgot-password');
-    
     // Validate the token
-    const resetToken = validateResetToken(token);
+    const resetToken = await validateResetToken(token);
     
     if (!resetToken) {
       return res.status(400).json({
@@ -47,11 +44,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Token is valid
+    // Type assertion for the populated user data
+    const userData = resetToken.userId as any;
+
     res.json({
       success: true,
       message: 'Token is valid',
-      userId: resetToken.userId
+      data: {
+        userId: userData._id,
+        email: userData.email,
+        username: userData.username,
+        fullName: userData.fullName
+      }
     });
 
   } catch (error: any) {

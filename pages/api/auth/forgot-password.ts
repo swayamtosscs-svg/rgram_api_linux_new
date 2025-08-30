@@ -1,27 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
 import User from '../../../lib/models/User';
+import PasswordResetToken from '../../../lib/models/PasswordResetToken';
 import * as crypto from 'crypto';
 import * as nodemailer from 'nodemailer';
-
-// Password reset token model
-interface IPasswordResetToken {
-  userId: string;
-  token: string;
-  expiresAt: Date;
-  isUsed: boolean;
-}
-
-const PasswordResetTokenSchema = {
-  userId: String,
-  token: String,
-  expiresAt: Date,
-  isUsed: Boolean,
-  createdAt: { type: Date, default: Date.now }
-};
-
-// In-memory storage for reset tokens (in production, use Redis or database)
-let passwordResetTokens: IPasswordResetToken[] = [];
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -79,21 +61,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const resetToken = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
-    // Store reset token
-    const resetTokenData: IPasswordResetToken = {
-      userId: user._id.toString(),
+    // Remove old tokens for this user
+    await PasswordResetToken.deleteMany({ userId: user._id });
+
+    // Store reset token in database
+    const resetTokenData = new PasswordResetToken({
+      userId: user._id,
       token: resetToken,
       expiresAt,
       isUsed: false
-    };
+    });
 
-    // Remove old tokens for this user
-    passwordResetTokens = passwordResetTokens.filter(
-      token => token.userId !== user._id.toString()
-    );
-
-    // Add new token
-    passwordResetTokens.push(resetTokenData);
+    await resetTokenData.save();
 
     // Send reset email
     await sendPasswordResetEmail(user.email, user.fullName || user.username, resetToken);
@@ -200,23 +179,40 @@ async function sendPasswordResetEmail(email: string, fullName: string, resetToke
 }
 
 // Helper function to validate reset token
-export function validateResetToken(token: string): IPasswordResetToken | null {
-  const resetToken = passwordResetTokens.find(
-    t => t.token === token && !t.isUsed && t.expiresAt > new Date()
-  );
-  return resetToken || null;
+export async function validateResetToken(token: string) {
+  try {
+    const resetToken = await PasswordResetToken.findOne({
+      token,
+      isUsed: false,
+      expiresAt: { $gt: new Date() }
+    }).populate('userId', 'email username fullName').lean();
+    
+    return resetToken;
+  } catch (error) {
+    console.error('Error validating reset token:', error);
+    return null;
+  }
 }
 
 // Helper function to mark token as used
-export function markTokenAsUsed(token: string): void {
-  const resetToken = passwordResetTokens.find(t => t.token === token);
-  if (resetToken) {
-    resetToken.isUsed = true;
+export async function markTokenAsUsed(token: string) {
+  try {
+    await PasswordResetToken.findOneAndUpdate(
+      { token },
+      { isUsed: true }
+    );
+  } catch (error) {
+    console.error('Error marking token as used:', error);
   }
 }
 
 // Clean up expired tokens (run this periodically)
-export function cleanupExpiredTokens(): void {
-  const now = new Date();
-  passwordResetTokens = passwordResetTokens.filter(token => token.expiresAt > now);
+export async function cleanupExpiredTokens() {
+  try {
+    await PasswordResetToken.deleteMany({
+      expiresAt: { $lt: new Date() }
+    });
+  } catch (error) {
+    console.error('Error cleaning up expired tokens:', error);
+  }
 }

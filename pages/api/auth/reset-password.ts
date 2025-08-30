@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
 import User from '../../../lib/models/User';
 import bcrypt from 'bcryptjs';
+import { validateResetToken, markTokenAsUsed } from './forgot-password';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -26,11 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Import the validation function from the forgot-password API
-    const { validateResetToken, markTokenAsUsed } = await import('./forgot-password');
-    
     // Validate the token
-    const resetToken = validateResetToken(token);
+    const resetToken = await validateResetToken(token);
     
     if (!resetToken) {
       return res.status(400).json({
@@ -55,12 +53,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // Type assertion for the populated user data
+    const userData = resetToken.userId as any;
+
     // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Update the user's password
     const updatedUser = await User.findByIdAndUpdate(
-      resetToken.userId,
+      userData._id,
       { 
         password: hashedPassword,
         passwordChangedAt: new Date(),
@@ -77,7 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Mark the token as used
-    markTokenAsUsed(token);
+    await markTokenAsUsed(token);
 
     res.json({
       success: true,
