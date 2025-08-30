@@ -20,7 +20,8 @@
 2. Select your RGram API project
 3. Go to Settings → Environment Variables
 4. Add each variable from the .env.template file
-5. Redeploy your project
+5. **IMPORTANT**: Set `CORS_ORIGIN=https://api-rgram1.vercel.app`
+6. Redeploy your project
 
 ## Step 3: Test the Setup
 

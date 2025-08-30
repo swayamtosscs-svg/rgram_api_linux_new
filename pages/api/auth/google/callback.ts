@@ -106,7 +106,7 @@ export default async function handler(
         }
         
         // Redirect to demo page with token
-        return res.redirect(`${process.env.CORS_ORIGIN || 'http://localhost:3000'}/google-oauth-demo.html?token=${token}`);
+        return res.redirect(`${process.env.CORS_ORIGIN || 'https://api-rgram1.vercel.app'}/google-oauth-demo.html?token=${token}`);
       } catch (dbError) {
         console.error('Database error during mock auth:', dbError);
         return res.status(500).json({
@@ -201,7 +201,7 @@ export default async function handler(
     const token = generateToken(user._id);
 
     // Redirect to demo page with token
-    res.redirect(`${process.env.CORS_ORIGIN || 'http://localhost:3000'}/google-oauth-demo.html?token=${token}`);
+    res.redirect(`${process.env.CORS_ORIGIN || 'https://api-rgram1.vercel.app'}/google-oauth-demo.html?token=${token}`);
   } catch (error: any) {
     console.error('Google callback error:', error);
     res.status(500).json({ 
