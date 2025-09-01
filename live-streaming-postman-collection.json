@@ -1,35 +1,83 @@
 {
   "info": {
     "name": "Live Streaming API Collection",
-    "description": "Complete collection for testing Instagram-like live streaming APIs",
+    "description": "Complete collection for testing all live streaming APIs including stream creation, management, comments, and viewer tracking",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
   },
   "variable": [
     {
-      "key": "base_url",
+      "key": "baseUrl",
       "value": "http://localhost:3000",
       "type": "string"
     },
     {
-      "key": "user_id",
-      "value": "68ad40ebfe4335deca03666d",
+      "key": "authToken",
+      "value": "your-jwt-token-here",
       "type": "string"
     },
     {
-      "key": "viewer_id",
-      "value": "viewer_user_id_here",
+      "key": "streamId",
+      "value": "",
       "type": "string"
     },
     {
-      "key": "stream_id",
-      "value": "generated_stream_id_here",
+      "key": "commentId",
+      "value": "",
       "type": "string"
     }
   ],
   "item": [
     {
-      "name": "🎥 Stream Management",
+      "name": "Stream Management",
       "item": [
+        {
+          "name": "Create Live Stream",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Morning Darshan - Live\",\n  \"description\": \"Join us for morning darshan and prayers\",\n  \"category\": \"darshan\",\n  \"isPrivate\": false,\n  \"allowedViewers\": [],\n  \"tags\": [\"darshan\", \"morning\", \"temple\", \"prayers\"],\n  \"location\": \"Mumbai, India\",\n  \"settings\": {\n    \"quality\": \"720p\",\n    \"enableChat\": true,\n    \"enableLikes\": true,\n    \"enableComments\": true,\n    \"enableScreenShare\": false,\n    \"maxViewers\": 1000,\n    \"isArchived\": true,\n    \"moderationEnabled\": true,\n    \"language\": \"hindi\",\n    \"deityName\": \"Krishna\",\n    \"templeInfo\": {\n      \"name\": \"ISKCON Temple\",\n      \"location\": \"Mumbai, India\",\n      \"contact\": \"+91-1234567890\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/live-stream/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "create"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.streamId) {",
+                  "        pm.collectionVariables.set('streamId', response.data.streamId);",
+                  "        console.log('Stream ID saved:', response.data.streamId);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
         {
           "name": "Start Live Stream",
           "request": {
@@ -42,17 +90,53 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"title\": \"Gaming Live Stream\",\n  \"description\": \"Playing my favorite game live!\",\n  \"isPrivate\": false,\n  \"allowedViewers\": [],\n  \"category\": \"gaming\",\n  \"tags\": [\"gaming\", \"live\", \"fun\"],\n  \"location\": \"New York\",\n  \"settings\": {\n    \"quality\": \"720p\",\n    \"enableChat\": true,\n    \"enableLikes\": true,\n    \"enableComments\": true,\n    \"enableScreenShare\": false,\n    \"maxViewers\": 1000\n  }\n}"
+              "raw": "{\n  \"streamId\": \"{{streamId}}\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/live/start",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "start"]
+              "raw": "{{baseUrl}}/api/live-stream/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "start"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Go Live",
+          "name": "End Live Stream",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"streamId\": \"{{streamId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/live-stream/end",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "end"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Stream Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/live-stream/{{streamId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "{{streamId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Stream",
           "request": {
             "method": "PUT",
             "header": [
@@ -63,40 +147,237 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"streamId\": \"{{stream_id}}\",\n  \"userId\": \"{{user_id}}\"\n}"
+              "raw": "{\n  \"title\": \"Updated Morning Darshan\",\n  \"description\": \"Updated description for the stream\",\n  \"category\": \"puja\",\n  \"isPrivate\": true,\n  \"allowedViewers\": [\"user456\", \"user789\"]\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/live/go-live",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "go-live"]
+              "raw": "{{baseUrl}}/api/live-stream/{{streamId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "{{streamId}}"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "End Stream",
+          "name": "Delete Stream",
           "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"streamId\": \"{{stream_id}}\",\n  \"userId\": \"{{user_id}}\"\n}"
-            },
+            "method": "DELETE",
+            "header": [],
             "url": {
-              "raw": "{{base_url}}/api/live/end",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "end"]
+              "raw": "{{baseUrl}}/api/live-stream/{{streamId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "{{streamId}}"]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "👥 Viewer Management",
+      "name": "Stream Discovery",
+      "item": [
+        {
+          "name": "List All Live Streams",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/live-stream/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "list"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Streams by Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/live-stream/list?category=darshan&status=live&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "list"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "darshan"
+                },
+                {
+                  "key": "status",
+                  "value": "live"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Streams by Text",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/live-stream/list?search=morning&sortBy=viewerCount&sortOrder=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "list"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "morning"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "viewerCount"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Live Comments",
+      "item": [
+        {
+          "name": "Get Stream Comments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/live-stream/comments?streamId={{streamId}}&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "comments"],
+              "query": [
+                {
+                  "key": "streamId",
+                  "value": "{{streamId}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Post Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"streamId\": \"{{streamId}}\",\n  \"message\": \"Beautiful darshan! 🙏\",\n  \"parentComment\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/live-stream/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "comments"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.commentId) {",
+                  "        pm.collectionVariables.set('commentId', response.data.commentId);",
+                  "        console.log('Comment ID saved:', response.data.commentId);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Post Reply Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"streamId\": \"{{streamId}}\",\n  \"message\": \"I agree! Such a peaceful atmosphere 🙏\",\n  \"parentComment\": \"{{commentId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/live-stream/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "comments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Comment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commentId\": \"{{commentId}}\",\n  \"message\": \"Updated comment message\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/live-stream/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "comments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commentId\": \"{{commentId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/live-stream/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "comments"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Viewer Management",
       "item": [
         {
           "name": "Join Stream",
@@ -110,14 +391,15 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"streamId\": \"{{stream_id}}\",\n  \"viewerId\": \"{{viewer_id}}\"\n}"
+              "raw": "{\n  \"streamId\": \"{{streamId}}\",\n  \"action\": \"join\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/live/join",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "join"]
+              "raw": "{{baseUrl}}/api/live-stream/viewer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "viewer"]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Leave Stream",
@@ -131,123 +413,20 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"streamId\": \"{{stream_id}}\",\n  \"viewerId\": \"{{viewer_id}}\"\n}"
+              "raw": "{\n  \"streamId\": \"{{streamId}}\",\n  \"action\": \"leave\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/live/leave",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "leave"]
+              "raw": "{{baseUrl}}/api/live-stream/viewer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "viewer"]
             }
-          }
-        },
-        {
-          "name": "Get Stream Viewers",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/live/viewers?streamId={{stream_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "viewers"],
-              "query": [
-                {
-                  "key": "streamId",
-                  "value": "{{stream_id}}"
-                }
-              ]
-            }
-          }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "🔍 Stream Discovery",
-      "item": [
-        {
-          "name": "Get All Live Streams",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/live/streams",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "streams"]
-            }
-          }
-        },
-        {
-          "name": "Get Gaming Streams",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/live/streams?category=gaming&limit=10&sortBy=viewerCount&sortOrder=desc",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "streams"],
-              "query": [
-                {
-                  "key": "category",
-                  "value": "gaming"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                },
-                {
-                  "key": "sortBy",
-                  "value": "viewerCount"
-                },
-                {
-                  "key": "sortOrder",
-                  "value": "desc"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Streams by Location",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/live/streams?location=New%20York&tags=gaming,live",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "streams"],
-              "query": [
-                {
-                  "key": "location",
-                  "value": "New York"
-                },
-                {
-                  "key": "tags",
-                  "value": "gaming,live"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Stream Info",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/live/stream/{{stream_id}}?includeComments=true&commentsLimit=20",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "stream", "{{stream_id}}"],
-              "query": [
-                {
-                  "key": "includeComments",
-                  "value": "true"
-                },
-                {
-                  "key": "commentsLimit",
-                  "value": "20"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "💬 Real-time Interaction",
+      "name": "Stream Engagement",
       "item": [
         {
           "name": "Like Stream",
@@ -261,17 +440,18 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"streamId\": \"{{stream_id}}\",\n  \"userId\": \"{{viewer_id}}\"\n}"
+              "raw": "{\n  \"streamId\": \"{{streamId}}\",\n  \"action\": \"like\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/live/like",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "like"]
+              "raw": "{{baseUrl}}/api/live-stream/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "like"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Add Comment",
+          "name": "Unlike Stream",
           "request": {
             "method": "POST",
             "header": [
@@ -282,183 +462,74 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"streamId\": \"{{stream_id}}\",\n  \"userId\": \"{{viewer_id}}\",\n  \"message\": \"This stream is amazing! 🔥\",\n  \"parentCommentId\": \"\"\n}"
+              "raw": "{\n  \"streamId\": \"{{streamId}}\",\n  \"action\": \"unlike\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/live/comment",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "comment"]
+              "raw": "{{baseUrl}}/api/live-stream/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "like"]
             }
-          }
-        },
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Test Scenarios",
+      "item": [
         {
-          "name": "Add Reply Comment",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"streamId\": \"{{stream_id}}\",\n  \"userId\": \"{{viewer_id}}\",\n  \"message\": \"I agree with you!\",\n  \"parentCommentId\": \"comment_id_here\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/live/comment",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "comment"]
-            }
-          }
-        },
-        {
-          "name": "Get Comments",
+          "name": "Complete Stream Workflow",
           "request": {
             "method": "GET",
+            "header": [],
             "url": {
-              "raw": "{{base_url}}/api/live/comments?streamId={{stream_id}}&limit=50&page=1&sortBy=timestamp&sortOrder=desc&includeReplies=true",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "comments"],
+              "raw": "{{baseUrl}}/api/live-stream/list?status=live&limit=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "live-stream", "list"],
               "query": [
                 {
-                  "key": "streamId",
-                  "value": "{{stream_id}}"
+                  "key": "status",
+                  "value": "live"
                 },
                 {
                   "key": "limit",
-                  "value": "50"
-                },
-                {
-                  "key": "page",
                   "value": "1"
-                },
-                {
-                  "key": "sortBy",
-                  "value": "timestamp"
-                },
-                {
-                  "key": "sortOrder",
-                  "value": "desc"
-                },
-                {
-                  "key": "includeReplies",
-                  "value": "true"
                 }
               ]
             }
-          }
-        }
-      ]
-    },
-    {
-      "name": "⚙️ Stream Configuration",
-      "item": [
-        {
-          "name": "Update Stream Settings",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// This is a test scenario to demonstrate the complete workflow",
+                  "console.log('Complete Stream Workflow Test:');",
+                  "console.log('1. Create a stream');",
+                  "console.log('2. Start the stream');",
+                  "console.log('3. Join as viewer');",
+                  "console.log('4. Post comments');",
+                  "console.log('5. Like the stream');",
+                  "console.log('6. Leave the stream');",
+                  "console.log('7. End the stream');",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.streams.length > 0) {",
+                  "        const stream = response.data.streams[0];",
+                  "        pm.collectionVariables.set('streamId', stream.streamId);",
+                  "        console.log('Found live stream:', stream.title);",
+                  "        console.log('Stream ID:', stream.streamId);",
+                  "        console.log('Current viewers:', stream.viewerCount);",
+                  "    }",
+                  "}"
+                ]
               }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"streamId\": \"{{stream_id}}\",\n  \"userId\": \"{{user_id}}\",\n  \"title\": \"Updated Stream Title\",\n  \"description\": \"Updated description\",\n  \"isPrivate\": true,\n  \"allowedViewers\": [\"user1\", \"user2\"],\n  \"category\": \"gaming\",\n  \"tags\": [\"gaming\", \"live\", \"updated\"],\n  \"location\": \"Los Angeles\",\n  \"settings\": {\n    \"quality\": \"1080p\",\n    \"enableChat\": true,\n    \"enableLikes\": true,\n    \"enableComments\": false,\n    \"enableScreenShare\": true,\n    \"maxViewers\": 500\n  }\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/live/update-settings",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "update-settings"]
             }
-          }
+          ]
         }
       ]
-    },
-    {
-      "name": "🧪 Testing & Debug",
-      "item": [
-        {
-          "name": "Test Basic API",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/live/test",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "test"]
-            }
-          }
-        },
-        {
-          "name": "Health Check",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/live/health",
-              "host": ["{{base_url}}"],
-              "path": ["api", "live", "health"]
-            }
-          }
-        }
-      ]
-    }
-  ],
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          "// Auto-update stream_id variable after starting a stream",
-          "if (pm.info.requestName === 'Start Live Stream') {",
-          "    console.log('Starting live stream...');",
-          "}",
-          "",
-          "// Auto-update user_id and viewer_id if needed",
-          "if (!pm.collectionVariables.get('user_id')) {",
-          "    pm.collectionVariables.set('user_id', '68ad40ebfe4335deca03666d');",
-          "}",
-          "if (!pm.collectionVariables.get('viewer_id')) {",
-          "    pm.collectionVariables.set('viewer_id', 'viewer_user_id_here');",
-          "}"
-        ]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          "// Auto-extract stream_id from Start Stream response",
-          "if (pm.info.requestName === 'Start Live Stream' && pm.response.code === 200) {",
-          "    const response = pm.response.json();",
-          "    if (response.success && response.data && response.data.streamId) {",
-          "        pm.collectionVariables.set('stream_id', response.data.streamId);",
-          "        console.log('Stream ID updated:', response.data.streamId);",
-          "    }",
-          "}",
-          "",
-          "// Test response structure",
-          "pm.test('Response is successful', function () {",
-          "    pm.response.to.have.status(200);",
-          "});",
-          "",
-          "pm.test('Response has success field', function () {",
-          "    const response = pm.response.json();",
-          "    pm.expect(response).to.have.property('success');",
-          "});",
-          "",
-          "pm.test('Response has message field', function () {",
-          "    const response = pm.response.json();",
-          "    pm.expect(response).to.have.property('message');",
-          "});",
-          "",
-          "// Log response for debugging",
-          "console.log('Response:', pm.response.json());"
-        ]
-      }
     }
   ]
 }

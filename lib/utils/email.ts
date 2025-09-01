@@ -39,7 +39,7 @@ export const sendOTPEmail = async (
     }[purpose] || 'Your verification code';
 
     const html = `
-      &lt;!DOCTYPE html>
+      <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
@@ -48,13 +48,11 @@ export const sendOTPEmail = async (
       </head>
       <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-          &lt;!-- Header -->
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
             <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">R-GRAM</h1>
             <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 16px;">Spiritual & Religious Social Media</p>
           </div>
           
-          &lt;!-- Content -->
           <div style="padding: 40px 30px; background: #ffffff;">
             <h2 style="color: #333; margin-bottom: 20px; font-size: 24px;">${subject}</h2>
             
@@ -66,7 +64,6 @@ export const sendOTPEmail = async (
               Your verification code is:
             </p>
             
-            &lt;!-- OTP Box -->
             <div style="background: #f8f9ff; border: 2px solid #667eea; border-radius: 12px; padding: 30px; text-align: center; margin: 30px 0;">
               <h1 style="color: #667eea; font-size: 36px; margin: 0; letter-spacing: 8px; font-weight: bold;">${otp}</h1>
             </div>
@@ -82,7 +79,6 @@ export const sendOTPEmail = async (
               For your security, never share this code with anyone. R-GRAM will never ask for your verification code.
             </p>
             
-            &lt;!-- Footer -->
             <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #eee; text-align: center;">
               <p style="color: #999; font-size: 14px; margin: 0;">
                 Best regards,<br>
@@ -98,11 +94,33 @@ export const sendOTPEmail = async (
       </html>
     `;
 
+    // Create a simple text version for better compatibility
+    const text = `
+R-GRAM - Spiritual & Religious Social Media
+
+${subject}
+
+${purposeText}
+
+Your verification code is: ${otp}
+
+⚠️ Important: This code will expire in ${process.env.OTP_EXPIRE_MINUTES || 10} minutes.
+If you didn't request this code, please ignore this email.
+
+For your security, never share this code with anyone. R-GRAM will never ask for your verification code.
+
+Best regards,
+The R-GRAM Team
+
+This is an automated message, please do not reply to this email.
+    `.trim();
+
     await transporter.sendMail({
       from: `"R-GRAM" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
       to: email,
       subject,
       html,
+      text,
     });
 
     console.log(`✅ OTP email sent successfully to ${email}`);
@@ -124,7 +142,7 @@ export const sendWelcomeEmail = async (
     const transporter = createTransporter();
 
     const html = `
-      &lt;!DOCTYPE html>
+      <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
@@ -133,13 +151,11 @@ export const sendWelcomeEmail = async (
       </head>
       <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-          &lt;!-- Header -->
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
             <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">R-GRAM</h1>
             <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 16px;">Spiritual & Religious Social Media</p>
           </div>
           
-          &lt;!-- Content -->
           <div style="padding: 40px 30px; background: #ffffff;">
             <h2 style="color: #333; margin-bottom: 20px; font-size: 24px;">Welcome to R-GRAM! 🙏</h2>
             
@@ -151,7 +167,6 @@ export const sendWelcomeEmail = async (
               Welcome to R-GRAM! We're excited to have you join our community of spiritual and religious content creators and seekers.
             </p>
             
-            &lt;!-- Features Box -->
             <div style="background: #f8f9ff; border-left: 4px solid #667eea; padding: 25px; margin: 30px 0; border-radius: 0 8px 8px 0;">
               <h3 style="color: #333; margin-top: 0; font-size: 18px;">What you can do on R-GRAM:</h3>
               <ul style="color: #666; line-height: 1.8; padding-left: 20px;">
@@ -164,7 +179,6 @@ export const sendWelcomeEmail = async (
               </ul>
             </div>
             
-            &lt;!-- CTA Button -->
             <div style="text-align: center; margin: 40px 0;">
               <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 35px; text-decoration: none; border-radius: 30px; display: inline-block; font-weight: bold; font-size: 16px;">
@@ -183,7 +197,6 @@ export const sendWelcomeEmail = async (
               <a href="mailto:${process.env.EMAIL_FROM || process.env.EMAIL_USER}" style="color: #667eea;">support@rgram.com</a>
             </p>
             
-            &lt;!-- Footer -->
             <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #eee; text-align: center;">
               <p style="color: #999; font-size: 14px; margin: 0;">
                 Best regards,<br>
@@ -225,7 +238,7 @@ export const sendPasswordResetConfirmationEmail = async (
     const transporter = createTransporter();
 
     const html = `
-      &lt;!DOCTYPE html>
+      <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
@@ -234,13 +247,11 @@ export const sendPasswordResetConfirmationEmail = async (
       </head>
       <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-          &lt;!-- Header -->
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
             <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">R-GRAM</h1>
             <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 16px;">Spiritual & Religious Social Media</p>
           </div>
           
-          &lt;!-- Content -->
           <div style="padding: 40px 30px; background: #ffffff;">
             <h2 style="color: #333; margin-bottom: 20px; font-size: 24px;">Password Reset Successful ✅</h2>
             
@@ -258,7 +269,6 @@ export const sendPasswordResetConfirmationEmail = async (
               </p>
             </div>
             
-            &lt;!-- CTA Button -->
             <div style="text-align: center; margin: 40px 0;">
               <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 35px; text-decoration: none; border-radius: 30px; display: inline-block; font-weight: bold; font-size: 16px;">
@@ -266,7 +276,6 @@ export const sendPasswordResetConfirmationEmail = async (
               </a>
             </div>
             
-            &lt;!-- Footer -->
             <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #eee; text-align: center;">
               <p style="color: #999; font-size: 14px; margin: 0;">
                 Best regards,<br>

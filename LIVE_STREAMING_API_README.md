@@ -1,519 +1,507 @@
-# 🎥 Live Streaming API - Instagram-like Live System
+# 🔴 Live Streaming API Documentation
 
-A comprehensive API system for live streaming functionality similar to Instagram Live, built with Next.js, TypeScript, and MongoDB.
+A comprehensive live streaming API system for religious content including darshan, puja, aarti, bhajan, and discourse streams.
 
-## 🚀 **Features**
+## 🚀 Features
 
-### **Core Live Streaming**
-- **Start Stream**: Create and configure live streams
-- **Go Live**: Transition from pending to live status
-- **End Stream**: Stop broadcasting and calculate final stats
-- **Join/Leave**: Real-time viewer management
-- **Stream Discovery**: Browse and search live streams
+- **Live Stream Management**: Create, start, end, and manage live streams
+- **Real-time Viewer Tracking**: Track viewer joins, leaves, and engagement
+- **Live Comments**: Real-time commenting system with moderation
+- **Stream Discovery**: Search and filter live streams by category, status, etc.
+- **Privacy Controls**: Support for private streams with viewer restrictions
+- **Analytics**: Comprehensive stream analytics and viewer metrics
+- **Multi-language Support**: Support for Hindi, English, Sanskrit, and Gujarati
+- **Quality Options**: Multiple streaming quality options (480p, 720p, 1080p)
 
-### **Real-time Interaction**
-- **Live Comments**: Real-time commenting system
-- **Live Likes**: Instant like reactions
-- **Viewer Count**: Real-time viewer tracking
-- **Stream Settings**: Dynamic configuration updates
-- **🆕 Active Viewer Tracking**: Track who is currently watching
-- **🆕 Viewer History**: Record join/leave patterns and watch duration
+## 📋 API Endpoints
 
-### **Advanced Features**
-- **Private Streams**: Restricted access control
-- **Quality Settings**: Multiple resolution options
-- **Category & Tags**: Content organization
-- **Location Support**: Geographic streaming
-- **Screen Sharing**: Enhanced broadcasting options
+### 1. Create Live Stream
+**POST** `/api/live-stream/create`
 
-## 📁 **API Endpoints**
+Creates a new live stream with specified settings.
 
-### **1. Stream Management**
-
-#### **Start Live Stream**
-```http
-POST /api/live/start
-```
-**Body:**
+**Request Body:**
 ```json
 {
-  "userId": "user_id_here",
-  "title": "My Live Stream",
-  "description": "Join me for an amazing live session!",
+  "title": "Morning Darshan - Live",
+  "description": "Join us for morning darshan and prayers",
+  "category": "darshan",
   "isPrivate": false,
-  "allowedViewers": ["user1", "user2"],
-  "category": "gaming",
-  "tags": ["gaming", "live", "fun"],
-  "location": "New York",
+  "allowedViewers": [],
   "settings": {
     "quality": "720p",
     "enableChat": true,
     "enableLikes": true,
     "enableComments": true,
     "enableScreenShare": false,
-    "maxViewers": 1000
+    "maxViewers": 1000,
+    "isArchived": true,
+    "moderationEnabled": true,
+    "language": "hindi",
+    "deityName": "Krishna",
+    "templeInfo": {
+      "name": "ISKCON Temple",
+      "location": "Mumbai, India",
+      "contact": "+91-1234567890"
+    }
   }
 }
 ```
 
-#### **Go Live**
-```http
-PUT /api/live/go-live
-```
-**Body:**
+**Response:**
 ```json
 {
-  "streamId": "stream_id_here",
-  "userId": "user_id_here"
+  "success": true,
+  "message": "Live stream created successfully",
+  "data": {
+    "streamId": "64f8a1b2c3d4e5f6a7b8c9d0",
+    "streamKey": "stream_user123_1698765432123_abc123def",
+    "streamUrl": "rtmp://your-streaming-server/live/stream_user123_1698765432123_abc123def",
+    "playbackUrl": "https://your-streaming-server/live/stream_user123_1698765432123_abc123def/index.m3u8",
+    "status": "pending"
+  }
 }
 ```
 
-#### **End Stream**
-```http
-PUT /api/live/end
-```
-**Body:**
+### 2. Start Live Stream
+**POST** `/api/live-stream/start`
+
+Starts a pending live stream.
+
+**Request Body:**
 ```json
 {
-  "streamId": "stream_id_here",
-  "userId": "user_id_here"
+  "streamId": "64f8a1b2c3d4e5f6a7b8c9d0"
 }
 ```
 
-### **2. Viewer Management**
-
-#### **Join Stream**
-```http
-POST /api/live/join
-```
-**Body:**
+**Response:**
 ```json
 {
-  "streamId": "stream_id_here",
-  "viewerId": "viewer_id_here"
+  "success": true,
+  "message": "Live stream started successfully",
+  "data": {
+    "streamId": "64f8a1b2c3d4e5f6a7b8c9d0",
+    "status": "live",
+    "startedAt": "2024-01-15T10:00:00.000Z",
+    "streamUrl": "rtmp://your-streaming-server/live/stream_user123_1698765432123_abc123def",
+    "playbackUrl": "https://your-streaming-server/live/stream_user123_1698765432123_abc123def/index.m3u8"
+  }
 }
 ```
 
-#### **Leave Stream**
-```http
-POST /api/live/leave
-```
-**Body:**
+### 3. End Live Stream
+**POST** `/api/live-stream/end`
+
+Ends an active live stream.
+
+**Request Body:**
 ```json
 {
-  "streamId": "stream_id_here",
-  "viewerId": "viewer_id_here"
+  "streamId": "64f8a1b2c3d4e5f6a7b8c9d0"
 }
 ```
 
-#### **🆕 Get Stream Viewers**
-```http
-GET /api/live/viewers?streamId=stream_id_here
-```
-**NEW**: Get detailed information about current viewers including viewer IDs, usernames, and watch statistics.
-
-### **3. Stream Discovery**
-
-#### **Get Live Streams**
-```http
-GET /api/live/streams?category=gaming&tags=gaming,live&location=New%20York&limit=20&page=1&sortBy=viewerCount&sortOrder=desc
-```
-
-#### **Get Stream Info**
-```http
-GET /api/live/stream/{streamId}?includeComments=true&commentsLimit=20
-```
-
-### **4. Real-time Interaction**
-
-#### **Like Stream**
-```http
-POST /api/live/like
-```
-**Body:**
+**Response:**
 ```json
 {
-  "streamId": "stream_id_here",
-  "userId": "user_id_here"
+  "success": true,
+  "message": "Live stream ended successfully",
+  "data": {
+    "streamId": "64f8a1b2c3d4e5f6a7b8c9d0",
+    "status": "ended",
+    "endedAt": "2024-01-15T11:30:00.000Z",
+    "duration": 5400,
+    "finalViewerCount": 150,
+    "peakViewerCount": 200,
+    "totalViews": 500
+  }
 }
 ```
 
-#### **Add Comment**
-```http
-POST /api/live/comment
-```
-**Body:**
+### 4. Get Stream Details
+**GET** `/api/live-stream/[id]`
+
+Retrieves detailed information about a specific live stream.
+
+**Response:**
 ```json
 {
-  "streamId": "stream_id_here",
-  "userId": "user_id_here",
-  "message": "Amazing stream! 🔥",
-  "parentCommentId": "comment_id_for_reply"
+  "success": true,
+  "data": {
+    "streamId": "64f8a1b2c3d4e5f6a7b8c9d0",
+    "userId": "user123",
+    "username": "TempleAdmin",
+    "title": "Morning Darshan - Live",
+    "description": "Join us for morning darshan and prayers",
+    "status": "live",
+    "category": "darshan",
+    "streamUrl": "rtmp://your-streaming-server/live/stream_user123_1698765432123_abc123def",
+    "playbackUrl": "https://your-streaming-server/live/stream_user123_1698765432123_abc123def/index.m3u8",
+    "thumbnailUrl": "https://example.com/thumbnail.jpg",
+    "startedAt": "2024-01-15T10:00:00.000Z",
+    "endedAt": null,
+    "duration": 1800,
+    "viewerCount": 150,
+    "peakViewerCount": 200,
+    "totalViews": 500,
+    "likes": 25,
+    "comments": 12,
+    "isPrivate": false,
+    "allowedViewers": [],
+    "tags": ["darshan", "morning", "temple", "prayers"],
+    "location": "Mumbai, India",
+    "settings": {
+      "quality": "720p",
+      "enableChat": true,
+      "enableLikes": true,
+      "enableComments": true,
+      "enableScreenShare": false,
+      "maxViewers": 1000,
+      "isArchived": true,
+      "moderationEnabled": true,
+      "language": "hindi",
+      "deityName": "Krishna",
+      "templeInfo": {
+        "name": "ISKCON Temple",
+        "location": "Mumbai, India",
+        "contact": "+91-1234567890"
+      }
+    },
+    "createdAt": "2024-01-15T09:45:00.000Z",
+    "updatedAt": "2024-01-15T10:00:00.000Z"
+  }
 }
 ```
 
-#### **Get Comments**
-```http
-GET /api/live/comments?streamId=stream_id_here&limit=50&page=1&sortBy=timestamp&sortOrder=desc&includeReplies=true
-```
+### 5. Update Stream
+**PUT** `/api/live-stream/[id]`
 
-### **5. Stream Configuration**
+Updates stream details (only for pending streams).
 
-#### **Update Settings**
-```http
-PUT /api/live/update-settings
-```
-**Body:**
+**Request Body:**
 ```json
 {
-  "streamId": "stream_id_here",
-  "userId": "user_id_here",
-  "title": "Updated Stream Title",
+  "title": "Updated Morning Darshan",
+  "description": "Updated description",
+  "category": "puja",
   "isPrivate": true,
-  "allowedViewers": ["user1", "user2", "user3"],
-  "settings": {
-    "enableComments": false,
-    "maxViewers": 500
+  "allowedViewers": ["user456", "user789"]
+}
+```
+
+### 6. Delete Stream
+**DELETE** `/api/live-stream/[id]`
+
+Deletes a pending stream.
+
+### 7. List Live Streams
+**GET** `/api/live-stream/list`
+
+Lists live streams with filtering and pagination.
+
+**Query Parameters:**
+- `page`: Page number (default: 1)
+- `limit`: Items per page (default: 20)
+- `status`: Stream status (live, ended, pending, cancelled, all)
+- `category`: Stream category (darshan, puja, aarti, bhajan, discourse, other, all)
+- `search`: Search query for title, description, or username
+- `userId`: Filter by streamer ID
+- `sortBy`: Sort field (createdAt, viewerCount, likes)
+- `sortOrder`: Sort order (asc, desc)
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "streams": [...],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 5,
+      "totalItems": 100,
+      "itemsPerPage": 20,
+      "hasNextPage": true,
+      "hasPrevPage": false
+    }
   }
 }
 ```
 
-## 🗄️ **Database Models**
+### 8. Live Comments
+**GET** `/api/live-stream/comments?streamId=[id]`
 
-### **LiveStream Schema**
-```typescript
+Retrieves comments for a live stream.
+
+**POST** `/api/live-stream/comments`
+
+Posts a new comment.
+
+**Request Body:**
+```json
 {
-  userId: string;           // Streamer's user ID
-  username: string;         // Streamer's username
-  title: string;            // Stream title
-  description?: string;     // Stream description
+  "streamId": "64f8a1b2c3d4e5f6a7b8c9d0",
+  "message": "Beautiful darshan! 🙏",
+  "parentComment": "comment_id_for_reply"
+}
+```
+
+**PUT** `/api/live-stream/comments`
+
+Updates an existing comment.
+
+**DELETE** `/api/live-stream/comments`
+
+Deletes a comment.
+
+### 9. Viewer Tracking
+**POST** `/api/live-stream/viewer`
+
+Tracks viewer joins and leaves.
+
+**Request Body:**
+```json
+{
+  "streamId": "64f8a1b2c3d4e5f6a7b8c9d0",
+  "action": "join" // or "leave"
+}
+```
+
+### 10. Stream Likes
+**POST** `/api/live-stream/like`
+
+Manages stream likes.
+
+**Request Body:**
+```json
+{
+  "streamId": "64f8a1b2c3d4e5f6a7b8c9d0",
+  "action": "like" // or "unlike"
+}
+```
+
+## 🗄️ Database Models
+
+### LiveStream Model
+```typescript
+interface ILiveStream {
+  userId: string;
+  username: string;
+  title: string;
+  description?: string;
   status: 'pending' | 'live' | 'ended' | 'cancelled';
-  streamKey: string;        // Unique streaming key
-  streamUrl: string;        // RTMP input URL
-  playbackUrl: string;      // HLS playback URL
-  thumbnailUrl?: string;    // Stream thumbnail
-  startedAt?: Date;         // When stream went live
-  endedAt?: Date;           // When stream ended
-  duration: number;         // Stream duration in seconds
-  viewerCount: number;      // Current viewers
-  peakViewerCount: number;  // Peak viewer count
-  totalViews: number;       // Total unique views
-  likes: number;            // Total likes
-  comments: number;         // Total comments
-  isPrivate: boolean;       // Private stream flag
-  allowedViewers?: string[]; // Allowed viewers for private streams
-  activeViewers?: string[];  // 🆕 Currently watching viewers
-  viewerHistory?: Array<{   // 🆕 Viewer join/leave history
+  streamKey: string;
+  streamUrl: string;
+  playbackUrl: string;
+  thumbnailUrl?: string;
+  startedAt?: Date;
+  endedAt?: Date;
+  duration: number;
+  viewerCount: number;
+  peakViewerCount: number;
+  totalViews: number;
+  likes: number;
+  comments: number;
+  isPrivate: boolean;
+  allowedViewers?: string[];
+  activeViewers?: string[];
+  viewerHistory?: Array<{
     viewerId: string;
     joinedAt: Date;
     leftAt?: Date;
-    watchDuration?: number; // in seconds
+    watchDuration?: number;
   }>;
-  category?: string;        // Stream category
-  tags?: string[];          // Stream tags
-  location?: string;        // Stream location
-  settings: {               // Stream configuration
+  category: 'darshan' | 'puja' | 'aarti' | 'bhajan' | 'discourse' | 'other';
+  tags?: string[];
+  location?: string;
+  settings: {
     quality: '720p' | '1080p' | '480p';
     enableChat: boolean;
     enableLikes: boolean;
     enableComments: boolean;
     enableScreenShare: boolean;
     maxViewers?: number;
-  }
+    isArchived: boolean;
+    moderationEnabled: boolean;
+    language: string;
+    deityName?: string;
+    templeInfo?: {
+      name: string;
+      location: string;
+      contact?: string;
+    };
+  };
 }
 ```
 
-### **LiveComment Schema**
+### LiveComment Model
 ```typescript
-{
-  streamId: string;         // Associated stream ID
-  userId: string;           // Commenter's user ID
-  username: string;         // Commenter's username
-  userAvatar?: string;      // Commenter's avatar
-  message: string;          // Comment message
-  timestamp: Date;          // Comment timestamp
-  isDeleted: boolean;       // Deletion flag
-  deletedAt?: Date;         // Deletion timestamp
-  deletedBy?: string;       // Who deleted the comment
-  likes: number;            // Comment likes
-  replies: string[];        // Reply comment IDs
-  parentComment?: string;   // Parent comment ID for replies
-  isHighlighted: boolean;   // Streamer highlight flag
-  isPinned: boolean;        // Streamer pin flag
+interface ILiveComment {
+  streamId: string;
+  userId: string;
+  username: string;
+  userAvatar?: string;
+  message: string;
+  timestamp: Date;
+  isDeleted: boolean;
+  deletedAt?: Date;
+  deletedBy?: string;
+  likes: number;
+  replies: string[];
+  parentComment?: string;
+  isHighlighted: boolean;
+  isPinned: boolean;
 }
 ```
 
-## 🔧 **Setup Instructions**
+## 🔐 Authentication
 
-### **Prerequisites**
+All endpoints require authentication via JWT token in the Authorization header:
+
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+## 📱 Demo Application
+
+A comprehensive demo application is available at `/public/live-streaming-demo.html` that allows you to:
+
+- Create and manage live streams
+- Test all API endpoints
+- View live stream details
+- Post and view comments
+- Track viewer engagement
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
 - Node.js 16+
 - MongoDB
-- Streaming server (RTMP/HLS)
-- CDN for video delivery
+- JWT authentication system
+- Streaming server (e.g., RTMP server, HLS)
 
-### **Environment Variables**
-```bash
-# Database
-MONGODB_URI=your_mongodb_connection_string
-
-# Streaming Server (Update these URLs)
-STREAMING_SERVER_URL=rtmp://your-streaming-server
-CDN_BASE_URL=https://your-cdn.com
-
-# Optional: Cloudinary for thumbnails
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-```
-
-### **Installation**
+### 2. Installation
 ```bash
 # Install dependencies
 npm install
 
-# Install uuid for stream key generation
-npm install uuid
-npm install --save-dev @types/uuid
+# Set up environment variables
+cp env-template.txt .env.local
 
 # Start development server
 npm run dev
 ```
 
-## 📱 **Usage Examples**
-
-### **Complete Live Stream Workflow**
-
-#### **1. Start Stream**
-```bash
-curl -X POST http://localhost:3000/api/live/start \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "68ad40ebfe4335deca03666d",
-    "title": "Gaming Live Stream",
-    "description": "Playing my favorite game live!",
-    "category": "gaming",
-    "tags": ["gaming", "live", "fun"],
-    "settings": {
-      "quality": "720p",
-      "enableChat": true,
-      "enableLikes": true,
-      "enableComments": true
-    }
-  }'
+### 3. Environment Variables
+```env
+MONGODB_URI=mongodb://localhost:27017/your-database
+JWT_SECRET=your-jwt-secret
+STREAMING_SERVER_URL=rtmp://your-streaming-server
+PLAYBACK_SERVER_URL=https://your-playback-server
 ```
 
-#### **2. Go Live**
-```bash
-curl -X PUT http://localhost:3000/api/live/go-live \
-  -H "Content-Type: application/json" \
-  -d '{
-    "streamId": "generated_stream_id",
-    "userId": "68ad40ebfe4335deca03666d"
-  }'
-```
+### 4. Testing the APIs
+1. Open `/public/live-streaming-demo.html` in your browser
+2. Use the demo interface to test all endpoints
+3. Check the browser console for detailed responses
 
-#### **3. Join Stream (Viewer)**
-```bash
-curl -X POST http://localhost:3000/api/live/join \
-  -H "Content-Type: application/json" \
-  -d '{
-    "streamId": "stream_id_here",
-    "viewerId": "viewer_user_id"
-  }'
-```
+## 🔧 Configuration
 
-#### **4. Add Comment**
-```bash
-curl -X POST http://localhost:3000/api/live/comment \
-  -H "Content-Type: application/json" \
-  -d '{
-    "streamId": "stream_id_here",
-    "userId": "viewer_user_id",
-    "message": "This stream is amazing! 🔥"
-  }'
-```
+### Streaming Server Setup
+The API generates RTMP URLs for streaming. You'll need to:
 
-#### **5. Like Stream**
-```bash
-curl -X POST http://localhost:3000/api/live/like \
-  -H "Content-Type: application/json" \
-  -d '{
-    "streamId": "stream_id_here",
-    "userId": "viewer_user_id"
-  }'
-```
+1. Set up an RTMP server (e.g., nginx-rtmp, Ant Media Server)
+2. Configure HLS output for playback
+3. Update the `STREAMING_SERVER_URL` and `PLAYBACK_SERVER_URL` in your environment
 
-#### **6. End Stream**
-```bash
-curl -X PUT http://localhost:3000/api/live/end \
-  -H "Content-Type: application/json" \
-  -d '{
-    "streamId": "stream_id_here",
-    "userId": "68ad40ebfe4335deca03666d"
-  }'
-```
+### Quality Settings
+- **480p**: Lower bandwidth, wider compatibility
+- **720p**: Balanced quality and bandwidth (default)
+- **1080p**: High quality, higher bandwidth
 
-### **Discover Live Streams**
-```bash
-# Get all live streams
-curl -X GET "http://localhost:3000/api/live/streams"
+### Privacy Controls
+- **Public Streams**: Visible to all users
+- **Private Streams**: Only visible to allowed viewers
+- **Viewer Restrictions**: Control who can access private streams
 
-# Get gaming streams in New York
-curl -X GET "http://localhost:3000/api/live/streams?category=gaming&location=New%20York"
+## 📊 Analytics & Metrics
 
-# Get streams sorted by viewer count
-curl -X GET "http://localhost:3000/api/live/streams?sortBy=viewerCount&sortOrder=desc"
+The system tracks comprehensive metrics:
 
-# Get streams with specific tags
-curl -X GET "http://localhost:3000/api/live/streams?tags=gaming,live,fun"
-```
+- **Viewer Count**: Current active viewers
+- **Peak Viewers**: Highest concurrent viewer count
+- **Total Views**: Cumulative unique viewers
+- **Watch Duration**: Individual viewer engagement
+- **Engagement**: Likes, comments, and interactions
 
-### **Get Stream Details**
-```bash
-# Get basic stream info
-curl -X GET "http://localhost:3000/api/live/stream/stream_id_here"
+## 🛡️ Security Features
 
-# Get stream info with recent comments
-curl -X GET "http://localhost:3000/api/live/stream/stream_id_here?includeComments=true&commentsLimit=20"
-```
-
-### **Update Stream Settings**
-```bash
-curl -X PUT http://localhost:3000/api/live/update-settings \
-  -H "Content-Type: application/json" \
-  -d '{
-    "streamId": "stream_id_here",
-    "userId": "68ad40ebfe4335deca03666d",
-    "title": "Updated Stream Title",
-    "isPrivate": true,
-    "allowedViewers": ["user1", "user2"],
-    "settings": {
-      "enableComments": false,
-      "maxViewers": 500
-    }
-  }'
-```
-
-## 🌐 **Streaming Server Integration**
-
-### **RTMP Input URL**
-The API generates RTMP URLs in this format:
-```
-rtmp://your-streaming-server/live/{streamKey}
-```
-
-### **HLS Playback URL**
-Viewers can access streams via:
-```
-https://your-cdn.com/live/{streamKey}/index.m3u8
-```
-
-### **Recommended Streaming Servers**
-- **Node-Media-Server**: Lightweight Node.js streaming server
-- **Nginx-RTMP**: High-performance RTMP server
-- **Ant Media Server**: Enterprise-grade streaming solution
-- **Wowza**: Professional streaming platform
-
-## 🔒 **Security Features**
-
-- **User Authentication**: All endpoints require valid user IDs
-- **Access Control**: Private streams with viewer restrictions
+- **JWT Authentication**: Secure API access
+- **User Authorization**: Users can only manage their own streams
+- **Content Moderation**: Built-in moderation controls
+- **Rate Limiting**: Prevents API abuse
 - **Input Validation**: Comprehensive request validation
-- **Rate Limiting**: Built-in protection against abuse
-- **Data Sanitization**: XSS and injection protection
 
-## 📊 **Real-time Features**
+## 🔄 Real-time Features
 
-### **WebSocket Integration (Future Enhancement)**
-For true real-time updates, consider integrating WebSockets:
-- Live viewer count updates
-- Real-time comment streaming
-- Instant like notifications
-- Live stream status changes
+- **Live Viewer Tracking**: Real-time viewer count updates
+- **Live Comments**: Instant comment posting and retrieval
+- **Stream Status Updates**: Real-time status changes
+- **Engagement Metrics**: Live like and comment counts
 
-### **Server-Sent Events (SSE)**
-Alternative to WebSockets for one-way real-time updates:
-- Live comment feed
-- Viewer count updates
-- Stream status notifications
+## 🌐 API Rate Limits
 
-## 🚀 **Deployment**
+- **Create Stream**: 5 requests per minute per user
+- **Start/End Stream**: 10 requests per minute per user
+- **Comments**: 20 requests per minute per user
+- **Viewer Tracking**: 30 requests per minute per user
 
-### **Vercel (Recommended)**
-```bash
-npm install -g vercel
-vercel
+## 📝 Error Handling
+
+All endpoints return consistent error responses:
+
+```json
+{
+  "error": "Error message",
+  "details": "Detailed error information"
+}
 ```
 
-### **Docker**
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-EXPOSE 3000
-CMD ["npm", "start"]
-```
+Common HTTP status codes:
+- `200`: Success
+- `201`: Created
+- `400`: Bad Request
+- `401`: Unauthorized
+- `403`: Forbidden
+- `404`: Not Found
+- `405`: Method Not Allowed
+- `500`: Internal Server Error
 
-### **Environment Setup**
-Ensure your streaming server and CDN are properly configured:
-1. **RTMP Server**: Accept incoming streams
-2. **HLS Generation**: Convert RTMP to HLS
-3. **CDN Distribution**: Deliver video globally
-4. **Database**: MongoDB connection
-5. **Monitoring**: Stream health checks
+## 🤝 Contributing
 
-## 🧪 **Testing**
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-### **Test Scripts**
-Use the provided test scripts to verify functionality:
-```bash
-# Test stream creation
-node test-live-streaming.js
+## 📄 License
 
-# Test viewer interactions
-node test-live-viewers.js
+This project is licensed under the MIT License.
 
-# Test real-time features
-node test-live-comments.js
-```
+## 🆘 Support
 
-### **Postman Collection**
-Import the `live-streaming-postman-collection.json` for API testing.
+For support and questions:
+- Create an issue in the repository
+- Check the demo application for usage examples
+- Review the API documentation
 
-## 📈 **Performance Optimization**
+## 🔮 Future Enhancements
 
-- **Database Indexing**: Optimized queries for live streams
-- **Caching**: Redis for frequently accessed data
-- **CDN**: Global video distribution
-- **Load Balancing**: Multiple streaming servers
-- **Monitoring**: Real-time performance metrics
-
-## 🔮 **Future Enhancements**
-
-- **Multi-stream Support**: Multiple concurrent streams per user
-- **Stream Recording**: Save live streams for replay
-- **Advanced Analytics**: Detailed viewer insights
-- **Monetization**: Tips, subscriptions, ads
-- **Mobile SDK**: Native mobile streaming
-- **AI Moderation**: Automated content filtering
-
-## 🆘 **Support & Troubleshooting**
-
-### **Common Issues**
-1. **Stream Not Starting**: Check RTMP server configuration
-2. **Viewers Can't Join**: Verify stream status and privacy settings
-3. **Comments Not Working**: Ensure comments are enabled
-4. **High Latency**: Optimize CDN and streaming server
-
-### **Debug Endpoints**
-- `/api/live/test`: Basic API functionality
-- `/api/live/health`: System health check
-- `/api/live/stats`: Streaming statistics
-
----
-
-**Built with ❤️ using Next.js, TypeScript, and MongoDB**
-
-*For more information, check the individual API documentation files.*
+- **WebRTC Support**: Browser-based streaming
+- **Multi-bitrate Streaming**: Adaptive bitrate streaming
+- **Advanced Analytics**: Detailed viewer behavior analysis
+- **Content Moderation AI**: Automated content filtering
+- **Mobile SDK**: Native mobile app support
+- **CDN Integration**: Global content delivery
+- **Monetization**: Subscription and donation features
