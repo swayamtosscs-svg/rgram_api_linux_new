@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { initGoogleAuth } from '../lib/utils/googleAuth';
+import { initGoogleOAuth } from '../lib/utils/googleAuth';
 
 /**
  * Example Google Login Button component
@@ -37,7 +37,7 @@ const GoogleLoginButton: React.FC = () => {
       setError('');
       
       // Use the utility function from googleAuth.ts
-      const authUrl = await initGoogleAuth();
+      const authUrl = await initGoogleOAuth();
       
       // Redirect to Google OAuth page
       window.location.href = authUrl;

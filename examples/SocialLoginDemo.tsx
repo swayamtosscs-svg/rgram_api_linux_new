@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styles from './SocialLoginDemo.module.css';
-import { initGoogleAuth } from '../lib/utils/googleAuth';
+import { initGoogleOAuth } from '../lib/utils/googleAuth';
 
 const SocialLoginDemo: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -27,7 +27,7 @@ const SocialLoginDemo: React.FC = () => {
       setError('');
       
       // Use the utility function from googleAuth.ts
-      const authUrl = await initGoogleAuth();
+      const authUrl = await initGoogleOAuth();
       
       // Redirect to Google Auth
       window.location.href = authUrl;

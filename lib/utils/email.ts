@@ -322,13 +322,18 @@ export const sendPasswordResetEmail = async (
       if (process.env.VERCEL_URL) {
         // Use Vercel's auto-generated URL
         baseUrl = `https://${process.env.VERCEL_URL}`;
-      } else if (process.env.NODE_ENV === 'production') {
-        // In production, use the Vercel domain
+      } else if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+        // In production or on Vercel, use the Vercel domain
         baseUrl = 'https://api-rgram1.vercel.app';
       } else {
         // Fallback to localhost for development
         baseUrl = 'http://localhost:3000';
       }
+    }
+    
+    // Force Vercel domain if we're on Vercel (additional safety check)
+    if (process.env.VERCEL || process.env.VERCEL_URL || process.env.NODE_ENV === 'production') {
+      baseUrl = 'https://api-rgram1.vercel.app';
     }
     
     const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
