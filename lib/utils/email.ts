@@ -314,7 +314,24 @@ export const sendPasswordResetEmail = async (
   try {
     const transporter = createTransporter();
 
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+    // Determine the correct base URL for the reset link
+    let baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    
+    // If NEXT_PUBLIC_APP_URL is not set, try to determine from other environment variables
+    if (!baseUrl) {
+      if (process.env.VERCEL_URL) {
+        // Use Vercel's auto-generated URL
+        baseUrl = `https://${process.env.VERCEL_URL}`;
+      } else if (process.env.NODE_ENV === 'production') {
+        // In production, use the Vercel domain
+        baseUrl = 'https://api-rgram1.vercel.app';
+      } else {
+        // Fallback to localhost for development
+        baseUrl = 'http://localhost:3000';
+      }
+    }
+    
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
     const html = `
       <!DOCTYPE html>

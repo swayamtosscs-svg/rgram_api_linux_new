@@ -60,8 +60,13 @@ export default async function handler(
         await connectDB();
         console.log('Database connection successful');
         
-        // Check if mock user already exists
-        let user = await User.findOne({ email: MOCK_USER_DATA.email });
+        // Check if mock user already exists by email OR googleId
+        let user = await User.findOne({ 
+          $or: [
+            { email: MOCK_USER_DATA.email },
+            { googleId: MOCK_USER_DATA.googleId }
+          ]
+        });
         console.log('User search result:', user ? 'User found' : 'User not found');
         
         if (!user) {
@@ -78,6 +83,19 @@ export default async function handler(
             isEmailVerified: true,
           });
           console.log('New user created:', username);
+        } else {
+          // Update existing user's Google ID if not set
+          if (!user.googleId) {
+            user.googleId = MOCK_USER_DATA.googleId;
+            await user.save();
+            console.log('Updated existing user with Google ID');
+          }
+          // Update user's information if it was undefined
+          if (!user.fullName || user.fullName === 'undefined') {
+            user.fullName = MOCK_USER_DATA.name;
+            await user.save();
+            console.log('Updated user fullName');
+          }
         }
         
         // Update last active
@@ -169,15 +187,35 @@ export default async function handler(
 
     await connectDB();
 
-    // Check if user already exists
-    let user = await User.findOne({ $or: [{ email }, { googleId }] });
+    // Check if user already exists by email OR googleId
+    let user = await User.findOne({ 
+      $or: [
+        { email: email },
+        { googleId: googleId }
+      ]
+    });
 
     if (user) {
       // Update Google ID if not already set
       if (!user.googleId) {
         user.googleId = googleId;
-        await user.save();
+        console.log('Updated existing user with Google ID');
       }
+      
+      // Update user's information if it was undefined or missing
+      if (!user.fullName || user.fullName === 'undefined') {
+        user.fullName = name;
+        console.log('Updated user fullName from undefined');
+      }
+      
+      // Update avatar if provided and different
+      if (avatar && user.avatar !== avatar) {
+        user.avatar = avatar;
+        console.log('Updated user avatar');
+      }
+      
+      await user.save();
+      console.log('Existing user updated:', user.email);
     } else {
       // Create new user
       const username = email.split('@')[0] + Math.floor(Math.random() * 1000);
@@ -191,6 +229,7 @@ export default async function handler(
         avatar: avatar || '',
         isEmailVerified: true, // Auto-verify email for Google users
       });
+      console.log('New user created:', username);
     }
 
     // Update last active
