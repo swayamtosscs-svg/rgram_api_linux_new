@@ -1,0 +1,93 @@
+{
+  "info": {
+    "name": "RGram API - Google OAuth",
+    "description": "Collection for testing Google OAuth endpoints on RGram API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Initialize Google OAuth",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://api-rgram1.vercel.app/api/auth/google/init",
+          "protocol": "https",
+          "host": ["api-rgram1", "vercel", "app"],
+          "path": ["api", "auth", "google", "init"]
+        },
+        "description": "Initialize Google OAuth flow and get authorization URL"
+      },
+      "response": []
+    },
+    {
+      "name": "Google OAuth Callback (Mock)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://api-rgram1.vercel.app/api/auth/google/callback?test=true&format=json",
+          "protocol": "https",
+          "host": ["api-rgram1", "vercel", "app"],
+          "path": ["api", "auth", "google", "callback"],
+          "query": [
+            {
+              "key": "test",
+              "value": "true"
+            },
+            {
+              "key": "format",
+              "value": "json"
+            }
+          ]
+        },
+        "description": "Test Google OAuth callback with mock data (for testing without real OAuth flow)"
+      },
+      "response": []
+    },
+    {
+      "name": "Get User Info (Protected)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://api-rgram1.vercel.app/api/auth/user",
+          "protocol": "https",
+          "host": ["api-rgram1", "vercel", "app"],
+          "path": ["api", "auth", "user"]
+        },
+        "description": "Get authenticated user information (requires JWT token)"
+      },
+      "response": []
+    },
+    {
+      "name": "Get User Info (Unauthorized)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://api-rgram1.vercel.app/api/auth/user",
+          "protocol": "https",
+          "host": ["api-rgram1", "vercel", "app"],
+          "path": ["api", "auth", "user"]
+        },
+        "description": "Test unauthorized access to user endpoint (should return 401)"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "jwt_token",
+      "value": "your_jwt_token_here",
+      "type": "string",
+      "description": "JWT token received from Google OAuth callback"
+    }
+  ]
+}

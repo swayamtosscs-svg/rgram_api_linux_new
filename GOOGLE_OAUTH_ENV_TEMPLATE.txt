@@ -29,4 +29,6 @@ NODE_ENV=development
 # 6. Add authorized redirect URIs:
 #    - https://api-rgram1.vercel.app/api/auth/google/callback
 #    - http://localhost:3000/api/auth/google/callback (for development)
-# 7. Copy Client ID and Client Secret to this file
+# 7. Copy Client ID and Client Secret
+# 
+# Note: The callback will redirect to /google-oauth-demo.html instead of /auth/social-callback
