@@ -78,6 +78,22 @@ export default function Home() {
           Open Chat
         </a>
         <a 
+          href="/users-list" 
+          style={{ 
+            display: 'inline-block', 
+            backgroundColor: '#673AB7', 
+            color: 'white', 
+            padding: '12px 20px', 
+            textDecoration: 'none', 
+            borderRadius: '4px',
+            fontWeight: 'bold',
+            marginBottom: '20px',
+            marginRight: '10px'
+          }}
+        >
+          Find People to Chat
+        </a>
+        <a 
           href="/chat-demo" 
           style={{ 
             display: 'inline-block', 

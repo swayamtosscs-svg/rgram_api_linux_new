@@ -28,7 +28,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Calculate unread counts for each thread
     const threadsWithUnread = threads.map(thread => {
-      const unreadCount = thread.unreadCount.get(decoded.userId) || 0;
+      // Handle unreadCount - it might be a Map or plain object depending on .lean()
+      let unreadCount = 0;
+      if (thread.unreadCount) {
+        if (typeof thread.unreadCount.get === 'function') {
+          // It's a Map
+          unreadCount = thread.unreadCount.get(decoded.userId) || 0;
+        } else {
+          // It's a plain object (from .lean())
+          unreadCount = thread.unreadCount[decoded.userId] || 0;
+        }
+      }
       const otherParticipant = thread.participants.find(
         (p: any) => p._id.toString() !== decoded.userId
       );

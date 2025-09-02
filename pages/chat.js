@@ -5,11 +5,13 @@ import { useChat } from '../lib/hooks/useChat';
 
 export default function ChatPage() {
   const router = useRouter();
+  const { user: targetUserId, username: targetUsername } = router.query;
   const [newMessage, setNewMessage] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [users, setUsers] = useState([]);
   const messagesEndRef = useRef(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState(new Set());
   
   // Use custom chat hook to prevent infinite loading
   const {
@@ -126,6 +128,31 @@ export default function ChatPage() {
     }
   }, [isInitialized, fetchUsers]);
 
+  // Simulate online status updates
+  useEffect(() => {
+    if (users.length > 0) {
+      const interval = setInterval(() => {
+        const randomOnlineUsers = new Set();
+        users.forEach(user => {
+          if (Math.random() > 0.7) { // 30% chance of being online
+            randomOnlineUsers.add(user._id);
+          }
+        });
+        setOnlineUsers(randomOnlineUsers);
+      }, 5000);
+
+      return () => clearInterval(interval);
+    }
+  }, [users]);
+
+  // Handle target user from URL parameters
+  useEffect(() => {
+    if (targetUserId && isInitialized) {
+      setSelectedUser(targetUserId);
+      fetchMessagesForUser(targetUserId);
+    }
+  }, [targetUserId, isInitialized, fetchMessagesForUser]);
+
   // Fetch messages only when selectedUser changes
   useEffect(() => {
     if (selectedUser && isInitialized) {
@@ -169,7 +196,18 @@ export default function ChatPage() {
       {/* Users Sidebar */}
       <div className="w-80 bg-white border-r border-gray-200">
         <div className="p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Chats</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-800">Chats</h2>
+            <button
+              onClick={() => router.push('/users-list')}
+              className="text-purple-600 hover:text-purple-700 transition-colors"
+              title="Find People"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </button>
+          </div>
         </div>
         <div className="overflow-y-auto h-full">
           {users.map((user) => (
@@ -181,13 +219,24 @@ export default function ChatPage() {
               }`}
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
-                  {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
+                <div className="relative">
+                  <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                    {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
+                  </div>
+                  {/* Online Status Indicator */}
+                  {onlineUsers.has(user._id) && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border border-white rounded-full"></div>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {user.fullName || user.username}
-                  </p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {user.fullName || user.username}
+                    </p>
+                    {onlineUsers.has(user._id) && (
+                      <span className="text-xs text-green-600 font-medium">Online</span>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500 truncate">
                     @{user.username}
                   </p>
@@ -289,9 +338,17 @@ export default function ChatPage() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <p className="text-lg">Select a user to start chatting</p>
+          <div className="flex-1 flex items-center justify-center bg-gray-50">
+            <div className="text-center">
+              <div className="text-gray-400 text-6xl mb-6">💬</div>
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">No messages yet</h3>
+              <p className="text-gray-500 mb-6">Start a conversation with someone</p>
+              <button
+                onClick={() => router.push('/users-list')}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                Find People
+              </button>
             </div>
           </div>
         )}
