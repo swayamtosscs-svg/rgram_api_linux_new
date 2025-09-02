@@ -336,7 +336,8 @@ export const sendPasswordResetEmail = async (
       baseUrl = 'https://api-rgram1.vercel.app';
     }
     
-    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+    // Include email in the reset URL for direct password reset
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
     const html = `
       <!DOCTYPE html>

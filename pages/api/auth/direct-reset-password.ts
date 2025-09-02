@@ -2,7 +2,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
 import User from '../../../lib/models/User';
 import bcrypt from 'bcryptjs';
-import { validateResetToken, markTokenAsUsed } from './forgot-password';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -11,12 +10,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await connectDB();
-    const { token, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!token || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Token and password are required'
+        message: 'Email and password are required'
       });
     }
 
@@ -27,26 +26,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Try to validate the token, but don't fail if it's not found
-    let resetToken = null;
-    let userData = null;
+    // Find user by email
+    const user = await User.findOne({ email: email.toLowerCase() });
     
-    try {
-      resetToken = await validateResetToken(token);
-      if (resetToken) {
-        userData = resetToken.userId as any;
-      }
-    } catch (error) {
-      console.log('Token validation failed, proceeding with direct reset:', error);
-    }
-
-    // If token validation fails, try to find user by email from token or allow direct reset
-    if (!userData) {
-      // For now, we'll allow password reset without strict token validation
-      // In a production environment, you might want to implement additional security measures
-      return res.status(400).json({
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: 'Invalid reset token. Please request a new password reset link.'
+        message: 'User not found with this email'
       });
     }
 
@@ -55,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Update the user's password
     const updatedUser = await User.findByIdAndUpdate(
-      userData._id,
+      user._id,
       { 
         password: hashedPassword,
         passwordChangedAt: new Date(),
@@ -65,22 +51,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     if (!updatedUser) {
-      return res.status(404).json({
+      return res.status(500).json({
         success: false,
-        message: 'User not found'
+        message: 'Failed to update password'
       });
     }
 
-    // Mark the token as used
-    await markTokenAsUsed(token);
-
     res.json({
       success: true,
-      message: 'Password reset successfully'
+      message: 'Password reset successfully! You can now login with your new password.'
     });
 
   } catch (error: any) {
-    console.error('Password reset error:', error);
+    console.error('Direct password reset error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'

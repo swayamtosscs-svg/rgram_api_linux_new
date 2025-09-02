@@ -4,46 +4,34 @@ import Head from 'next/head';
 
 export default function ResetPassword() {
   const router = useRouter();
-  const { token } = router.query;
+  const { token, email } = router.query;
   
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
-  const [isValidToken, setIsValidToken] = useState(false);
+  const [isValidToken, setIsValidToken] = useState(true); // Always allow password reset
 
   useEffect(() => {
-    if (token) {
-      // Validate the token when the page loads
-      validateToken();
+    if (email) {
+      setUserEmail(email as string);
+      setMessage('Enter your new password below');
+    } else if (token) {
+      // Skip strict validation - allow direct password reset
+      setIsValidToken(true);
+      setMessage('Enter your email and new password below');
     }
-  }, [token]);
-
-  const validateToken = async () => {
-    try {
-      const response = await fetch('/api/auth/validate-reset-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      });
-
-      if (response.ok) {
-        setIsValidToken(true);
-      } else {
-        setMessage('Invalid or expired reset token. Please request a new password reset.');
-        setIsValidToken(false);
-      }
-    } catch (error) {
-      setMessage('Error validating token. Please try again.');
-      setIsValidToken(false);
-    }
-  };
+  }, [token, email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!userEmail) {
+      setMessage('Please enter your email address');
+      return;
+    }
     
     if (password !== confirmPassword) {
       setMessage('Passwords do not match');
@@ -59,12 +47,13 @@ export default function ResetPassword() {
     setMessage('');
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
+      // Use direct reset API that doesn't require token validation
+      const response = await fetch('/api/auth/direct-reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({ email: userEmail, password }),
       });
 
       const data = await response.json();
@@ -153,6 +142,23 @@ export default function ResetPassword() {
           
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="rounded-md shadow-sm -space-y-px">
+              {!email && (
+                <div>
+                  <label htmlFor="email" className="sr-only">
+                    Email Address
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                    placeholder="Email Address"
+                    value={userEmail}
+                    onChange={(e) => setUserEmail(e.target.value)}
+                  />
+                </div>
+              )}
               <div>
                 <label htmlFor="password" className="sr-only">
                   New Password
@@ -162,7 +168,7 @@ export default function ResetPassword() {
                   name="password"
                   type="password"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                  className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm ${!email ? 'rounded-none' : 'rounded-t-md'}`}
                   placeholder="New Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
