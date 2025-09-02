@@ -1,7 +1,7 @@
 const http = require('http');
 const next = require('next');
 
-const port = 80; // Public HTTP port
+const port = 3000; // Public HTTP port
 const hostname = '0.0.0.0'; // Bind to all interfaces for public access
 
 const app = next({ dev: false });
