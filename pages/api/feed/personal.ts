@@ -39,27 +39,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const followingIds = following.map((f: any) => f.following);
 
-    // If user is not following anyone, return empty feed
-    if (followingIds.length === 0) {
-      return res.json({
-        success: true,
-        message: 'Following feed retrieved (no following users)',
-        data: {
-          posts: [],
-          pagination: {
-            currentPage: page,
-            totalPages: 0,
-            totalPosts: 0,
-            hasNextPage: false,
-            hasPrevPage: page > 1
-          }
-        }
-      });
-    }
-
-    // Get posts from followed users only (excluding current user's own posts)
+    // Get posts from followed users AND current user's own posts
     const posts = await Post.find({
-      author: { $in: followingIds },
+      author: { $in: [...followingIds, userId] },
       isActive: true
     })
     .populate('author', 'username fullName avatar religion isPrivate')
@@ -72,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Get total count for pagination
     const totalPosts = await Post.countDocuments({
-      author: { $in: followingIds },
+      author: { $in: [...followingIds, userId] },
       isActive: true
     });
 
@@ -80,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.json({
       success: true,
-      message: 'Following feed retrieved successfully',
+      message: 'Personal feed retrieved successfully',
       data: {
         posts,
         pagination: {
@@ -91,12 +73,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           hasPrevPage: page > 1,
           limit: limit
         },
-        followingCount: followingIds.length
+        followingCount: followingIds.length,
+        feedType: 'personal' // includes following + own posts
       }
     });
 
   } catch (error: any) {
-    console.error('Following feed error:', error);
+    console.error('Personal feed error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'
