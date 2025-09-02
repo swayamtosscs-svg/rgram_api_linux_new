@@ -43,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Check if user already liked the post
-    const isAlreadyLiked = post.likes.includes(userId);
+    const isAlreadyLiked = post.likes.some((likeId: any) => likeId.toString() === userId);
 
     let updatedPost;
     let action;
