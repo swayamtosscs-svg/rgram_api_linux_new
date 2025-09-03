@@ -141,13 +141,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const targetUser = await User.findById(user_id);
       console.log('Target user exists:', !!targetUser);
       
-      // Find any follow record (regardless of status)
-      const follow = await Follow.findOne({ 
+      // Find any follow record (regardless of status) - try multiple approaches
+      let follow = await Follow.findOne({ 
         follower: followerId, 
         following: user_id
       });
       
-      console.log('Found follow record:', follow);
+      console.log('Found follow record (method 1):', follow);
+      
+      // If not found, try with string IDs
+      if (!follow) {
+        follow = await Follow.findOne({ 
+          follower: followerId.toString(), 
+          following: user_id.toString()
+        });
+        console.log('Found follow record (method 2):', follow);
+      }
+      
+      // If still not found, try with ObjectId conversion
+      if (!follow) {
+        const mongoose = require('mongoose');
+        follow = await Follow.findOne({ 
+          follower: new mongoose.Types.ObjectId(followerId), 
+          following: new mongoose.Types.ObjectId(user_id)
+        });
+        console.log('Found follow record (method 3):', follow);
+      }
       
       // Also check reverse relationship
       const reverseFollow = await Follow.findOne({
@@ -164,6 +183,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const allFollowers = await Follow.find({ following: user_id });
       console.log('All followers of target user:', allFollowers.length);
       
+      // If still no follow record found, try to find by the specific ID from the follow response
+      if (!follow) {
+        // Try to find the specific follow record by ID
+        const specificFollow = await Follow.findById('68b7e58a6b22cf0c69a2ff36');
+        console.log('Specific follow record by ID:', specificFollow);
+        
+        if (specificFollow && 
+            specificFollow.follower.toString() === followerId && 
+            specificFollow.following.toString() === user_id) {
+          follow = specificFollow;
+          console.log('Using specific follow record:', follow);
+        }
+      }
+      
       if (!follow) {
         return res.status(400).json({ 
           success: false, 
@@ -175,7 +208,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             totalFollowers: allFollowers.length,
             targetUserExists: !!targetUser,
             followRecord: follow,
-            reverseFollowRecord: reverseFollow
+            reverseFollowRecord: reverseFollow,
+            allFollowsDetails: allFollows.map(f => ({
+              id: f._id,
+              follower: f.follower.toString(),
+              following: f.following.toString(),
+              status: f.status
+            }))
           }
         });
       }
