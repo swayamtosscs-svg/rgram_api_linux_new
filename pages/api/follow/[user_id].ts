@@ -123,25 +123,50 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     } else {
       // Handle unfollow
+      console.log('Unfollow request for user:', user_id, 'by follower:', followerId);
+      
+      // Find any follow record (regardless of status)
       const follow = await Follow.findOne({ 
         follower: followerId, 
         following: user_id
       });
       
+      console.log('Found follow record:', follow);
+      
       if (!follow) {
-        return res.status(400).json({ success: false, message: 'Not following this user' });
+        // Also check if there are any follow records at all for debugging
+        const allFollows = await Follow.find({ follower: followerId });
+        console.log('All follows by this user:', allFollows);
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Not following this user',
+          debug: {
+            userId: user_id,
+            followerId: followerId,
+            totalFollows: allFollows.length
+          }
+        });
       }
       
       // Delete the follow record regardless of status
       await Follow.findByIdAndDelete(follow._id);
+      console.log('Deleted follow record with status:', follow.status);
       
       // Update user counts only if it was an accepted follow
       if (follow.status === 'accepted') {
         await User.findByIdAndUpdate(followerId, { $inc: { followingCount: -1 } });
         await User.findByIdAndUpdate(user_id, { $inc: { followersCount: -1 } });
+        console.log('Updated user counts');
       }
       
-      return res.json({ success: true, message: 'Successfully unfollowed user' });
+      return res.json({ 
+        success: true, 
+        message: 'Successfully unfollowed user',
+        debug: {
+          deletedStatus: follow.status,
+          userId: user_id
+        }
+      });
     }
   } catch (error: any) {
     console.error('Follow endpoint error:', error);
