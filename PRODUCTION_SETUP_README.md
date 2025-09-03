@@ -6,8 +6,8 @@ This guide sets up a production-ready Next.js application with Nginx reverse pro
 
 ## 📋 What This Setup Includes
 
-1. **Next.js App** - Running on port 8081 with proper binding
-2. **Nginx Reverse Proxy** - Serving on port 80, proxying to port 8081
+1. **Next.js App** - Running on port 3000 with proper binding
+2. **Nginx Reverse Proxy** - Serving on port 80, proxying to port 3000
 3. **PM2 Process Manager** - Auto-restart, clustering, monitoring
 4. **Systemd Service** - Backup service management
 5. **UFW Firewall** - Secure port configuration
@@ -16,7 +16,7 @@ This guide sets up a production-ready Next.js application with Nginx reverse pro
 ## 🎯 Final Result
 
 - **Main URL**: http://103.14.120.163 (port 80)
-- **Direct App**: http://103.14.120.163:8081 (port 8081)
+- **Direct App**: http://103.14.120.163:3000 (port 3000)
 - **Health Check**: http://103.14.120.163/health
 
 ## 🛠️ Quick Deployment
@@ -56,7 +56,7 @@ ufw --force enable
 ufw allow 22      # SSH
 ufw allow 80      # HTTP
 ufw allow 443     # HTTPS
-ufw allow 8081    # Direct app access
+ufw allow 3000    # Direct app access
 ```
 
 #### 4. Setup Application
@@ -98,14 +98,14 @@ systemctl enable nextjs-api
 ## 🔧 Configuration Files
 
 ### server.js
-- ✅ Binds to `0.0.0.0:8081` for external access
+- ✅ Binds to `0.0.0.0:3000` for external access
 - ✅ Production optimizations
 - ✅ Security headers
 - ✅ Graceful shutdown
 - ✅ Environment-based configuration
 
 ### nginx-nextjs.conf
-- ✅ Reverse proxy to port 8081
+- ✅ Reverse proxy to port 3000
 - ✅ Security headers
 - ✅ Gzip compression
 - ✅ Rate limiting
@@ -157,14 +157,14 @@ systemctl stop nextjs-api      # Stop service
 # PM2 status
 pm2 status
 
-# Check if port 8081 is listening
-netstat -tlnp | grep :8081
+# Check if port 3000 is listening
+netstat -tlnp | grep :3000
 
 # Check if port 80 is listening (Nginx)
 netstat -tlnp | grep :80
 
 # Test local connections
-curl http://localhost:8081
+curl http://localhost:3000
 curl http://localhost
 ```
 
@@ -183,7 +183,7 @@ journalctl -u nextjs-api -f
 
 ### Common Issues
 
-1. **Port 8081 not listening**
+1. **Port 3000 not listening**
    ```bash
    pm2 restart nextjs-api
    ```
@@ -198,7 +198,7 @@ journalctl -u nextjs-api -f
    ```bash
    ufw status
    ufw allow 80
-ufw allow 8081
+ufw allow 3000
    ```
 
 ## 🔒 Security Features
@@ -253,7 +253,7 @@ If you encounter issues:
 
 1. Check logs: `pm2 logs nextjs-api`
 2. Verify configuration: `nginx -t`
-3. Test connectivity: `curl http://localhost:8081`
+3. Test connectivity: `curl http://localhost:3000`
 4. Check firewall: `ufw status`
 
 ## 🎉 Success!
