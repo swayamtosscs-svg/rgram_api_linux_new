@@ -42,6 +42,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const form = formidable({
       maxFileSize: 100 * 1024 * 1024, // 100MB max file size
       allowEmptyFiles: false,
+      multiples: true, // Allow multiple files
+      keepExtensions: true, // Keep original file extensions
       filter: ({ mimetype }: any) => {
         // Allow common file types
         return mimetype && (
@@ -58,10 +60,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const [fields, files] = await form.parse(req);
 
-    if (!files.file || !Array.isArray(files.file)) {
+    console.log('📋 Parsed fields:', fields);
+    console.log('📁 Parsed files:', Object.keys(files));
+
+    // Check for files in different possible field names
+    let fileArray = [];
+    if (files.file && Array.isArray(files.file)) {
+      fileArray = files.file;
+    } else if (files.file && !Array.isArray(files.file)) {
+      fileArray = [files.file];
+    } else if (files.files && Array.isArray(files.files)) {
+      fileArray = files.files;
+    } else if (files.files && !Array.isArray(files.files)) {
+      fileArray = [files.files];
+    } else {
+      // Check all file fields
+      for (const [fieldName, fieldValue] of Object.entries(files)) {
+        if (fieldValue) {
+          if (Array.isArray(fieldValue)) {
+            fileArray = fileArray.concat(fieldValue);
+          } else {
+            fileArray.push(fieldValue);
+          }
+        }
+      }
+    }
+
+    if (fileArray.length === 0) {
       return res.status(400).json({ 
         success: false, 
-        message: 'No files uploaded' 
+        message: 'No files uploaded. Please ensure you are sending files with field name "file" or "files"',
+        debug: {
+          receivedFields: Object.keys(files),
+          receivedFieldsCount: Object.keys(files).length
+        }
       });
     }
 
@@ -84,7 +116,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Process each file
-    for (const file of files.file) {
+    for (const file of fileArray) {
       try {
         // Check if file has content
         if (!file.filepath || !file.size || file.size === 0) {
@@ -159,7 +191,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Clean up temporary files
-    for (const file of files.file) {
+    for (const file of fileArray) {
       try {
         if (file.filepath && fs.existsSync(file.filepath)) {
           fs.unlinkSync(file.filepath);
@@ -177,7 +209,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         uploadedFiles,
         errors: errors.length > 0 ? errors : undefined,
         summary: {
-          total: files.file.length,
+          total: fileArray.length,
           successful: uploadedFiles.length,
           failed: errors.length
         },
