@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
 import User from '../../../lib/models/User';
 import Post from '../../../lib/models/Post';
+import Follow from '../../../lib/models/Follow';
 import { verifyToken } from '../../../lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -20,8 +21,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
+    // Get users that the current user follows
+    const followingUsers = await (Follow as any).find({
+      follower: decoded.userId,
+      status: 'accepted'
+    }).select('following').lean();
+
+    const followingIds = followingUsers.map((follow: any) => follow.following);
+
+    // Build author filter - include followed users and same religion users
     let authorFilter: any = {};
-    if (religion) {
+    if (followingIds.length > 0) {
+      authorFilter = { author: { $in: followingIds } };
+    } else if (religion) {
+      // If not following anyone, show posts from same religion
       const sameReligionUsers = await (User as any).find({ religion }).select('_id').lean();
       authorFilter = { author: { $in: sameReligionUsers.map((u: any) => u._id) } };
     }

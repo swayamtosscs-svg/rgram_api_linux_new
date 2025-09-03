@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
-import Notification from '../../../lib/models/Notification';
+import FriendRequest from '../../../lib/models/FriendRequest';
 import { verifyToken } from '../../../lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -22,42 +22,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const currentUserId = decoded.userId;
-    const { page = 1, limit = 20, unreadOnly = false } = req.query;
+    const { type = 'received', status, page = 1, limit = 10 } = req.query;
 
     const skip = (Number(page) - 1) * Number(limit);
-    const query: any = { recipient: currentUserId };
+    const query: any = {};
 
-    if (unreadOnly === 'true') {
-      query.isRead = false;
+    if (type === 'received') {
+      query.recipient = currentUserId;
+    } else if (type === 'sent') {
+      query.sender = currentUserId;
+    } else {
+      return res.status(400).json({ success: false, message: 'Invalid type parameter' });
     }
 
-    const notifications = await Notification.find(query)
+    if (status && ['pending', 'accepted', 'rejected'].includes(status as string)) {
+      query.status = status;
+    }
+
+    const friendRequests = await FriendRequest.find(query)
       .populate('sender', 'username fullName avatar')
-      .populate('post', 'content images videos')
-      .populate('story', 'content media')
+      .populate('recipient', 'username fullName avatar')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit))
       .lean();
 
-    const totalNotifications = await Notification.countDocuments(query);
-    const unreadCount = await Notification.countDocuments({ 
-      recipient: currentUserId, 
-      isRead: false 
-    });
+    const totalRequests = await FriendRequest.countDocuments(query);
 
-    const totalPages = Math.ceil(totalNotifications / Number(limit));
+    const totalPages = Math.ceil(totalRequests / Number(limit));
 
     return res.status(200).json({
       success: true,
-      message: 'Notifications retrieved successfully',
+      message: 'Friend requests retrieved successfully',
       data: {
-        notifications,
-        unreadCount,
+        friendRequests,
         pagination: {
           currentPage: Number(page),
           totalPages,
-          totalNotifications,
+          totalRequests,
           hasNextPage: Number(page) < totalPages,
           hasPrevPage: Number(page) > 1
         }
@@ -65,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error: any) {
-    console.error('List notifications error:', error);
+    console.error('List friend requests error:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Internal server error', 

@@ -73,7 +73,6 @@ jspm_packages/
 .yarn-integrity
 
 # dotenv environment variables file
-.env.test
 
 # parcel-bundler cache
 .cache

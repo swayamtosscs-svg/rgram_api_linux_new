@@ -4,7 +4,7 @@ export interface INotification extends Document {
   _id: string;
   recipient: mongoose.Types.ObjectId;
   sender: mongoose.Types.ObjectId;
-  type: 'follow' | 'like' | 'comment' | 'mention' | 'story_view';
+  type: 'follow' | 'like' | 'comment' | 'mention' | 'story_view' | 'friend_request' | 'friend_request_accepted';
   post?: mongoose.Types.ObjectId;
   story?: mongoose.Types.ObjectId;
   comment?: mongoose.Types.ObjectId;
@@ -26,7 +26,7 @@ const NotificationSchema = new Schema<INotification>({
   },
   type: {
     type: String,
-    enum: ['follow', 'like', 'comment', 'mention', 'story_view'],
+    enum: ['follow', 'like', 'comment', 'mention', 'story_view', 'friend_request', 'friend_request_accepted'],
     required: true
   },
   post: {
@@ -53,4 +53,9 @@ NotificationSchema.index({ recipient: 1, createdAt: -1 });
 NotificationSchema.index({ recipient: 1, isRead: 1 });
 NotificationSchema.index({ sender: 1, recipient: 1, type: 1 });
 
-export default mongoose.models.Notification || mongoose.model<INotification>('Notification', NotificationSchema);
+// Clear the model cache to ensure schema updates are applied
+if (mongoose.models.Notification) {
+  delete mongoose.models.Notification;
+}
+
+export default mongoose.model<INotification>('Notification', NotificationSchema);

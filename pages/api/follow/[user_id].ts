@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
 import Follow from '../../../lib/models/Follow';
 import User from '../../../lib/models/User';
+import Notification from '../../../lib/models/Notification';
 import { verifyToken } from '../../../lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -63,23 +64,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
 
-      // If user is private, create pending follow request
-      if (userToFollow.isPrivate) {
-        const followRequest = await Follow.create({
-          follower: followerId,
-          following: user_id,
-          status: 'pending',
-          requestedAt: new Date()
-        });
+              // If user is private, create pending follow request
+        if (userToFollow.isPrivate) {
+          const followRequest = await Follow.create({
+            follower: followerId,
+            following: user_id,
+            status: 'pending',
+            requestedAt: new Date()
+          });
 
-        await followRequest.populate('follower', 'username fullName avatar');
-        await followRequest.populate('following', 'username fullName avatar');
+          // Create notification
+          await Notification.create({
+            recipient: user_id,
+            sender: followerId,
+            type: 'follow'
+          });
 
-        return res.status(201).json({
-          success: true,
-          message: 'Follow request sent successfully (private account)',
-          data: { followRequest }
-        });
+          await followRequest.populate('follower', 'username fullName avatar');
+          await followRequest.populate('following', 'username fullName avatar');
+
+          return res.status(201).json({
+            success: true,
+            message: 'Follow request sent successfully (private account)',
+            data: { followRequest }
+          });
       } else {
         // If user is public, follow directly
         try {
@@ -96,6 +104,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
           throw e;
         }
+
+        // Create notification
+        await Notification.create({
+          recipient: user_id,
+          sender: followerId,
+          type: 'follow'
+        });
 
         // Update user counts
         await User.findByIdAndUpdate(followerId, { $inc: { followingCount: 1 } });
