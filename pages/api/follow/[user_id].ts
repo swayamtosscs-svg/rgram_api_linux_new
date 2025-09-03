@@ -134,67 +134,64 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
     } else {
-      // Handle unfollow
+      // Handle unfollow - completely rewritten logic
       console.log('Unfollow request for user:', user_id, 'by follower:', followerId);
       
       // Check if user exists
       const targetUser = await User.findById(user_id);
       console.log('Target user exists:', !!targetUser);
       
-      // Find any follow record (regardless of status) - try multiple approaches
-      let follow = await Follow.findOne({ 
+      // Get all follow records for debugging
+      const allFollows = await Follow.find({ follower: followerId });
+      const allFollowers = await Follow.find({ following: user_id });
+      
+      console.log('All follows by this user:', allFollows.length);
+      console.log('All followers of target user:', allFollowers.length);
+      console.log('All follows details:', allFollows.map(f => ({
+        id: f._id,
+        follower: f.follower.toString(),
+        following: f.following.toString(),
+        status: f.status
+      })));
+      
+      // Try to find the follow record using multiple methods
+      let follow = null;
+      
+      // Method 1: Direct query
+      follow = await Follow.findOne({ 
         follower: followerId, 
         following: user_id
       });
       
-      console.log('Found follow record (method 1):', follow);
-      
-      // If not found, try with string IDs
+      // Method 2: If not found, check all follows and find manually
       if (!follow) {
-        follow = await Follow.findOne({ 
-          follower: followerId.toString(), 
-          following: user_id.toString()
-        });
-        console.log('Found follow record (method 2):', follow);
+        follow = allFollows.find(f => 
+          f.following.toString() === user_id.toString()
+        );
+        console.log('Found follow record manually:', follow);
       }
       
-      // If still not found, try with ObjectId conversion
+      // Method 3: If still not found, try to find by checking all followers
+      if (!follow) {
+        follow = allFollowers.find(f => 
+          f.follower.toString() === followerId.toString()
+        );
+        console.log('Found follow record in followers:', follow);
+      }
+      
+      // Method 4: Last resort - try to find any record with these IDs
       if (!follow) {
         const mongoose = require('mongoose');
-        follow = await Follow.findOne({ 
-          follower: new mongoose.Types.ObjectId(followerId), 
-          following: new mongoose.Types.ObjectId(user_id)
+        const allRecords = await Follow.find({
+          $or: [
+            { follower: followerId, following: user_id },
+            { follower: user_id, following: followerId },
+            { follower: followerId.toString(), following: user_id.toString() },
+            { follower: user_id.toString(), following: followerId.toString() }
+          ]
         });
-        console.log('Found follow record (method 3):', follow);
-      }
-      
-      // Also check reverse relationship
-      const reverseFollow = await Follow.findOne({
-        follower: user_id,
-        following: followerId
-      });
-      console.log('Reverse follow record:', reverseFollow);
-      
-      // Check all follows by this user
-      const allFollows = await Follow.find({ follower: followerId });
-      console.log('All follows by this user:', allFollows.length);
-      
-      // Check all follows to this user
-      const allFollowers = await Follow.find({ following: user_id });
-      console.log('All followers of target user:', allFollowers.length);
-      
-      // If still no follow record found, try to find by the specific ID from the follow response
-      if (!follow) {
-        // Try to find the specific follow record by ID
-        const specificFollow = await Follow.findById('68b7e58a6b22cf0c69a2ff36');
-        console.log('Specific follow record by ID:', specificFollow);
-        
-        if (specificFollow && 
-            specificFollow.follower.toString() === followerId && 
-            specificFollow.following.toString() === user_id) {
-          follow = specificFollow;
-          console.log('Using specific follow record:', follow);
-        }
+        follow = allRecords[0];
+        console.log('Found follow record with OR query:', follow);
       }
       
       if (!follow) {
@@ -207,9 +204,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             totalFollows: allFollows.length,
             totalFollowers: allFollowers.length,
             targetUserExists: !!targetUser,
-            followRecord: follow,
-            reverseFollowRecord: reverseFollow,
             allFollowsDetails: allFollows.map(f => ({
+              id: f._id,
+              follower: f.follower.toString(),
+              following: f.following.toString(),
+              status: f.status
+            })),
+            allFollowersDetails: allFollowers.map(f => ({
               id: f._id,
               follower: f.follower.toString(),
               following: f.following.toString(),
@@ -219,9 +220,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
       
-      // Delete the follow record regardless of status
-      await Follow.findByIdAndDelete(follow._id);
-      console.log('Deleted follow record with status:', follow.status);
+      // Delete the follow record
+      const deleteResult = await Follow.findByIdAndDelete(follow._id);
+      console.log('Delete result:', deleteResult);
       
       // Update user counts only if it was an accepted follow
       if (follow.status === 'accepted') {
@@ -236,7 +237,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         debug: {
           deletedStatus: follow.status,
           userId: user_id,
-          followId: follow._id
+          followId: follow._id,
+          deleteResult: !!deleteResult
         }
       });
     }
