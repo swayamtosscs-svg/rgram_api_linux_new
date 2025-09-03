@@ -1,0 +1,40 @@
+# Systemd Service File for Next.js API
+# Place this file in /etc/systemd/system/nextjs-api.service
+
+[Unit]
+Description=Next.js API Server
+Documentation=https://nextjs.org/
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/var/www/html/api_rgram1
+Environment=NODE_ENV=production
+Environment=PORT=4000
+Environment=HOSTNAME=0.0.0.0
+ExecStart=/usr/bin/node server.js
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutStopSec=5
+PrivateTmp=true
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nextjs-api
+
+# Security settings
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/html/api_rgram1
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target
