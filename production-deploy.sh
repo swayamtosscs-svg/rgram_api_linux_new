@@ -83,7 +83,7 @@ ufw --force enable
 ufw allow 22      # SSH
 ufw allow 80      # HTTP
 ufw allow 443     # HTTPS
-ufw allow 4000    # Next.js app (for direct access if needed)
+ufw allow 8081    # Next.js app (for direct access if needed)
 print_status "UFW firewall configured"
 
 # Show firewall status
@@ -187,11 +187,11 @@ echo "1️⃣5️⃣ Final verification..."
 print_info "PM2 Status:"
 pm2 status
 
-# Check if port 4000 is listening
-if netstat -tlnp | grep :4000 > /dev/null; then
-    print_status "Port 4000 is listening"
+# Check if port 8081 is listening
+if netstat -tlnp | grep :8081 > /dev/null; then
+    print_status "Port 8081 is listening"
 else
-    print_error "Port 4000 is not listening"
+    print_error "Port 8081 is not listening"
 fi
 
 # Check if port 80 is listening (Nginx)
@@ -202,7 +202,7 @@ else
 fi
 
 # Test local connections
-if curl -s --connect-timeout 5 http://localhost:4000 > /dev/null; then
+if curl -s --connect-timeout 5 http://localhost:8081 > /dev/null; then
     print_status "Local app connection works"
 else
     print_error "Local app connection failed"
@@ -224,7 +224,7 @@ pm2 status
 echo ""
 echo "🌐 Access URLs:"
 echo "   Main site: http://103.14.120.163"
-echo "   Direct app: http://103.14.120.163:4000"
+echo "   Direct app: http://103.14.120.163:8081"
 echo "   Health check: http://103.14.120.163/health"
 echo ""
 echo "🔧 Management Commands:"

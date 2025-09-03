@@ -1,7 +1,7 @@
 const http = require('http');
 const next = require('next');
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 8081;
 const hostname = '0.0.0.0'; // Bind to all interfaces for external access
 const isDev = process.env.NODE_ENV !== 'production';
 
