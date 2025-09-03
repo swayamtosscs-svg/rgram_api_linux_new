@@ -38,15 +38,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === 'POST') {
+      console.log('Follow request for user:', user_id, 'by follower:', followerId);
+      
       // Check if already following or request already sent
       const existingFollow = await Follow.findOne({
         follower: followerId,
         following: user_id
       });
 
+      console.log('Existing follow record:', existingFollow);
+
       if (existingFollow) {
         if (existingFollow.status === 'accepted') {
-          return res.status(400).json({ success: false, message: 'Already following this user' });
+          return res.status(400).json({ 
+            success: false, 
+            message: 'Already following this user',
+            debug: {
+              followId: existingFollow._id,
+              status: existingFollow.status,
+              createdAt: existingFollow.createdAt
+            }
+          });
         } else if (existingFollow.status === 'pending') {
           return res.status(400).json({ success: false, message: 'Follow request already sent' });
         } else if (existingFollow.status === 'rejected') {
@@ -125,6 +137,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Handle unfollow
       console.log('Unfollow request for user:', user_id, 'by follower:', followerId);
       
+      // Check if user exists
+      const targetUser = await User.findById(user_id);
+      console.log('Target user exists:', !!targetUser);
+      
       // Find any follow record (regardless of status)
       const follow = await Follow.findOne({ 
         follower: followerId, 
@@ -133,17 +149,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       console.log('Found follow record:', follow);
       
+      // Also check reverse relationship
+      const reverseFollow = await Follow.findOne({
+        follower: user_id,
+        following: followerId
+      });
+      console.log('Reverse follow record:', reverseFollow);
+      
+      // Check all follows by this user
+      const allFollows = await Follow.find({ follower: followerId });
+      console.log('All follows by this user:', allFollows.length);
+      
+      // Check all follows to this user
+      const allFollowers = await Follow.find({ following: user_id });
+      console.log('All followers of target user:', allFollowers.length);
+      
       if (!follow) {
-        // Also check if there are any follow records at all for debugging
-        const allFollows = await Follow.find({ follower: followerId });
-        console.log('All follows by this user:', allFollows);
         return res.status(400).json({ 
           success: false, 
           message: 'Not following this user',
           debug: {
             userId: user_id,
             followerId: followerId,
-            totalFollows: allFollows.length
+            totalFollows: allFollows.length,
+            totalFollowers: allFollowers.length,
+            targetUserExists: !!targetUser,
+            followRecord: follow,
+            reverseFollowRecord: reverseFollow
           }
         });
       }
@@ -164,7 +196,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         message: 'Successfully unfollowed user',
         debug: {
           deletedStatus: follow.status,
-          userId: user_id
+          userId: user_id,
+          followId: follow._id
         }
       });
     }
