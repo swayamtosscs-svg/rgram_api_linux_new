@@ -123,19 +123,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     } else {
       // Handle unfollow
-      const follow = await Follow.findOneAndDelete({ 
+      const follow = await Follow.findOne({ 
         follower: followerId, 
-        following: user_id,
-        status: 'accepted' // Only unfollow accepted requests
+        following: user_id
       });
       
       if (!follow) {
         return res.status(400).json({ success: false, message: 'Not following this user' });
       }
       
-      // Update user counts
-      await User.findByIdAndUpdate(followerId, { $inc: { followingCount: -1 } });
-      await User.findByIdAndUpdate(user_id, { $inc: { followersCount: -1 } });
+      // Delete the follow record regardless of status
+      await Follow.findByIdAndDelete(follow._id);
+      
+      // Update user counts only if it was an accepted follow
+      if (follow.status === 'accepted') {
+        await User.findByIdAndUpdate(followerId, { $inc: { followingCount: -1 } });
+        await User.findByIdAndUpdate(user_id, { $inc: { followersCount: -1 } });
+      }
       
       return res.json({ success: true, message: 'Successfully unfollowed user' });
     }
