@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node server.js",
+    "start:next": "next start",
     "lint": "next lint",
     "cleanup-stories": "node scripts/cleanup-expired-stories.js",
     "cleanup-scheduled": "node scripts/scheduled-cleanup.js"
