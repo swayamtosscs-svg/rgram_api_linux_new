@@ -9,8 +9,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   try {
     await connectDB();
-    const { user_id } = req.query;
-    if (!user_id || typeof user_id !== 'string') {
+    const { user_id, userId } = req.query;
+    const targetUserId = user_id || userId;
+    if (!targetUserId || typeof targetUserId !== 'string') {
       return res.status(400).json({ success: false, message: 'User ID is required' });
     }
     
@@ -21,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Only get accepted following relationships
     const following = await Follow.find({ 
-      follower: user_id,
+      follower: targetUserId,
       status: 'accepted'
     })
     .populate('following', 'username fullName avatar bio')
@@ -32,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Get total count for pagination
     const totalCount = await Follow.countDocuments({ 
-      follower: user_id,
+      follower: targetUserId,
       status: 'accepted'
     });
     const totalPages = Math.ceil(totalCount / limitNum);

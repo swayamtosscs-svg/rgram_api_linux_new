@@ -19,6 +19,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     console.log('📤 Starting assets upload...');
+    console.log('📋 Request method:', req.method);
+    console.log('📋 Request headers:', req.headers);
+    console.log('📋 Content-Type:', req.headers['content-type']);
 
     // Get user ID from query parameters or headers
     const userId = req.query.userId as string || req.headers['x-user-id'] as string;
@@ -38,13 +41,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // Check if content-type is multipart/form-data
+    const contentType = req.headers['content-type'];
+    if (!contentType || !contentType.includes('multipart/form-data')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Content-Type must be multipart/form-data',
+        receivedContentType: contentType
+      });
+    }
+
     // Parse multipart form data
     const form = formidable({
       maxFileSize: 100 * 1024 * 1024, // 100MB max file size
       allowEmptyFiles: false,
       multiples: true, // Allow multiple files
       keepExtensions: true, // Keep original file extensions
+      maxFields: 10, // Maximum number of fields
+      maxFieldsSize: 20 * 1024 * 1024, // 20MB max fields size
       filter: ({ mimetype }: any) => {
+        console.log('🔍 File mimetype:', mimetype);
         // Allow common file types
         return mimetype && (
           mimetype.includes('image/') ||
@@ -64,7 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('📁 Parsed files:', Object.keys(files));
 
     // Check for files in different possible field names
-    let fileArray = [];
+    let fileArray: any[] = [];
     if (files.file && Array.isArray(files.file)) {
       fileArray = files.file;
     } else if (files.file && !Array.isArray(files.file)) {
@@ -92,7 +108,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         message: 'No files uploaded. Please ensure you are sending files with field name "file" or "files"',
         debug: {
           receivedFields: Object.keys(files),
-          receivedFieldsCount: Object.keys(files).length
+          receivedFieldsCount: Object.keys(files).length,
+          contentType: req.headers['content-type'],
+          method: req.method,
+          allFiles: files
         }
       });
     }
