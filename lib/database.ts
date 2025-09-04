@@ -31,7 +31,7 @@ async function connectDB() {
       connectTimeoutMS: 30000, // Added connection timeout
       family: 4,
       retryWrites: true,
-      w: 'majority'
+      w: 1 as const // Changed from 'majority' to 1 for better TypeScript compatibility
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
