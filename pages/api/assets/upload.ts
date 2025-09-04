@@ -2,6 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
+import connectDB from '../../../lib/database';
+import User from '../../../lib/models/User';
 
 export const config = {
   api: {
@@ -23,6 +25,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('📋 Request headers:', req.headers);
     console.log('📋 Content-Type:', req.headers['content-type']);
 
+    // Connect to database
+    await connectDB();
+
     // Get user ID from query parameters or headers
     const userId = req.query.userId as string || req.headers['x-user-id'] as string;
     
@@ -40,6 +45,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         message: 'Invalid user ID format' 
       });
     }
+
+    // Get user details from database to get username
+    const user = await User.findById(userId).select('username fullName').lean();
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    const username = user.username || user.fullName || userId;
+    console.log('👤 User found:', { userId, username });
 
     // Check if content-type is multipart/form-data
     const contentType = req.headers['content-type'];
@@ -119,8 +136,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const uploadedFiles = [];
     const errors = [];
 
-    // Create user directory structure in public/assets folder
-    const userDir = path.join(process.cwd(), 'public', 'assets', userId);
+    // Create user directory structure in public/assets folder using username
+    const userDir = path.join(process.cwd(), 'public', 'assets', username);
     const imagesDir = path.join(userDir, 'images');
     const videosDir = path.join(userDir, 'videos');
     const audioDir = path.join(userDir, 'audio');
@@ -164,11 +181,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           targetDir = documentsDir;
         }
 
-        // Generate unique filename
+        // Generate unique filename using username
         const timestamp = Date.now();
         const randomString = Math.random().toString(36).substr(2, 9);
         const fileExtension = path.extname(file.originalFilename || '');
-        const fileName = `${userId}_${timestamp}_${randomString}${fileExtension}`;
+        const fileName = `${username}_${timestamp}_${randomString}${fileExtension}`;
         
         // Full path for the file
         const filePath = path.join(targetDir, fileName);
@@ -179,8 +196,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Get file stats
         const fileStats = fs.statSync(filePath);
         
-        // Generate public URL
-        const publicUrl = `/assets/${userId}/${folder}/${fileName}`;
+        // Generate public URL using username
+        const publicUrl = `/assets/${username}/${folder}/${fileName}`;
         
         uploadedFiles.push({
           originalName: file.originalFilename,
@@ -193,8 +210,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           uploadedAt: new Date(),
           uploadedBy: {
             userId: userId,
-            username: userId, // Using userId as username for simplicity
-            fullName: userId
+            username: username,
+            fullName: user.fullName
           }
         });
 
@@ -235,7 +252,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         storageInfo: {
           type: 'assets',
           basePath: '/assets',
-          userPath: `/assets/${userId}`
+          userPath: `/assets/${username}`,
+          username: username,
+          userId: userId
         }
       }
     });

@@ -2,6 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
+import connectDB from '../../../lib/database';
+import User from '../../../lib/models/User';
 
 export const config = {
   api: {
@@ -19,6 +21,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     console.log('🔄 Starting assets replace operation...');
+
+    // Connect to database
+    await connectDB();
 
     // Get user ID from query parameters or headers
     const userId = req.query.userId as string || req.headers['x-user-id'] as string;
@@ -38,6 +43,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // Get user details from database to get username
+    const user = await User.findById(userId).select('username fullName').lean();
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    const username = user.username || user.fullName || userId;
+    console.log('👤 User found:', { userId, username });
+
     // Get target file info from query parameters
     const { targetFilePath, targetFileName, targetFolder: queryTargetFolder } = req.query;
 
@@ -52,7 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (targetFilePath) {
       // If full path is provided, validate it belongs to the user
-      const userDir = path.join(process.cwd(), 'public', 'assets', userId);
+      const userDir = path.join(process.cwd(), 'public', 'assets', username);
       const resolvedPath = path.resolve(targetFilePath as string);
       const resolvedUserDir = path.resolve(userDir);
       
@@ -67,7 +84,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else {
       // If only fileName is provided, construct the path
       const folderName = queryTargetFolder || 'general';
-      existingFilePath = path.join(process.cwd(), 'public', 'assets', userId, folderName as string, targetFileName as string);
+      existingFilePath = path.join(process.cwd(), 'public', 'assets', username, folderName as string, targetFileName as string);
     }
 
     // Check if target file exists
@@ -164,7 +181,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // If folder type changed, move to appropriate folder
     if (newTargetFolder !== existingFolder) {
-      const newTargetDir = path.join(process.cwd(), 'public', 'assets', userId, newTargetFolder);
+      const newTargetDir = path.join(process.cwd(), 'public', 'assets', username, newTargetFolder);
       
       // Create new folder if it doesn't exist
       if (!fs.existsSync(newTargetDir)) {
@@ -272,7 +289,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         storageInfo: {
           type: 'assets',
           basePath: '/assets',
-          userPath: `/assets/${userId}`,
+          userPath: `/assets/${username}`,
           newFolder: newTargetFolder
         }
       }

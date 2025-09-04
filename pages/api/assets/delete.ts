@@ -1,6 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
+import connectDB from '../../../lib/database';
+import User from '../../../lib/models/User';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'DELETE') {
@@ -12,6 +14,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     console.log('🗑️ Starting assets delete operation...');
+
+    // Connect to database
+    await connectDB();
 
     // Get user ID from query parameters or headers
     const userId = req.query.userId as string || req.headers['x-user-id'] as string;
@@ -31,8 +36,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Get file path from request body
-    const { filePath, fileName, folder } = req.body;
+    // Get user details from database to get username
+    const user = await User.findById(userId).select('username fullName').lean();
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    const username = user.username || user.fullName || userId;
+    console.log('👤 User found:', { userId, username });
+
+    // Get file path from request body or query parameters
+    const { filePath, fileName: bodyFileName, folder: bodyFolder } = req.body;
+    const queryFileName = req.query.fileName as string;
+    const queryFolder = req.query.folder as string;
+    
+    const fileName = bodyFileName || queryFileName;
+    const folder = bodyFolder || queryFolder;
 
     if (!filePath && !fileName) {
       return res.status(400).json({
@@ -41,11 +63,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    let targetFilePath: string;
+    let targetFilePath: string = '';
 
     if (filePath) {
       // If full path is provided, validate it belongs to the user
-      const userDir = path.join(process.cwd(), 'public', 'assets', userId);
+      const userDir = path.join(process.cwd(), 'public', 'assets', username);
       const resolvedPath = path.resolve(filePath);
       const resolvedUserDir = path.resolve(userDir);
       
@@ -58,13 +80,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       targetFilePath = resolvedPath;
     } else {
-      // If only fileName is provided, construct the path
-      const folderName = folder || 'general';
-      targetFilePath = path.join(process.cwd(), 'public', 'assets', userId, folderName, fileName);
+      // If only fileName is provided, try to find the file in all folders
+      if (!folder) {
+        const userDir = path.join(process.cwd(), 'public', 'assets', username);
+        
+        // Search for the file in all folders
+        try {
+          const folders = fs.readdirSync(userDir);
+          let found = false;
+          
+          for (const folderName of folders) {
+            const potentialPath = path.join(userDir, folderName, fileName);
+            if (fs.existsSync(potentialPath)) {
+              targetFilePath = potentialPath;
+              found = true;
+              console.log(`🔍 Found file in folder: ${folderName}`);
+              break;
+            }
+          }
+          
+          if (!found) {
+            return res.status(404).json({
+              success: false,
+              message: 'File not found in any folder'
+            });
+          }
+        } catch (error) {
+          return res.status(404).json({
+            success: false,
+            message: 'User directory not found'
+          });
+        }
+      } else {
+        // If folder is provided, use it
+        const folderName = folder;
+        targetFilePath = path.join(process.cwd(), 'public', 'assets', username, folderName, fileName);
+      }
     }
 
     // Check if file exists
-    if (!fs.existsSync(targetFilePath)) {
+    if (!targetFilePath || !fs.existsSync(targetFilePath)) {
       return res.status(404).json({
         success: false,
         message: 'File not found'
@@ -95,7 +150,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Check if user directory is now empty and remove it if so
-    const userDir = path.join(process.cwd(), 'public', 'assets', userId);
+    const userDir = path.join(process.cwd(), 'public', 'assets', username);
     try {
       const remainingFolders = fs.readdirSync(userDir);
       if (remainingFolders.length === 0) {
@@ -118,8 +173,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           deletedAt: new Date(),
           deletedBy: {
             userId: userId,
-            username: userId, // Using userId as username for simplicity
-            fullName: userId
+            username: username,
+            fullName: user.fullName || username
           }
         }
       }

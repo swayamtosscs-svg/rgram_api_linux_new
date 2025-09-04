@@ -1,6 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
+import connectDB from '../../../lib/database';
+import User from '../../../lib/models/User';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -11,6 +13,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Connect to database
+    await connectDB();
+
     // Get user ID from query parameters or headers
     const userId = req.query.userId as string || req.headers['x-user-id'] as string;
     
@@ -29,6 +34,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // Get user details from database to get username
+    const user = await User.findById(userId).select('username fullName').lean();
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    const username = user.username || user.fullName || userId;
+    console.log('👤 User found:', { userId, username });
+
     // Get query parameters
     const { 
       folder = 'all', 
@@ -44,8 +61,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const limitNum = Math.min(parseInt(limit as string), 100); // Max 100 items per page
     const skip = (pageNum - 1) * limitNum;
 
-    // User's assets directory
-    const userDir = path.join(process.cwd(), 'public', 'assets', userId);
+    // User's assets directory using username
+    const userDir = path.join(process.cwd(), 'public', 'assets', username);
     
     if (!fs.existsSync(userDir)) {
       return res.json({
