@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
-import connectDB from '../../../lib/database';
+import mongoose from 'mongoose';
 import User from '../../../lib/models/User';
 
 export const config = {
@@ -10,6 +10,30 @@ export const config = {
     bodyParser: false,
   },
 };
+
+// MongoDB connection function
+async function connectToDatabase() {
+  if (mongoose.connections[0].readyState) {
+    return;
+  }
+
+  try {
+    await mongoose.connect(process.env.MONGODB_URI!, {
+      bufferCommands: false,
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
+      family: 4,
+      retryWrites: true,
+      w: 1
+    });
+    console.log('✅ Connected to MongoDB');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
+    throw error;
+  }
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -23,26 +47,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('📤 Starting assets upload...');
     console.log('📋 Request method:', req.method);
     console.log('📋 Request headers:', req.headers);
-    console.log('📋 Content-Type:', req.headers['content-type']);
 
-    // Connect to database
-    await connectDB();
+    // Connect to MongoDB
+    await connectToDatabase();
 
-    // Get user ID from query parameters or headers
-    const userId = req.query.userId as string || req.headers['x-user-id'] as string;
+    // Get user ID from query parameters
+    const userId = req.query.userId as string;
     
     if (!userId) {
       return res.status(400).json({ 
         success: false, 
-        message: 'User ID is required. Provide userId in query params or x-user-id header' 
-      });
-    }
-
-    // Validate user ID format (basic validation)
-    if (userId.length < 3) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid user ID format' 
+        message: 'User ID is required. Provide userId in query params' 
       });
     }
 
@@ -72,13 +87,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const form = formidable({
       maxFileSize: 100 * 1024 * 1024, // 100MB max file size
       allowEmptyFiles: false,
-      multiples: true, // Allow multiple files
-      keepExtensions: true, // Keep original file extensions
-      maxFields: 10, // Maximum number of fields
-      maxFieldsSize: 20 * 1024 * 1024, // 20MB max fields size
+      multiples: true,
+      keepExtensions: true,
+      maxFields: 10,
+      maxFieldsSize: 20 * 1024 * 1024,
       filter: ({ mimetype }: any) => {
         console.log('🔍 File mimetype:', mimetype);
-        // Allow common file types
         return mimetype && (
           mimetype.includes('image/') ||
           mimetype.includes('video/') ||
@@ -96,7 +110,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('📋 Parsed fields:', fields);
     console.log('📁 Parsed files:', Object.keys(files));
 
-    // Check for files in different possible field names
+    // Check for files
     let fileArray: any[] = [];
     if (files.file && Array.isArray(files.file)) {
       fileArray = files.file;
@@ -107,7 +121,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else if (files.files && !Array.isArray(files.files)) {
       fileArray = [files.files];
     } else {
-      // Check all file fields
       for (const [fieldName, fieldValue] of Object.entries(files)) {
         if (fieldValue) {
           if (Array.isArray(fieldValue)) {
@@ -127,8 +140,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           receivedFields: Object.keys(files),
           receivedFieldsCount: Object.keys(files).length,
           contentType: req.headers['content-type'],
-          method: req.method,
-          allFiles: files
+          method: req.method
         }
       });
     }
@@ -136,7 +148,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const uploadedFiles = [];
     const errors = [];
 
-    // Create user directory structure in public/assets folder using username
+    // Create user directory structure using username
     const userDir = path.join(process.cwd(), 'public', 'assets', username);
     const imagesDir = path.join(userDir, 'images');
     const videosDir = path.join(userDir, 'videos');
@@ -154,7 +166,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Process each file
     for (const file of fileArray) {
       try {
-        // Check if file has content
         if (!file.filepath || !file.size || file.size === 0) {
           errors.push({
             fileName: file.originalFilename || 'unknown',
@@ -264,7 +275,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).json({
       success: false,
       message: 'Assets file upload failed',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 }

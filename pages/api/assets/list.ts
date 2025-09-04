@@ -1,8 +1,32 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
-import connectDB from '../../../lib/database';
+import mongoose from 'mongoose';
 import User from '../../../lib/models/User';
+
+// MongoDB connection function
+async function connectToDatabase() {
+  if (mongoose.connections[0].readyState) {
+    return;
+  }
+
+  try {
+    await mongoose.connect(process.env.MONGODB_URI!, {
+      bufferCommands: false,
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
+      family: 4,
+      retryWrites: true,
+      w: 1
+    });
+    console.log('✅ Connected to MongoDB');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
+    throw error;
+  }
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -13,24 +37,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Connect to database
-    await connectDB();
+    console.log('📋 Starting assets list...');
 
-    // Get user ID from query parameters or headers
-    const userId = req.query.userId as string || req.headers['x-user-id'] as string;
+    // Connect to MongoDB
+    await connectToDatabase();
+
+    // Get user ID from query parameters
+    const userId = req.query.userId as string;
     
     if (!userId) {
       return res.status(400).json({ 
         success: false, 
-        message: 'User ID is required. Provide userId in query params or x-user-id header' 
-      });
-    }
-
-    // Validate user ID format (basic validation)
-    if (userId.length < 3) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid user ID format' 
+        message: 'User ID is required. Provide userId in query params' 
       });
     }
 
@@ -47,39 +65,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('👤 User found:', { userId, username });
 
     // Get query parameters
-    const { 
-      folder = 'all', 
-      type = 'all', 
-      page = '1', 
-      limit = '20',
-      search = '',
-      sortBy = 'uploadedAt',
-      sortOrder = 'desc'
-    } = req.query;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const folder = req.query.folder as string || 'all';
+    const type = req.query.type as string || 'all';
+    const search = req.query.search as string || '';
 
-    const pageNum = parseInt(page as string);
-    const limitNum = Math.min(parseInt(limit as string), 100); // Max 100 items per page
-    const skip = (pageNum - 1) * limitNum;
-
-    // User's assets directory using username
+    // Create user directory path using username
     const userDir = path.join(process.cwd(), 'public', 'assets', username);
     
     if (!fs.existsSync(userDir)) {
       return res.json({
         success: true,
-        message: 'No assets found',
+        message: 'Assets retrieved successfully',
         data: {
           files: [],
           pagination: {
-            page: pageNum,
-            limit: limitNum,
+            page: 1,
+            limit: limit,
             total: 0,
-            totalPages: 0
+            totalPages: 0,
+            hasNext: false,
+            hasPrev: false
           },
           filters: {
-            folder: folder as string,
-            type: type as string,
-            search: search as string
+            folder: folder,
+            type: type,
+            search: search,
+            sortBy: 'uploadedAt',
+            sortOrder: 'desc'
+          },
+          statistics: {
+            folderStats: {
+              images: 0,
+              videos: 0,
+              audio: 0,
+              documents: 0,
+              general: 0,
+              total: 0
+            },
+            totalSize: 0,
+            totalSizeMB: 0
+          },
+          storageInfo: {
+            type: 'assets',
+            basePath: '/assets',
+            userPath: `/assets/${username}`,
+            username: username,
+            userId: userId
           }
         }
       });
@@ -87,49 +120,50 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Get all files from user directory
     const allFiles = [];
-    const folders = ['images', 'videos', 'audio', 'documents', 'general'];
+    const folderStats = {
+      images: 0,
+      videos: 0,
+      audio: 0,
+      documents: 0,
+      general: 0,
+      total: 0
+    };
 
+    const folders = ['images', 'videos', 'audio', 'documents', 'general'];
+    
     for (const folderName of folders) {
       const folderPath = path.join(userDir, folderName);
-      
       if (fs.existsSync(folderPath)) {
         const files = fs.readdirSync(folderPath);
         
-        for (const fileName of files) {
-          const filePath = path.join(folderPath, fileName);
-          const fileStats = fs.statSync(filePath);
+        for (const file of files) {
+          const filePath = path.join(folderPath, file);
+          const stats = fs.statSync(filePath);
           
-          if (fileStats.isFile()) {
-            // Determine file type from extension
-            const ext = path.extname(fileName).toLowerCase();
-            let fileType = 'general';
-            
-            if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.avif'].includes(ext)) {
-              fileType = 'image';
-            } else if (['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv'].includes(ext)) {
-              fileType = 'video';
-            } else if (['.mp3', '.wav', '.aac', '.ogg', '.flac'].includes(ext)) {
-              fileType = 'audio';
-            } else if (['.pdf', '.doc', '.docx', '.txt'].includes(ext)) {
-              fileType = 'document';
-            }
-
-            allFiles.push({
-              fileName: fileName,
-              originalName: fileName, // We don't store original names in assets storage
+          if (stats.isFile()) {
+            const fileInfo = {
+              fileName: file,
+              originalName: file,
               folder: folderName,
-              fileType: fileType,
-              size: fileStats.size,
-              publicUrl: `/assets/${userId}/${folderName}/${fileName}`,
+              fileType: folderName === 'images' ? 'image' : 
+                       folderName === 'videos' ? 'video' : 
+                       folderName === 'audio' ? 'audio' : 
+                       folderName === 'documents' ? 'document' : 'general',
+              size: stats.size,
+              publicUrl: `/assets/${username}/${folderName}/${file}`,
               localPath: filePath,
-              uploadedAt: fileStats.birthtime,
-              modifiedAt: fileStats.mtime,
+              uploadedAt: stats.birthtime,
+              modifiedAt: stats.mtime,
               uploadedBy: {
                 userId: userId,
-                username: userId, // Using userId as username for simplicity
-                fullName: userId
+                username: username,
+                fullName: user.fullName
               }
-            });
+            };
+            
+            allFiles.push(fileInfo);
+            folderStats[folderName as keyof typeof folderStats]++;
+            folderStats.total++;
           }
         }
       }
@@ -138,99 +172,67 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Apply filters
     let filteredFiles = allFiles;
 
-    // Filter by folder
     if (folder !== 'all') {
       filteredFiles = filteredFiles.filter(file => file.folder === folder);
     }
 
-    // Filter by type
     if (type !== 'all') {
       filteredFiles = filteredFiles.filter(file => file.fileType === type);
     }
 
-    // Filter by search term
     if (search) {
-      const searchTerm = (search as string).toLowerCase();
       filteredFiles = filteredFiles.filter(file => 
-        file.fileName.toLowerCase().includes(searchTerm) ||
-        file.originalName.toLowerCase().includes(searchTerm)
+        file.fileName.toLowerCase().includes(search.toLowerCase()) ||
+        file.originalName.toLowerCase().includes(search.toLowerCase())
       );
     }
 
-    // Sort files
-    filteredFiles.sort((a, b) => {
-      let aValue, bValue;
-      
-      switch (sortBy) {
-        case 'size':
-          aValue = a.size;
-          bValue = b.size;
-          break;
-        case 'fileName':
-          aValue = a.fileName.toLowerCase();
-          bValue = b.fileName.toLowerCase();
-          break;
-        case 'uploadedAt':
-        default:
-          aValue = new Date(a.uploadedAt).getTime();
-          bValue = new Date(b.uploadedAt).getTime();
-          break;
-      }
+    // Sort files by upload date (newest first)
+    filteredFiles.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
 
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
-
-    // Apply pagination
+    // Calculate pagination
     const total = filteredFiles.length;
-    const totalPages = Math.ceil(total / limitNum);
-    const paginatedFiles = filteredFiles.slice(skip, skip + limitNum);
-
-    // Calculate folder statistics
-    const folderStats = {
-      images: allFiles.filter(f => f.folder === 'images').length,
-      videos: allFiles.filter(f => f.folder === 'videos').length,
-      audio: allFiles.filter(f => f.folder === 'audio').length,
-      documents: allFiles.filter(f => f.folder === 'documents').length,
-      general: allFiles.filter(f => f.folder === 'general').length,
-      total: allFiles.length
-    };
+    const totalPages = Math.ceil(total / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedFiles = filteredFiles.slice(startIndex, endIndex);
 
     // Calculate total size
     const totalSize = allFiles.reduce((sum, file) => sum + file.size, 0);
+    const totalSizeMB = totalSize / (1024 * 1024);
 
+    // Return results
     res.json({
       success: true,
       message: 'Assets retrieved successfully',
       data: {
         files: paginatedFiles,
         pagination: {
-          page: pageNum,
-          limit: limitNum,
+          page: page,
+          limit: limit,
           total: total,
           totalPages: totalPages,
-          hasNext: pageNum < totalPages,
-          hasPrev: pageNum > 1
+          hasNext: page < totalPages,
+          hasPrev: page > 1
         },
         filters: {
-          folder: folder as string,
-          type: type as string,
-          search: search as string,
-          sortBy: sortBy as string,
-          sortOrder: sortOrder as string
+          folder: folder,
+          type: type,
+          search: search,
+          sortBy: 'uploadedAt',
+          sortOrder: 'desc'
         },
         statistics: {
-          folderStats,
+          folderStats: folderStats,
           totalSize: totalSize,
-          totalSizeMB: Math.round((totalSize / (1024 * 1024)) * 100) / 100
+          totalSizeMB: Math.round(totalSizeMB * 100) / 100
         },
         storageInfo: {
           type: 'assets',
           basePath: '/assets',
-          userPath: `/assets/${userId}`
+          userPath: `/assets/${username}`,
+          username: username,
+          userId: userId
         }
       }
     });
@@ -239,8 +241,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Assets list error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve assets',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'Assets list failed',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 }

@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
-import connectDB from '../../../lib/database';
+import mongoose from 'mongoose';
 import User from '../../../lib/models/User';
 
 export const config = {
@@ -11,8 +11,32 @@ export const config = {
   },
 };
 
+// MongoDB connection function
+async function connectToDatabase() {
+  if (mongoose.connections[0].readyState) {
+    return;
+  }
+
+  try {
+    await mongoose.connect(process.env.MONGODB_URI!, {
+      bufferCommands: false,
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
+      family: 4,
+      retryWrites: true,
+      w: 1
+    });
+    console.log('✅ Connected to MongoDB');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
+    throw error;
+  }
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'PUT') {
+  if (req.method !== 'POST') {
     return res.status(405).json({ 
       success: false, 
       message: 'Method not allowed' 
@@ -20,26 +44,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    console.log('🔄 Starting assets replace operation...');
+    console.log('🔄 Starting assets replace...');
 
-    // Connect to database
-    await connectDB();
+    // Connect to MongoDB
+    await connectToDatabase();
 
-    // Get user ID from query parameters or headers
-    const userId = req.query.userId as string || req.headers['x-user-id'] as string;
+    // Get user ID from query parameters
+    const userId = req.query.userId as string;
     
     if (!userId) {
       return res.status(400).json({ 
         success: false, 
-        message: 'User ID is required. Provide userId in query params or x-user-id header' 
-      });
-    }
-
-    // Validate user ID format (basic validation)
-    if (userId.length < 3) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid user ID format' 
+        message: 'User ID is required. Provide userId in query params' 
       });
     }
 
@@ -55,68 +71,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const username = user.username || user.fullName || userId;
     console.log('👤 User found:', { userId, username });
 
-    // Get target file info from query parameters
-    const { targetFilePath, targetFileName, targetFolder: queryTargetFolder } = req.query;
-
-    if (!targetFilePath && !targetFileName) {
+    // Check if content-type is multipart/form-data
+    const contentType = req.headers['content-type'];
+    if (!contentType || !contentType.includes('multipart/form-data')) {
       return res.status(400).json({
         success: false,
-        message: 'Target file path or file name is required'
+        message: 'Content-Type must be multipart/form-data',
+        receivedContentType: contentType
       });
     }
 
-    let existingFilePath: string;
-
-    if (targetFilePath) {
-      // If full path is provided, validate it belongs to the user
-      const userDir = path.join(process.cwd(), 'public', 'assets', username);
-      const resolvedPath = path.resolve(targetFilePath as string);
-      const resolvedUserDir = path.resolve(userDir);
-      
-      if (!resolvedPath.startsWith(resolvedUserDir)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Access denied: File does not belong to user'
-        });
-      }
-      
-      existingFilePath = resolvedPath;
-    } else {
-      // If only fileName is provided, construct the path
-      const folderName = queryTargetFolder || 'general';
-      existingFilePath = path.join(process.cwd(), 'public', 'assets', username, folderName as string, targetFileName as string);
-    }
-
-    // Check if target file exists
-    if (!fs.existsSync(existingFilePath)) {
-      return res.status(404).json({
-        success: false,
-        message: 'Target file not found'
-      });
-    }
-
-    console.log('📁 Target file found:', existingFilePath);
-
-    // Get existing file info
-    const existingFileStats = fs.statSync(existingFilePath);
-    const existingFileName = path.basename(existingFilePath);
-    const existingFolder = path.basename(path.dirname(existingFilePath));
-    const existingRelativePath = path.relative(path.join(process.cwd(), 'public'), existingFilePath);
-    const existingPublicUrl = `/${existingRelativePath.replace(/\\/g, '/')}`;
-
-    console.log('📋 Existing file info:', {
-      fileName: existingFileName,
-      folder: existingFolder,
-      size: existingFileStats.size,
-      modifiedAt: existingFileStats.mtime
-    });
-
-    // Parse multipart form data for new file
+    // Parse multipart form data
     const form = formidable({
       maxFileSize: 100 * 1024 * 1024, // 100MB max file size
       allowEmptyFiles: false,
+      multiples: false,
+      keepExtensions: true,
+      maxFields: 10,
+      maxFieldsSize: 20 * 1024 * 1024,
       filter: ({ mimetype }: any) => {
-        // Allow common file types
+        console.log('🔍 File mimetype:', mimetype);
         return mimetype && (
           mimetype.includes('image/') ||
           mimetype.includes('video/') ||
@@ -131,166 +105,175 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const [fields, files] = await form.parse(req);
 
-    if (!files.file || !Array.isArray(files.file)) {
+    console.log('📋 Parsed fields:', fields);
+    console.log('📁 Parsed files:', Object.keys(files));
+
+    // Get file to replace
+    const fileToReplace = files.file as any;
+    if (!fileToReplace) {
       return res.status(400).json({ 
         success: false, 
-        message: 'No new file provided for replacement' 
+        message: 'No file provided for replacement' 
       });
     }
 
-    const newFile = files.file[0];
+    // Get existing file name from query or body
+    const existingFileName = req.query.existingFileName as string || req.body?.existingFileName;
+    const existingFolder = req.query.existingFolder as string || req.body?.existingFolder;
 
-    // Check if new file has content
-    if (!newFile.filepath || !newFile.size || newFile.size === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'New file appears empty'
+    if (!existingFileName) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Existing file name is required' 
       });
     }
 
-    console.log('📤 New file received:', {
-      originalName: newFile.originalFilename,
-      size: newFile.size,
-      mimetype: newFile.mimetype
-    });
-
-    // Create backup of original file (optional)
-    const backupPath = existingFilePath + '.backup.' + Date.now();
-    try {
-      fs.copyFileSync(existingFilePath, backupPath);
-      console.log('💾 Backup created:', backupPath);
-    } catch (backupError) {
-      console.log('⚠️ Warning: Could not create backup:', backupError);
-    }
-
-    // Determine if we need to change folder based on new file type
-    let newTargetFolder = existingFolder;
-    let targetDir = path.dirname(existingFilePath);
+    // Create user directory path using username
+    const userDir = path.join(process.cwd(), 'public', 'assets', username);
     
-    if (newFile.mimetype?.includes('image/')) {
-      newTargetFolder = 'images';
-    } else if (newFile.mimetype?.includes('video/')) {
-      newTargetFolder = 'videos';
-    } else if (newFile.mimetype?.includes('audio/')) {
-      newTargetFolder = 'audio';
-    } else if (newFile.mimetype?.includes('application/pdf') || newFile.mimetype?.includes('application/')) {
-      newTargetFolder = 'documents';
-    } else {
-      newTargetFolder = 'general';
+    if (!fs.existsSync(userDir)) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User assets directory not found' 
+      });
     }
 
-    // If folder type changed, move to appropriate folder
-    if (newTargetFolder !== existingFolder) {
-      const newTargetDir = path.join(process.cwd(), 'public', 'assets', username, newTargetFolder);
-      
-      // Create new folder if it doesn't exist
-      if (!fs.existsSync(newTargetDir)) {
-        fs.mkdirSync(newTargetDir, { recursive: true });
+    // Find existing file
+    let existingFilePath = '';
+    let foundFolder = '';
+
+    if (existingFolder) {
+      // If folder is specified, look in that specific folder
+      const folderPath = path.join(userDir, existingFolder);
+      if (fs.existsSync(folderPath)) {
+        existingFilePath = path.join(folderPath, existingFileName);
+        if (fs.existsSync(existingFilePath)) {
+          foundFolder = existingFolder;
+        }
       }
-      
-      targetDir = newTargetDir;
+    } else {
+      // If no folder specified, search in all folders
+      const folders = ['images', 'videos', 'audio', 'documents', 'general'];
+      for (const folderName of folders) {
+        const folderPath = path.join(userDir, folderName);
+        if (fs.existsSync(folderPath)) {
+          const filePath = path.join(folderPath, existingFileName);
+          if (fs.existsSync(filePath)) {
+            existingFilePath = filePath;
+            foundFolder = folderName;
+            break;
+          }
+        }
+      }
     }
 
-    // Generate new filename (keep same naming pattern)
+    if (!existingFilePath || !fs.existsSync(existingFilePath)) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Existing file not found',
+        debug: {
+          existingFileName: existingFileName,
+          existingFolder: existingFolder,
+          userDir: userDir,
+          searchedIn: existingFolder ? [existingFolder] : ['images', 'videos', 'audio', 'documents', 'general']
+        }
+      });
+    }
+
+    // Get existing file stats
+    const existingFileStats = fs.statSync(existingFilePath);
+    const existingPublicUrl = `/assets/${username}/${foundFolder}/${existingFileName}`;
+
+    // Determine new file folder based on file type
+    let newFolder = foundFolder;
+    let newTargetDir = path.join(userDir, foundFolder);
+    
+    if (fileToReplace.mimetype?.includes('image/')) {
+      newFolder = 'images';
+      newTargetDir = path.join(userDir, 'images');
+    } else if (fileToReplace.mimetype?.includes('video/')) {
+      newFolder = 'videos';
+      newTargetDir = path.join(userDir, 'videos');
+    } else if (fileToReplace.mimetype?.includes('audio/')) {
+      newFolder = 'audio';
+      newTargetDir = path.join(userDir, 'audio');
+    } else if (fileToReplace.mimetype?.includes('application/pdf') || fileToReplace.mimetype?.includes('application/')) {
+      newFolder = 'documents';
+      newTargetDir = path.join(userDir, 'documents');
+    } else {
+      newFolder = 'general';
+      newTargetDir = path.join(userDir, 'general');
+    }
+
+    // Create new target directory if it doesn't exist
+    if (!fs.existsSync(newTargetDir)) {
+      fs.mkdirSync(newTargetDir, { recursive: true });
+    }
+
+    // Generate new filename using username
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substr(2, 9);
-    const fileExtension = path.extname(newFile.originalFilename || '');
-    const newFileName = `${userId}_${timestamp}_${randomString}${fileExtension}`;
+    const fileExtension = path.extname(fileToReplace.originalFilename || '');
+    const newFileName = `${username}_${timestamp}_${randomString}${fileExtension}`;
     
     // Full path for the new file
-    const newFilePath = path.join(targetDir, newFileName);
-
-    console.log('📁 New file path:', newFilePath);
-
+    const newFilePath = path.join(newTargetDir, newFileName);
+    
     // Copy new file to target directory
-    fs.copyFileSync(newFile.filepath, newFilePath);
+    fs.copyFileSync(fileToReplace.filepath, newFilePath);
     
     // Get new file stats
     const newFileStats = fs.statSync(newFilePath);
     
     // Generate new public URL
-    const newRelativePath = path.relative(path.join(process.cwd(), 'public'), newFilePath);
-    const newPublicUrl = `/${newRelativePath.replace(/\\/g, '/')}`;
+    const newPublicUrl = `/assets/${username}/${newFolder}/${newFileName}`;
 
     // Delete the old file
-    try {
-      fs.unlinkSync(existingFilePath);
-      console.log('🗑️ Old file deleted:', existingFilePath);
-    } catch (deleteError) {
-      console.error('❌ Error deleting old file:', deleteError);
-      // If we can't delete the old file, delete the new one to maintain consistency
-      fs.unlinkSync(newFilePath);
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to delete old file',
-        error: 'Could not complete file replacement'
-      });
-    }
+    fs.unlinkSync(existingFilePath);
 
-    // Clean up temporary files
+    // Clean up temporary file
     try {
-      if (newFile.filepath && fs.existsSync(newFile.filepath)) {
-        fs.unlinkSync(newFile.filepath);
+      if (fileToReplace.filepath && fs.existsSync(fileToReplace.filepath)) {
+        fs.unlinkSync(fileToReplace.filepath);
       }
     } catch (cleanupError) {
       console.error('Error cleaning up temporary file:', cleanupError);
     }
 
-    // Check if the old folder is now empty and remove it if so
-    if (newTargetFolder !== existingFolder) {
-      const oldFolderPath = path.dirname(existingFilePath);
-      try {
-        const remainingFiles = fs.readdirSync(oldFolderPath);
-        if (remainingFiles.length === 0) {
-          fs.rmdirSync(oldFolderPath);
-          console.log(`🗂️ Removed empty folder: ${oldFolderPath}`);
-        }
-      } catch (folderError) {
-        console.log('Could not remove old folder (may not be empty):', folderError);
-      }
-    }
+    console.log(`✅ Successfully replaced: ${existingFileName} with ${newFileName}`);
 
-    console.log('✅ Assets replacement completed successfully');
-
-    // Return results
+    // Return success response
     res.json({
       success: true,
-      message: 'Asset replaced successfully',
+      message: 'File replaced successfully',
       data: {
         replacedFile: {
-          oldFile: {
-            fileName: existingFileName,
-            filePath: existingFilePath,
-            publicUrl: existingPublicUrl,
-            size: existingFileStats.size,
-            folder: existingFolder,
-            replacedAt: new Date()
-          },
-          newFile: {
-            originalName: newFile.originalFilename,
-            fileName: newFileName,
-            filePath: newFilePath,
-            publicUrl: newPublicUrl,
-            size: newFileStats.size,
-            mimetype: newFile.mimetype,
-            folder: newTargetFolder,
-            uploadedAt: new Date(),
-            uploadedBy: {
-              userId: userId,
-              username: userId, // Using userId as username for simplicity
-              fullName: userId
-            }
-          },
-          backup: {
-            backupPath: backupPath,
-            backupCreated: fs.existsSync(backupPath)
+          oldFileName: existingFileName,
+          oldPath: existingFilePath,
+          oldPublicUrl: existingPublicUrl,
+          oldSize: existingFileStats.size,
+          oldFolder: foundFolder
+        },
+        newFile: {
+          fileName: newFileName,
+          localPath: newFilePath,
+          publicUrl: newPublicUrl,
+          size: newFileStats.size,
+          mimetype: fileToReplace.mimetype,
+          folder: newFolder,
+          replacedAt: new Date(),
+          replacedBy: {
+            userId: userId,
+            username: username,
+            fullName: user.fullName
           }
         },
         storageInfo: {
           type: 'assets',
           basePath: '/assets',
           userPath: `/assets/${username}`,
-          newFolder: newTargetFolder
+          username: username,
+          userId: userId
         }
       }
     });
@@ -299,8 +282,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Assets replace error:', error);
     res.status(500).json({
       success: false,
-      message: 'Asset replacement failed',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'Assets replace failed',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 }
