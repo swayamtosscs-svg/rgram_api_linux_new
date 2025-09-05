@@ -47,6 +47,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('📤 Starting assets upload...');
     console.log('📋 Request method:', req.method);
     console.log('📋 Request headers:', req.headers);
+    console.log('🌍 Environment:', process.env.NODE_ENV);
+    console.log('📁 Current working directory:', process.cwd());
+    console.log('🔗 MongoDB URI exists:', !!process.env.MONGODB_URI);
 
     // Connect to MongoDB
     await connectToDatabase();
@@ -156,10 +159,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const documentsDir = path.join(userDir, 'documents');
     const generalDir = path.join(userDir, 'general');
 
+    console.log('📁 Creating directories...');
+    console.log('📁 User directory:', userDir);
+    console.log('📁 Images directory:', imagesDir);
+
     // Create directories if they don't exist
     [userDir, imagesDir, videosDir, audioDir, documentsDir, generalDir].forEach(dir => {
       if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
+        try {
+          fs.mkdirSync(dir, { recursive: true });
+          console.log(`✅ Created directory: ${dir}`);
+        } catch (dirError: any) {
+          console.error(`❌ Error creating directory ${dir}:`, dirError);
+          throw new Error(`Failed to create directory ${dir}: ${dirError.message}`);
+        }
+      } else {
+        console.log(`📁 Directory already exists: ${dir}`);
       }
     });
 
@@ -202,10 +217,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const filePath = path.join(targetDir, fileName);
         
         // Copy file to target directory
+        console.log(`📁 Copying file from ${file.filepath} to ${filePath}`);
         fs.copyFileSync(file.filepath, filePath);
+        
+        // Verify file was copied successfully
+        if (!fs.existsSync(filePath)) {
+          throw new Error(`File copy failed: ${filePath} does not exist`);
+        }
         
         // Get file stats
         const fileStats = fs.statSync(filePath);
+        console.log(`✅ File copied successfully: ${fileName} (${fileStats.size} bytes)`);
         
         // Generate public URL using username
         const publicUrl = `/assets/${username}/${folder}/${fileName}`;
