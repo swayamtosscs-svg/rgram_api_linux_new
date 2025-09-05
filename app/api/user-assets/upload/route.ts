@@ -3,7 +3,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import dbConnect from '@/lib/database';
-import UserAssets from '@/models/UserAssets';
+import UserAssets from '../../../../models/UserAssets';
 import User from '@/lib/models/User';
 import sharp from 'sharp';
 

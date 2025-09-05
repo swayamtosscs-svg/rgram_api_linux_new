@@ -1,142 +1,64 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
 
-// Enhanced MongoDB connection with better error handling
-async function connectToMongoDB() {
-  console.log('🔧 Fixing MongoDB Connection for Ubuntu Server...');
+async function testMongoDBConnection() {
+  console.log('🔍 Testing MongoDB connection...');
   
-  if (!process.env.MONGODB_URI) {
-    console.error('❌ MONGODB_URI not found in environment variables');
-    console.log('💡 Please create a .env file with:');
-    console.log('MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority');
+  const MONGODB_URI = process.env.MONGODB_URI;
+  
+  if (!MONGODB_URI) {
+    console.error('❌ MONGODB_URI environment variable is not set');
     return false;
   }
   
-  // Parse the MongoDB URI to check for issues
-  const uri = process.env.MONGODB_URI;
-  console.log('🔗 MongoDB URI format:', uri.includes('mongodb+srv://') ? 'Atlas (SRV)' : 'Standard');
-  
-  // Enhanced connection options for Ubuntu server
-  const connectionOptions = {
-    bufferCommands: false,
-    maxPoolSize: 5, // Reduced for better stability
-    serverSelectionTimeoutMS: 30000,
-    socketTimeoutMS: 30000,
-    connectTimeoutMS: 30000,
-    family: 4, // Force IPv4
-    retryWrites: true,
-    w: 1,
-    retryReads: true,
-    maxIdleTimeMS: 10000,
-    heartbeatFrequencyMS: 10000,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    // Additional options for better connection stability
-    keepAlive: true,
-    keepAliveInitialDelay: 300000,
-    maxIdleTimeMS: 10000,
-    serverSelectionRetryDelayMS: 2000,
-    bufferMaxEntries: 0
-  };
+  console.log('📋 MongoDB URI:', MONGODB_URI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials
   
   try {
-    console.log('🔄 Attempting connection with enhanced options...');
-    
-    // Clear any existing connections
-    if (mongoose.connection.readyState !== 0) {
-      await mongoose.disconnect();
-    }
-    
-    // Set up event listeners
-    mongoose.connection.on('error', (err) => {
-      console.error('❌ MongoDB Error:', err.message);
+    // Test connection with minimal options
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false,
+      maxPoolSize: 1,
+      retryWrites: true,
+      w: 1,
+      retryReads: true,
     });
     
-    mongoose.connection.on('disconnected', () => {
-      console.log('⚠️ MongoDB Disconnected');
-    });
+    console.log('✅ MongoDB connection successful!');
     
-    mongoose.connection.on('reconnected', () => {
-      console.log('✅ MongoDB Reconnected');
-    });
-    
-    // Attempt connection
-    await mongoose.connect(uri, connectionOptions);
-    
-    console.log('✅ Successfully connected to MongoDB!');
-    console.log('📊 Connection state:', mongoose.connection.readyState);
-    console.log('🏷️ Database name:', mongoose.connection.name);
-    
-    // Test the connection with a simple operation
+    // Test a simple operation
     const admin = mongoose.connection.db.admin();
     const result = await admin.ping();
-    console.log('🏓 Ping result:', result);
+    console.log('✅ MongoDB ping successful:', result);
+    
+    await mongoose.disconnect();
+    console.log('✅ Disconnected from MongoDB');
     
     return true;
     
   } catch (error) {
-    console.error('❌ Connection failed:', error.message);
+    console.error('❌ MongoDB connection failed:', error.message);
     
-    // Provide specific solutions based on error type
     if (error.message.includes('IP')) {
-      console.log('\n🔧 IP Whitelist Solution:');
-      console.log('1. Go to MongoDB Atlas → Network Access');
-      console.log('2. Add IP Address: 103.14.120.163/32');
-      console.log('3. Or add 0.0.0.0/0 for all IPs (less secure)');
-      console.log('4. Wait 2-3 minutes for changes to take effect');
+      console.log('\n🔧 Fix suggestions:');
+      console.log('1. Add your server IP to MongoDB Atlas whitelist');
+      console.log('2. Or add 0.0.0.0/0 to allow all IPs (less secure)');
+      console.log('3. Check your MongoDB Atlas network access settings');
     }
     
     if (error.message.includes('authentication')) {
-      console.log('\n🔧 Authentication Solution:');
-      console.log('1. Check username and password in MONGODB_URI');
-      console.log('2. Ensure user has read/write permissions');
-      console.log('3. Verify database name is correct');
-    }
-    
-    if (error.message.includes('network') || error.message.includes('timeout')) {
-      console.log('\n🔧 Network Solution:');
-      console.log('1. Check server internet connection');
-      console.log('2. Verify firewall settings allow MongoDB ports');
-      console.log('3. Try connecting from a different network');
+      console.log('\n🔧 Fix suggestions:');
+      console.log('1. Check your MongoDB username and password');
+      console.log('2. Verify the database name in the connection string');
+      console.log('3. Check if the user has proper permissions');
     }
     
     return false;
   }
 }
 
-// Test function
-async function testConnection() {
-  const connected = await connectToMongoDB();
-  
-  if (connected) {
-    console.log('\n🎉 MongoDB connection is working!');
-    console.log('✅ Your Images API should work now');
-    
-    // Test a simple query
-    try {
-      const User = mongoose.model('User', new mongoose.Schema({
-        username: String,
-        email: String
-      }));
-      
-      const userCount = await User.countDocuments();
-      console.log(`👥 Found ${userCount} users in database`);
-      
-    } catch (queryError) {
-      console.log('⚠️ Query test failed:', queryError.message);
-    }
-    
-  } else {
-    console.log('\n❌ MongoDB connection failed');
-    console.log('🔧 Please fix the issues above and try again');
-  }
-  
-  // Close connection
-  if (mongoose.connection.readyState === 1) {
-    await mongoose.disconnect();
-    console.log('🔌 Disconnected from MongoDB');
-  }
-}
-
 // Run the test
-testConnection().catch(console.error);
+testMongoDBConnection().then(success => {
+  process.exit(success ? 0 : 1);
+});

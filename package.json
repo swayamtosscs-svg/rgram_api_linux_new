@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3000",
     "build": "next build",
+    "build:prod": "node build-production.js",
     "start": "node server.js",
     "start:next": "next start",
     "lint": "next lint",
+    "test:mongodb": "node fix-mongodb-connection.js",
     "cleanup-stories": "node scripts/cleanup-expired-stories.js",
     "cleanup-scheduled": "node scripts/scheduled-cleanup.js"
   },

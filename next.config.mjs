@@ -1,49 +1,49 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-
-  // Use pages directory
-  useFileSystemPublicRoutes: true,
-
-  // Configure image optimization
-  images: {
-    domains: ['res.cloudinary.com', 'storage.googleapis.com'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  experimental: {
+    serverComponentsExternalPackages: ['mongoose', 'sharp']
   },
-
-  // Enable static exports for pages that don't require server-side rendering
+  images: {
+    domains: ['res.cloudinary.com'],
+    formats: ['image/webp', 'image/avif'],
+  },
+  // Disable static optimization for API routes
   output: 'standalone',
-
-  // Configure webpack for optimizations
+  // Skip static generation for API routes
+  generateStaticParams: false,
+  // Configure build settings
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+  // Environment variables
+  env: {
+    MONGODB_URI: process.env.MONGODB_URI,
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+  },
+  // Webpack configuration
   webpack: (config, { isServer }) => {
-    if (!isServer) {
-      // Don't resolve 'fs' module on the client to prevent this error on build --> Error: Can't resolve 'fs'
-      config.resolve.fallback = {
-        fs: false,
-        stream: false,
-        crypto: false,
-        os: false,
-        path: false,
-      };
+    if (isServer) {
+      config.externals.push('sharp');
     }
     return config;
   },
-
-  // Configure page extensions
-  pageExtensions: ['tsx', 'ts', 'jsx', 'js', 'mjs'],
-
+  // API routes configuration
   async rewrites() {
     return [
       {
         source: '/api/:path*',
         destination: '/api/:path*',
       },
-      {
-        source: '/api/videos/fetch-religious-reels',
-        destination: '/api/videos/religious-reels',
-      },
     ];
+  },
+  // Disable static generation for specific routes
+  async generateBuildId() {
+    return 'build-' + Date.now();
   },
 };
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unlink, existsSync } from 'fs';
 import { promisify } from 'util';
 import dbConnect from '@/lib/database';
-import UserAssets from '@/models/UserAssets';
+import UserAssets from '../../../../models/UserAssets';
 import User from '@/lib/models/User';
 
 const unlinkAsync = promisify(unlink);

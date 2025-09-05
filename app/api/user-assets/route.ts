@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/database';
-import UserAssets from '@/models/UserAssets';
+import UserAssets from '../../../models/UserAssets';
 import User from '@/lib/models/User';
 
 export async function GET(req: NextRequest) {

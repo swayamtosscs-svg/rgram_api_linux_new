@@ -26,18 +26,18 @@ async function connectDB() {
     const opts = {
       bufferCommands: false,
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 60000, // Increased to 60 seconds
-      socketTimeoutMS: 60000, // Increased to 60 seconds
-      connectTimeoutMS: 60000, // Increased to 60 seconds
+      serverSelectionTimeoutMS: 5000, // Reduced to 5 seconds for faster failure
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
       family: 4, // Force IPv4
       retryWrites: true,
-      w: 1 as const, // Changed from 'majority' to 1 for better TypeScript compatibility
+      w: 1 as const,
       retryReads: true,
       maxIdleTimeMS: 30000,
       heartbeatFrequencyMS: 10000,
-      // Add additional options for Ubuntu server
-      useNewUrlParser: true,
-      useUnifiedTopology: true
+      // Remove deprecated options
+      // useNewUrlParser: true, // Deprecated
+      // useUnifiedTopology: true // Deprecated
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
@@ -47,6 +47,7 @@ async function connectDB() {
       require('./models/User');
       require('./models/Post');
       require('../models/Image');
+      require('../models/UserAssets');
       
       return mongoose;
     }).catch((error) => {
