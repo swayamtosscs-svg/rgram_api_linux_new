@@ -40,6 +40,7 @@ async function connectDB() {
       // Ensure models are registered
       require('./models/User');
       require('./models/Post');
+      require('../models/Image');
       
       return mongoose;
     }).catch((error) => {

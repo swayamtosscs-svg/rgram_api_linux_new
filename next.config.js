@@ -3,9 +3,9 @@ const nextConfig = {
   reactStrictMode: true,
   // Enable static optimization where possible
   staticPageGenerationTimeout: 120,
-  // Configure images for Cloudinary
+  // Configure images for local storage and Cloudinary
   images: {
-    domains: ['res.cloudinary.com'],
+    domains: ['res.cloudinary.com', '103.14.120.163'],
     unoptimized: true,
   },
   // Customize the build output
@@ -17,6 +17,11 @@ const nextConfig = {
       {
         source: '/static/:path*',
         destination: '/:path*',
+      },
+      // Assets routes for local storage
+      {
+        source: '/assets/:path*',
+        destination: '/assets/:path*',
       },
       // Dynamic API routes
       {
