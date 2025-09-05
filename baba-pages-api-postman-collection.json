@@ -1,0 +1,717 @@
+{
+  "info": {
+    "name": "Baba Pages API",
+    "description": "Complete API collection for managing spiritual leader (Baba) pages with posts, videos, and stories",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Baba Management",
+      "item": [
+        {
+          "name": "Create Baba Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"babaId\": \"baba_ramdev\",\n  \"babaName\": \"Baba Ramdev\",\n  \"spiritualName\": \"Swami Ramdev\",\n  \"description\": \"Yoga guru and spiritual leader\",\n  \"location\": \"Haridwar, India\",\n  \"ashram\": \"Patanjali Yogpeeth\",\n  \"socialLinks\": {\n    \"website\": \"https://patanjaliyogpeeth.net\",\n    \"youtube\": \"https://youtube.com/babarramdev\"\n  },\n  \"contactInfo\": {\n    \"email\": \"contact@patanjaliyogpeeth.net\",\n    \"phone\": \"+91-1234567890\"\n  },\n  \"spiritualTeachings\": [\"Yoga\", \"Meditation\", \"Ayurveda\"],\n  \"languages\": [\"Hindi\", \"English\", \"Sanskrit\"],\n  \"createdBy\": \"{{userId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba"]
+            }
+          }
+        },
+        {
+          "name": "Get All Baba Pages",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Baba",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba?babaId={{babaId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba"],
+              "query": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Baba Pages",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba?search=yoga&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "yoga"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Baba Page",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"babaId\": \"{{babaId}}\",\n  \"description\": \"Updated description\",\n  \"location\": \"Updated location\",\n  \"socialLinks\": {\n    \"website\": \"https://updated-website.com\",\n    \"youtube\": \"https://youtube.com/updated-channel\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba"]
+            }
+          }
+        },
+        {
+          "name": "Delete Baba Page",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/baba?babaId={{babaId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba"],
+              "query": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Baba Posts",
+      "item": [
+        {
+          "name": "Create Post with Image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "Daily Yoga Practice",
+                  "type": "text"
+                },
+                {
+                  "key": "content",
+                  "value": "Today we will learn the benefits of Surya Namaskar",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "category",
+                  "value": "teaching",
+                  "type": "text"
+                },
+                {
+                  "key": "tags",
+                  "value": "[\"yoga\", \"health\", \"meditation\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "isPublic",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba/posts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "posts"]
+            }
+          }
+        },
+        {
+          "name": "Create Text Post",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "Spiritual Message",
+                  "type": "text"
+                },
+                {
+                  "key": "content",
+                  "value": "Peace comes from within. Do not seek it without.",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "spiritual",
+                  "type": "text"
+                },
+                {
+                  "key": "tags",
+                  "value": "[\"peace\", \"spirituality\", \"wisdom\"]",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba/posts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "posts"]
+            }
+          }
+        },
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba/posts?babaId={{babaId}}&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "posts"],
+              "query": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Post",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba/posts?postId={{postId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "posts"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{postId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Posts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba/posts?babaId={{babaId}}&search=yoga&category=teaching&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "posts"],
+              "query": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}"
+                },
+                {
+                  "key": "search",
+                  "value": "yoga"
+                },
+                {
+                  "key": "category",
+                  "value": "teaching"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/baba/posts?postId={{postId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "posts"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{postId}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Baba Videos",
+      "item": [
+        {
+          "name": "Upload Video with Thumbnail",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "Morning Satsang",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Today's spiritual discourse on inner peace",
+                  "type": "text"
+                },
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "thumbnail",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "category",
+                  "value": "satsang",
+                  "type": "text"
+                },
+                {
+                  "key": "tags",
+                  "value": "[\"satsang\", \"spiritual\", \"discourse\"]",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba/videos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "videos"]
+            }
+          }
+        },
+        {
+          "name": "Upload Video without Thumbnail",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "Yoga Session",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Learn basic yoga poses",
+                  "type": "text"
+                },
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "category",
+                  "value": "teaching",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba/videos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "videos"]
+            }
+          }
+        },
+        {
+          "name": "Get All Videos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba/videos?babaId={{babaId}}&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "videos"],
+              "query": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Video",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba/videos?videoId={{videoId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "videos"],
+              "query": [
+                {
+                  "key": "videoId",
+                  "value": "{{videoId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Videos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba/videos?babaId={{babaId}}&search=satsang&category=satsang&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "videos"],
+              "query": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}"
+                },
+                {
+                  "key": "search",
+                  "value": "satsang"
+                },
+                {
+                  "key": "category",
+                  "value": "satsang"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Video",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/baba/videos?videoId={{videoId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "videos"],
+              "query": [
+                {
+                  "key": "videoId",
+                  "value": "{{videoId}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Baba Stories",
+      "item": [
+        {
+          "name": "Create Image Story",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "media",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "content",
+                  "value": "May you all be blessed with peace and prosperity",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "blessing",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba/stories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "stories"]
+            }
+          }
+        },
+        {
+          "name": "Create Video Story",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "media",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "content",
+                  "value": "Quick meditation session",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "daily",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba/stories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "stories"]
+            }
+          }
+        },
+        {
+          "name": "Get All Stories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba/stories?babaId={{babaId}}&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "stories"],
+              "query": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Story",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba/stories?storyId={{storyId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "stories"],
+              "query": [
+                {
+                  "key": "storyId",
+                  "value": "{{storyId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Stories by Category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba/stories?babaId={{babaId}}&category=blessing&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "stories"],
+              "query": [
+                {
+                  "key": "babaId",
+                  "value": "{{babaId}}"
+                },
+                {
+                  "key": "category",
+                  "value": "blessing"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Story",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/baba/stories?storyId={{storyId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba", "stories"],
+              "query": [
+                {
+                  "key": "storyId",
+                  "value": "{{storyId}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "Base URL for the API"
+    },
+    {
+      "key": "babaId",
+      "value": "baba_ramdev",
+      "description": "Sample Baba ID for testing"
+    },
+    {
+      "key": "userId",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j1",
+      "description": "Sample user ID for testing"
+    },
+    {
+      "key": "postId",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j2",
+      "description": "Sample post ID for testing"
+    },
+    {
+      "key": "videoId",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j3",
+      "description": "Sample video ID for testing"
+    },
+    {
+      "key": "storyId",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j4",
+      "description": "Sample story ID for testing"
+    }
+  ]
+}

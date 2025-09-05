@@ -1,145 +1,56 @@
-const mongoose = require('mongoose');
-const { v2 as cloudinary } = require('cloudinary');
+const { cleanupExpiredStories } = require('./cleanup-expired-stories');
 
-// Load environment variables
-require('dotenv').config({ path: '.env.local' });
+// Configuration
+const CLEANUP_INTERVAL = 60 * 60 * 1000; // Run every hour (in milliseconds)
+const INITIAL_DELAY = 5 * 60 * 1000; // Start after 5 minutes
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+console.log('🕒 Starting scheduled story cleanup service...');
+console.log(`⏰ Cleanup interval: ${CLEANUP_INTERVAL / 1000 / 60} minutes`);
+console.log(`⏰ Initial delay: ${INITIAL_DELAY / 1000 / 60} minutes`);
 
-// Import models
-const Story = require('../lib/models/Story');
+let cleanupInterval;
 
-// Database connection
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  console.error('❌ MONGODB_URI environment variable is required');
-  process.exit(1);
-}
-
-async function connectDB() {
+async function runCleanup() {
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
-    throw error;
-  }
-}
-
-async function cleanupExpiredStories() {
-  try {
-    console.log(`🧹 [${new Date().toISOString()}] Starting scheduled story cleanup...`);
+    console.log('\n🔄 Running scheduled cleanup...');
+    console.log('⏰ Time:', new Date().toISOString());
     
-    // Find all expired stories
-    const expiredStories = await Story.find({
-      expiresAt: { $lt: new Date() },
-      isActive: true
-    }).populate('author', 'username');
-
-    if (expiredStories.length === 0) {
-      console.log('✨ No expired stories found');
-      return;
-    }
-
-    console.log(`📊 Found ${expiredStories.length} expired stories to clean up`);
-
-    let deletedFromCloudinary = 0;
-    let deletedFromDatabase = 0;
-    let errors = 0;
-
-    // Process each expired story
-    for (const story of expiredStories) {
-      try {
-        // Extract public ID from the media URL
-        const urlParts = story.media.split('/');
-        const filename = urlParts[urlParts.length - 1];
-        const filenameWithoutExtension = filename.split('.')[0];
-        
-        // Reconstruct the public ID based on the folder structure
-        const cloudinaryPublicId = `users/${story.author.username}/story/${story.type}/${filenameWithoutExtension}`;
-
-        // Delete from Cloudinary
-        try {
-          await new Promise((resolve, reject) => {
-            cloudinary.uploader.destroy(
-              cloudinaryPublicId,
-              { resource_type: story.type === 'video' ? 'video' : 'image' },
-              (error, result) => {
-                if (error) {
-                  console.warn(`   ⚠️  Cloudinary deletion failed for story ${story._id}: ${error.message}`);
-                  reject(error);
-                } else {
-                  resolve(result);
-                }
-              }
-            );
-          });
-          deletedFromCloudinary++;
-        } catch (cloudinaryError) {
-          // Continue with database cleanup even if Cloudinary fails
-        }
-
-        // Delete from database
-        await Story.findByIdAndDelete(story._id);
-        deletedFromDatabase++;
-        
-      } catch (storyError) {
-        console.error(`   ❌ Error processing story ${story._id}:`, storyError.message);
-        errors++;
-      }
-    }
-
-    console.log(`📊 Cleanup completed: ${deletedFromDatabase} stories deleted from database, ${deletedFromCloudinary} from Cloudinary, ${errors} errors`);
-
-  } catch (error) {
-    console.error('❌ Cleanup process failed:', error);
-  }
-}
-
-async function startScheduledCleanup() {
-  try {
-    await connectDB();
-    console.log('🚀 Scheduled cleanup service started');
-    console.log('⏰ Running cleanup every hour...');
-    
-    // Run cleanup immediately
     await cleanupExpiredStories();
     
-    // Schedule cleanup every hour
-    setInterval(async () => {
-      try {
-        await cleanupExpiredStories();
-      } catch (error) {
-        console.error('❌ Scheduled cleanup failed:', error);
-      }
-    }, 60 * 60 * 1000); // 1 hour in milliseconds
-    
+    console.log('✅ Scheduled cleanup completed successfully');
   } catch (error) {
-    console.error('❌ Failed to start scheduled cleanup:', error);
-    process.exit(1);
+    console.error('❌ Scheduled cleanup failed:', error);
   }
 }
 
-// Handle graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('\n🛑 Shutting down scheduled cleanup service...');
-  await mongoose.disconnect();
-  console.log('🔌 Disconnected from MongoDB');
+// Start cleanup after initial delay
+setTimeout(() => {
+  console.log('🚀 Starting initial cleanup...');
+  runCleanup();
+  
+  // Set up recurring cleanup
+  cleanupInterval = setInterval(runCleanup, CLEANUP_INTERVAL);
+  console.log('✅ Scheduled cleanup service started');
+}, INITIAL_DELAY);
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('\n🛑 Received SIGINT, shutting down cleanup service...');
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    console.log('✅ Cleanup interval cleared');
+  }
   process.exit(0);
 });
 
-process.on('SIGTERM', async () => {
-  console.log('\n🛑 Shutting down scheduled cleanup service...');
-  await mongoose.disconnect();
-  console.log('🔌 Disconnected from MongoDB');
+process.on('SIGTERM', () => {
+  console.log('\n🛑 Received SIGTERM, shutting down cleanup service...');
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    console.log('✅ Cleanup interval cleared');
+  }
   process.exit(0);
 });
 
-// Start the service
-startScheduledCleanup();
+// Keep the process alive
+console.log('🔄 Cleanup service is running... Press Ctrl+C to stop');

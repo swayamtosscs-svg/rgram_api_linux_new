@@ -48,6 +48,10 @@ async function connectDB() {
       require('./models/Post');
       require('../models/Image');
       require('../models/UserAssets');
+      require('../models/Baba');
+      require('../models/BabaPost');
+      require('../models/BabaVideo');
+      require('../models/BabaStory');
       
       return mongoose;
     }).catch((error) => {

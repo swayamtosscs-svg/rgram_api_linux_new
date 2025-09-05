@@ -1,136 +1,142 @@
 const mongoose = require('mongoose');
-const { v2 as cloudinary } = 'cloudinary';
-
-// Load environment variables
+const fs = require('fs').promises;
+const path = require('path');
 require('dotenv').config({ path: '.env.local' });
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
 // Import models
-const Story = require('../lib/models/Story');
-const User = require('../lib/models/User');
+const BabaStory = require('../models/BabaStory');
+const Baba = require('../models/Baba');
 
-// Database connection
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  console.error('❌ MONGODB_URI environment variable is required');
-  process.exit(1);
-}
+// MongoDB connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://tossitswayam:Qwert123%23%24@cluster0.tpk0nle.mongodb.net/api_rgram?retryWrites=true&w=majority';
 
 async function connectDB() {
   try {
-    await mongoose.connect(MONGODB_URI);
+    if (mongoose.connection.readyState === 1) {
+      console.log('✅ Already connected to MongoDB');
+      return;
+    }
+
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 15000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false,
+      maxPoolSize: 5,
+      retryWrites: true,
+      w: 1,
+      retryReads: true,
+      family: 4,
+    });
+    
     console.log('✅ Connected to MongoDB');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
+    throw error;
   }
 }
 
 async function cleanupExpiredStories() {
   try {
-    console.log('🧹 Starting automatic story cleanup...');
+    console.log('🧹 Starting cleanup of expired stories...');
+    
+    await connectDB();
+    
+    const now = new Date();
+    console.log('⏰ Current time:', now.toISOString());
     
     // Find all expired stories
-    const expiredStories = await Story.find({
-      expiresAt: { $lt: new Date() },
-      isActive: true
-    }).populate('author', 'username');
-
+    const expiredStories = await BabaStory.find({
+      expiresAt: { $lte: now }
+    });
+    
+    console.log(`📊 Found ${expiredStories.length} expired stories`);
+    
     if (expiredStories.length === 0) {
-      console.log('✨ No expired stories found');
+      console.log('✅ No expired stories to clean up');
       return;
     }
-
-    console.log(`📊 Found ${expiredStories.length} expired stories to clean up`);
-
-    let deletedFromCloudinary = 0;
-    let deletedFromDatabase = 0;
-    let errors = 0;
-
+    
+    let deletedCount = 0;
+    let fileDeletedCount = 0;
+    let errorCount = 0;
+    
     // Process each expired story
     for (const story of expiredStories) {
       try {
-        console.log(`🗑️  Processing story: ${story._id} (${story.type})`);
-
-        // Extract public ID from the media URL
-        const urlParts = story.media.split('/');
-        const filename = urlParts[urlParts.length - 1];
-        const filenameWithoutExtension = filename.split('.')[0];
+        console.log(`🗑️ Processing story: ${story._id} (expired at: ${story.expiresAt})`);
         
-        // Reconstruct the public ID based on the folder structure
-        const cloudinaryPublicId = `users/${story.author.username}/story/${story.type}/${filenameWithoutExtension}`;
-
-        console.log(`   📁 Cloudinary path: ${cloudinaryPublicId}`);
-
-        // Delete from Cloudinary
-        try {
-          await new Promise((resolve, reject) => {
-            cloudinary.uploader.destroy(
-              cloudinaryPublicId,
-              { resource_type: story.type === 'video' ? 'video' : 'image' },
-              (error, result) => {
-                if (error) {
-                  console.warn(`   ⚠️  Cloudinary deletion failed: ${error.message}`);
-                  reject(error);
-                } else {
-                  console.log(`   ✅ Cloudinary deletion successful`);
-                  resolve(result);
-                }
-              }
-            );
-          });
-          deletedFromCloudinary++;
-        } catch (cloudinaryError) {
-          console.warn(`   ⚠️  Cloudinary deletion failed for story: ${story._id}`);
+        // Delete media file if exists
+        if (story.mediaPath) {
+          try {
+            await fs.access(story.mediaPath);
+            await fs.unlink(story.mediaPath);
+            console.log(`  ✅ Deleted media file: ${story.mediaPath}`);
+            fileDeletedCount++;
+          } catch (fileError) {
+            console.log(`  ⚠️ Media file not found or already deleted: ${story.mediaPath}`);
+          }
         }
-
-        // Delete from database
-        await Story.findByIdAndDelete(story._id);
-        deletedFromDatabase++;
-        console.log(`   ✅ Database deletion successful`);
-
-      } catch (storyError) {
-        console.error(`   ❌ Error processing story ${story._id}:`, storyError.message);
-        errors++;
+        
+        // Delete thumbnail file if exists
+        if (story.thumbnailPath) {
+          try {
+            await fs.access(story.thumbnailPath);
+            await fs.unlink(story.thumbnailPath);
+            console.log(`  ✅ Deleted thumbnail file: ${story.thumbnailPath}`);
+            fileDeletedCount++;
+          } catch (fileError) {
+            console.log(`  ⚠️ Thumbnail file not found or already deleted: ${story.thumbnailPath}`);
+          }
+        }
+        
+        // Delete story from database
+        await BabaStory.findByIdAndDelete(story._id);
+        console.log(`  ✅ Deleted story from database: ${story._id}`);
+        deletedCount++;
+        
+        // Update baba's story count
+        await Baba.findOneAndUpdate(
+          { babaId: story.babaId },
+          { $inc: { storiesCount: -1 } }
+        );
+        console.log(`  ✅ Updated story count for baba: ${story.babaId}`);
+        
+      } catch (error) {
+        console.error(`  ❌ Error processing story ${story._id}:`, error.message);
+        errorCount++;
       }
     }
-
-    console.log('\n📊 Cleanup Summary:');
-    console.log(`   Total expired stories: ${expiredStories.length}`);
-    console.log(`   Deleted from Cloudinary: ${deletedFromCloudinary}`);
-    console.log(`   Deleted from Database: ${deletedFromDatabase}`);
-    console.log(`   Errors: ${errors}`);
-
-    if (errors > 0) {
-      console.log('\n⚠️  Some stories had errors during cleanup');
-    } else {
-      console.log('\n✨ All expired stories cleaned up successfully!');
-    }
-
+    
+    console.log('🎉 Cleanup completed!');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log(`📊 Summary:`);
+    console.log(`  • Stories deleted from database: ${deletedCount}`);
+    console.log(`  • Files deleted from storage: ${fileDeletedCount}`);
+    console.log(`  • Errors encountered: ${errorCount}`);
+    console.log(`  • Total expired stories found: ${expiredStories.length}`);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
   } catch (error) {
-    console.error('❌ Cleanup process failed:', error);
-  }
-}
-
-async function main() {
-  try {
-    await connectDB();
-    await cleanupExpiredStories();
-  } catch (error) {
-    console.error('❌ Main process failed:', error);
+    console.error('❌ Cleanup error:', error);
+    throw error;
   } finally {
     await mongoose.disconnect();
-    console.log('🔌 Disconnected from MongoDB');
-    process.exit(0);
+    console.log('✅ Disconnected from MongoDB');
   }
 }
 
-// Run the cleanup
-main();
+// Run cleanup if called directly
+if (require.main === module) {
+  cleanupExpiredStories()
+    .then(() => {
+      console.log('✅ Cleanup script completed successfully');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('❌ Cleanup script failed:', error);
+      process.exit(1);
+    });
+}
+
+module.exports = { cleanupExpiredStories };
