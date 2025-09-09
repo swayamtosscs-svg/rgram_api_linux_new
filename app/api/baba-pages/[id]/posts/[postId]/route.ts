@@ -3,8 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import BabaPost from '@/lib/models/BabaPost';
 import mongoose from 'mongoose';
-import { unlink } from 'fs/promises';
-import { join } from 'path';
+import { deleteBabaPageMedia, extractPublicIdFromBabaPageUrl } from '@/utils/babaPagesCloudinary';
 
 // Get a specific post
 export async function GET(
@@ -133,13 +132,40 @@ export async function DELETE(
       );
     }
 
-    // Delete media files from filesystem
+    // Delete media files from Cloudinary
+    let cloudinaryDeleteResults = [];
     for (const media of post.media) {
       try {
-        const filePath = join(process.cwd(), 'public', media.url);
-        await unlink(filePath);
+        // Check if media has publicId (new Cloudinary format) or extract from URL
+        let publicId = (media as any).publicId;
+        if (!publicId) {
+          publicId = extractPublicIdFromBabaPageUrl(media.url);
+        }
+        
+        if (publicId) {
+          console.log(`Deleting media from Cloudinary: ${publicId}, type: ${media.type}`);
+          const deleteResult = await deleteBabaPageMedia(publicId, media.type);
+          cloudinaryDeleteResults.push({
+            publicId,
+            success: deleteResult.success,
+            error: deleteResult.error
+          });
+          
+          if (deleteResult.success) {
+            console.log(`Successfully deleted from Cloudinary: ${publicId}`);
+          } else {
+            console.error(`Failed to delete from Cloudinary: ${publicId} - ${deleteResult.error}`);
+          }
+        } else {
+          console.warn(`Could not extract publicId from URL: ${media.url}`);
+        }
       } catch (fileError) {
         console.error('Error deleting media file:', fileError);
+        cloudinaryDeleteResults.push({
+          publicId: 'unknown',
+          success: false,
+          error: fileError instanceof Error ? fileError.message : 'Unknown error'
+        });
       }
     }
 

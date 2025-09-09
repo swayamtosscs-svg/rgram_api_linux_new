@@ -3,8 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import BabaVideo from '@/lib/models/BabaVideo';
 import mongoose from 'mongoose';
-import { unlink } from 'fs/promises';
-import { join } from 'path';
+import { deleteBabaPageMedia, extractPublicIdFromBabaPageUrl } from '@/utils/babaPagesCloudinary';
 
 // Get a specific video
 export async function GET(
@@ -135,21 +134,41 @@ export async function DELETE(
       );
     }
 
-    // Delete video file from filesystem
+    // Delete video file from Cloudinary
     if (video.video && video.video.url) {
       try {
-        const videoPath = join(process.cwd(), 'public', video.video.url);
-        await unlink(videoPath);
+        // Check if video has publicId (new Cloudinary format) or extract from URL
+        let publicId = (video.video as any).publicId;
+        if (!publicId) {
+          publicId = extractPublicIdFromBabaPageUrl(video.video.url);
+        }
+        
+        if (publicId) {
+          const deleteResult = await deleteBabaPageMedia(publicId, 'video');
+          if (!deleteResult.success) {
+            console.error('Failed to delete video from Cloudinary:', deleteResult.error);
+          }
+        }
       } catch (fileError) {
         console.error('Error deleting video file:', fileError);
       }
     }
 
-    // Delete thumbnail file if exists
+    // Delete thumbnail file from Cloudinary if exists
     if (video.thumbnail && video.thumbnail.url) {
       try {
-        const thumbnailPath = join(process.cwd(), 'public', video.thumbnail.url);
-        await unlink(thumbnailPath);
+        // Check if thumbnail has publicId (new Cloudinary format) or extract from URL
+        let publicId = (video.thumbnail as any).publicId;
+        if (!publicId) {
+          publicId = extractPublicIdFromBabaPageUrl(video.thumbnail.url);
+        }
+        
+        if (publicId) {
+          const deleteResult = await deleteBabaPageMedia(publicId, 'image');
+          if (!deleteResult.success) {
+            console.error('Failed to delete thumbnail from Cloudinary:', deleteResult.error);
+          }
+        }
       } catch (fileError) {
         console.error('Error deleting thumbnail file:', fileError);
       }

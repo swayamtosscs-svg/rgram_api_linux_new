@@ -10,6 +10,7 @@ export interface IBabaStory extends Document {
     filename: string;
     size: number;
     mimeType: string;
+    publicId?: string;
   };
   viewsCount: number;
   likesCount: number;
@@ -51,6 +52,10 @@ const BabaStorySchema = new Schema<IBabaStory>({
     mimeType: {
       type: String,
       default: ''
+    },
+    publicId: {
+      type: String,
+      required: false
     }
   },
   viewsCount: {

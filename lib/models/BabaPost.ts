@@ -10,6 +10,7 @@ export interface IBabaPost extends Document {
     filename: string;
     size: number;
     mimeType: string;
+    publicId?: string;
   }[];
   likesCount: number;
   commentsCount: number;
@@ -52,6 +53,10 @@ const BabaPostSchema = new Schema<IBabaPost>({
     mimeType: {
       type: String,
       required: true
+    },
+    publicId: {
+      type: String,
+      required: false
     }
   }],
   likesCount: {

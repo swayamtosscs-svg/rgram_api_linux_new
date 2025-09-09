@@ -3,8 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import BabaVideo from '@/lib/models/BabaVideo';
 import mongoose from 'mongoose';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { uploadBabaPageMedia, deleteBabaPageMedia, extractPublicIdFromBabaPageUrl } from '@/utils/babaPagesCloudinary';
 
 // Create a new video/reel for a Baba Ji page
 export async function POST(
@@ -84,49 +83,45 @@ export async function POST(
     let thumbnailData = null;
 
     if (videoFile && videoFile.size > 0) {
-      const videoBytes = await videoFile.arrayBuffer();
-      const videoBuffer = Buffer.from(videoBytes);
+      // Upload video to Cloudinary
+      const videoUploadResult = await uploadBabaPageMedia(videoFile, id, 'videos');
       
-      // Create directory if it doesn't exist
-      const pageDir = join(process.cwd(), 'public', 'assets', 'baba-pages', id, 'videos');
-      await mkdir(pageDir, { recursive: true });
-      
-      // Generate unique filename for video
-      const timestamp = Date.now();
-      const randomString = Math.random().toString(36).substring(2, 15);
-      const videoExtension = videoFile.name.split('.').pop();
-      const videoFilename = `video_${timestamp}_${randomString}.${videoExtension}`;
-      const videoFilepath = join(pageDir, videoFilename);
-      
-      // Save video file
-      await writeFile(videoFilepath, videoBuffer);
-
-      videoData = {
-        url: `/assets/baba-pages/${id}/videos/${videoFilename}`,
-        filename: videoFilename,
-        size: videoFile.size,
-        duration: 0, // You might want to extract this from the video file
-        mimeType: videoFile.type
-      };
+      if (videoUploadResult.success && videoUploadResult.data) {
+        videoData = {
+          url: videoUploadResult.data.url,
+          filename: videoUploadResult.data.publicId.split('/').pop() || '',
+          size: videoUploadResult.data.size,
+          duration: 0, // You might want to extract this from the video file
+          mimeType: videoFile.type,
+          publicId: videoUploadResult.data.publicId
+        };
+      } else {
+        console.error('Failed to upload video to Cloudinary:', videoUploadResult.error);
+        return NextResponse.json(
+          { success: false, message: 'Failed to upload video: ' + videoUploadResult.error },
+          { status: 500 }
+        );
+      }
 
       // Process thumbnail file if provided
       if (thumbnailFile && thumbnailFile.size > 0) {
-        const thumbnailBytes = await thumbnailFile.arrayBuffer();
-        const thumbnailBuffer = Buffer.from(thumbnailBytes);
+        const thumbnailUploadResult = await uploadBabaPageMedia(thumbnailFile, id, 'videos', 'thumbnails');
         
-        const thumbnailExtension = thumbnailFile.name.split('.').pop();
-        const thumbnailFilename = `thumb_${timestamp}_${randomString}.${thumbnailExtension}`;
-        const thumbnailFilepath = join(pageDir, thumbnailFilename);
-        
-        // Save thumbnail file
-        await writeFile(thumbnailFilepath, thumbnailBuffer);
-        
-        thumbnailData = {
-          url: `/assets/baba-pages/${id}/videos/${thumbnailFilename}`,
-          filename: thumbnailFilename,
-          size: thumbnailFile.size,
-          mimeType: thumbnailFile.type
-        };
+        if (thumbnailUploadResult.success && thumbnailUploadResult.data) {
+          thumbnailData = {
+            url: thumbnailUploadResult.data.url,
+            filename: thumbnailUploadResult.data.publicId.split('/').pop() || '',
+            size: thumbnailUploadResult.data.size,
+            mimeType: thumbnailFile.type,
+            publicId: thumbnailUploadResult.data.publicId
+          };
+        } else {
+          console.error('Failed to upload thumbnail to Cloudinary:', thumbnailUploadResult.error);
+          return NextResponse.json(
+            { success: false, message: 'Failed to upload thumbnail: ' + thumbnailUploadResult.error },
+            { status: 500 }
+          );
+        }
       }
     }
 

@@ -3,8 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import BabaStory from '@/lib/models/BabaStory';
 import mongoose from 'mongoose';
-import { unlink } from 'fs/promises';
-import { join } from 'path';
+import { deleteBabaPageMedia, extractPublicIdFromBabaPageUrl } from '@/utils/babaPagesCloudinary';
 
 // Get a specific story
 export async function GET(
@@ -84,11 +83,21 @@ export async function DELETE(
       );
     }
 
-    // Delete media file from filesystem
+    // Delete media file from Cloudinary
     if (story.media && story.media.url) {
       try {
-        const filePath = join(process.cwd(), 'public', story.media.url);
-        await unlink(filePath);
+        // Check if media has publicId (new Cloudinary format) or extract from URL
+        let publicId = (story.media as any).publicId;
+        if (!publicId) {
+          publicId = extractPublicIdFromBabaPageUrl(story.media.url);
+        }
+        
+        if (publicId) {
+          const deleteResult = await deleteBabaPageMedia(publicId, story.media.type);
+          if (!deleteResult.success) {
+            console.error('Failed to delete story media from Cloudinary:', deleteResult.error);
+          }
+        }
       } catch (fileError) {
         console.error('Error deleting story media file:', fileError);
       }

@@ -11,12 +11,14 @@ export interface IBabaVideo extends Document {
     size: number;
     duration: number;
     mimeType: string;
+    publicId?: string;
   };
   thumbnail?: {
     url: string;
     filename: string;
     size: number;
     mimeType: string;
+    publicId?: string;
   };
   category: 'reel' | 'video';
   viewsCount: number;
@@ -65,6 +67,10 @@ const BabaVideoSchema = new Schema<IBabaVideo>({
     mimeType: {
       type: String,
       default: ''
+    },
+    publicId: {
+      type: String,
+      required: false
     }
   },
   thumbnail: {
@@ -83,6 +89,10 @@ const BabaVideoSchema = new Schema<IBabaVideo>({
     mimeType: {
       type: String,
       default: ''
+    },
+    publicId: {
+      type: String,
+      required: false
     }
   },
   category: {

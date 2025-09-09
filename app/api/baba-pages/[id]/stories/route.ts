@@ -3,8 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import BabaStory from '@/lib/models/BabaStory';
 import mongoose from 'mongoose';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { uploadBabaPageMedia, deleteBabaPageMedia, extractPublicIdFromBabaPageUrl } from '@/utils/babaPagesCloudinary';
 
 // Create a new story for a Baba Ji page
 export async function POST(
@@ -60,34 +59,29 @@ export async function POST(
     let mediaData = null;
 
     if (mediaFile && mediaFile.size > 0) {
-      const mediaBytes = await mediaFile.arrayBuffer();
-      const mediaBuffer = Buffer.from(mediaBytes);
+      // Upload media to Cloudinary
+      const uploadResult = await uploadBabaPageMedia(mediaFile, id, 'stories');
       
-      // Create directory if it doesn't exist
-      const pageDir = join(process.cwd(), 'public', 'assets', 'baba-pages', id, 'stories');
-      await mkdir(pageDir, { recursive: true });
-      
-      // Generate unique filename
-      const timestamp = Date.now();
-      const randomString = Math.random().toString(36).substring(2, 15);
-      const fileExtension = mediaFile.name.split('.').pop();
-      const filename = `story_${timestamp}_${randomString}.${fileExtension}`;
-      const filepath = join(pageDir, filename);
-      
-      // Save file
-      await writeFile(filepath, mediaBuffer);
-      
-      // Determine file type
-      const mimeType = mediaFile.type;
-      const fileType = mimeType.startsWith('video/') ? 'video' : 'image';
+      if (uploadResult.success && uploadResult.data) {
+        // Determine file type
+        const mimeType = mediaFile.type;
+        const fileType = mimeType.startsWith('video/') ? 'video' : 'image';
 
-      mediaData = {
-        type: fileType,
-        url: `/assets/baba-pages/${id}/stories/${filename}`,
-        filename: filename,
-        size: mediaFile.size,
-        mimeType: mimeType
-      };
+        mediaData = {
+          type: fileType,
+          url: uploadResult.data.url,
+          filename: uploadResult.data.publicId.split('/').pop() || '',
+          size: uploadResult.data.size,
+          mimeType: mimeType,
+          publicId: uploadResult.data.publicId
+        };
+      } else {
+        console.error('Failed to upload media to Cloudinary:', uploadResult.error);
+        return NextResponse.json(
+          { success: false, message: 'Failed to upload media: ' + uploadResult.error },
+          { status: 500 }
+        );
+      }
     }
 
     // Create story (will auto-expire in 24 hours)

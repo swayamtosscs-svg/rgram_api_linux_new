@@ -3,8 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import BabaPost from '@/lib/models/BabaPost';
 import mongoose from 'mongoose';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { uploadBabaPageMedia, deleteBabaPageMedia, extractPublicIdFromBabaPageUrl } from '@/utils/babaPagesCloudinary';
 
 // Create a new post for a Baba Ji page
 export async function POST(
@@ -48,37 +47,31 @@ export async function POST(
       content = formData.get('content') as string;
       const mediaFiles = formData.getAll('media') as File[];
 
-      // Process media files
+      // Process media files with Cloudinary
       for (const file of mediaFiles) {
         if (file.size > 0) {
-          const bytes = await file.arrayBuffer();
-          const buffer = Buffer.from(bytes);
+          const uploadResult = await uploadBabaPageMedia(file, id, 'posts');
           
-          // Create directory if it doesn't exist
-          const pageDir = join(process.cwd(), 'public', 'assets', 'baba-pages', id, 'posts');
-          await mkdir(pageDir, { recursive: true });
-          
-          // Generate unique filename
-          const timestamp = Date.now();
-          const randomString = Math.random().toString(36).substring(2, 15);
-          const fileExtension = file.name.split('.').pop();
-          const filename = `post_${timestamp}_${randomString}.${fileExtension}`;
-          const filepath = join(pageDir, filename);
-          
-          // Save file
-          await writeFile(filepath, buffer);
-          
-          // Determine file type
-          const mimeType = file.type;
-          const fileType = mimeType.startsWith('video/') ? 'video' : 'image';
-          
-          mediaArray.push({
-            type: fileType,
-            url: `/assets/baba-pages/${id}/posts/${filename}`,
-            filename: filename,
-            size: file.size,
-            mimeType: mimeType
-          });
+          if (uploadResult.success && uploadResult.data) {
+            // Determine file type
+            const mimeType = file.type;
+            const fileType = mimeType.startsWith('video/') ? 'video' : 'image';
+            
+            mediaArray.push({
+              type: fileType,
+              url: uploadResult.data.url,
+              filename: uploadResult.data.publicId.split('/').pop() || '',
+              size: uploadResult.data.size,
+              mimeType: mimeType,
+              publicId: uploadResult.data.publicId
+            });
+          } else {
+            console.error('Failed to upload media to Cloudinary:', uploadResult.error);
+            return NextResponse.json(
+              { success: false, message: 'Failed to upload media: ' + uploadResult.error },
+              { status: 500 }
+            );
+          }
         }
       }
     }
