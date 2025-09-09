@@ -1,411 +1,335 @@
-# Baba Pages API Documentation
+# Baba Ji Pages API Documentation
 
-This API provides comprehensive functionality for managing spiritual leader (Baba) pages where different Babas can upload and manage their content including posts, videos, and stories.
-
-## Overview
-
-The Baba Pages API allows spiritual leaders to:
-- Create and manage their personal pages
-- Upload and manage posts with images
-- Upload and manage videos with thumbnails
-- Create and manage stories (24-hour content)
-- Track followers and engagement metrics
-- Organize content by categories and tags
-
-## File Structure
-
-```
-public/babaji-pages/
-├── {babaId}/
-│   ├── posts/
-│   │   └── post_{timestamp}_{random}.webp
-│   ├── videos/
-│   │   ├── video_{timestamp}_{random}.{ext}
-│   │   └── thumb_{timestamp}_{random}.webp
-│   └── stories/
-│       ├── story_{timestamp}_{random}.{ext}
-│       └── thumb_{timestamp}_{random}.webp
-```
-
-## API Endpoints
-
-### 1. Baba Management
-
-#### Create Baba Page
-**POST** `/api/baba`
-
-Create a new Baba page.
-
-**Request Body:**
-```json
-{
-  "babaId": "baba_ramdev",
-  "babaName": "Baba Ramdev",
-  "spiritualName": "Swami Ramdev",
-  "description": "Yoga guru and spiritual leader",
-  "location": "Haridwar, India",
-  "ashram": "Patanjali Yogpeeth",
-  "socialLinks": {
-    "website": "https://patanjaliyogpeeth.net",
-    "youtube": "https://youtube.com/babarramdev"
-  },
-  "contactInfo": {
-    "email": "contact@patanjaliyogpeeth.net",
-    "phone": "+91-1234567890"
-  },
-  "spiritualTeachings": ["Yoga", "Meditation", "Ayurveda"],
-  "languages": ["Hindi", "English", "Sanskrit"],
-  "createdBy": "64f1a2b3c4d5e6f7g8h9i0j1"
-}
-```
-
-#### Get Baba Pages
-**GET** `/api/baba`
-
-Retrieve all Baba pages with pagination and search.
-
-**Query Parameters:**
-- `babaId` (optional): Get specific Baba page
-- `page` (optional): Page number (default: 1)
-- `limit` (optional): Items per page (default: 10)
-- `search` (optional): Search in name, description, location
-
-#### Update Baba Page
-**PUT** `/api/baba`
-
-Update Baba page information.
-
-#### Delete Baba Page
-**DELETE** `/api/baba?babaId={babaId}`
-
-Soft delete a Baba page.
-
-### 2. Baba Posts
-
-#### Create Post
-**POST** `/api/baba/posts`
-
-Upload a new post with optional image.
-
-**Request (multipart/form-data):**
-- `babaId` (required): Baba's ID
-- `title` (required): Post title
-- `content` (required): Post content
-- `image` (optional): Image file
-- `category` (optional): Post category
-- `tags` (optional): JSON array of tags
-- `isPublic` (optional): Public visibility
-
-#### Get Posts
-**GET** `/api/baba/posts`
-
-Retrieve Baba's posts with pagination and filtering.
-
-**Query Parameters:**
-- `babaId` (required): Baba's ID
-- `postId` (optional): Get specific post
-- `page` (optional): Page number
-- `limit` (optional): Items per page
-- `category` (optional): Filter by category
-- `search` (optional): Search in title/content
-
-#### Delete Post
-**DELETE** `/api/baba/posts?postId={postId}`
-
-Delete a post and its associated image.
-
-### 3. Baba Videos
-
-#### Upload Video
-**POST** `/api/baba/videos`
-
-Upload a new video with optional thumbnail.
-
-**Request (multipart/form-data):**
-- `babaId` (required): Baba's ID
-- `title` (required): Video title
-- `description` (optional): Video description
-- `video` (required): Video file
-- `thumbnail` (optional): Thumbnail image
-- `category` (optional): Video category
-- `tags` (optional): JSON array of tags
-- `isPublic` (optional): Public visibility
-
-#### Get Videos
-**GET** `/api/baba/videos`
-
-Retrieve Baba's videos with pagination and filtering.
-
-**Query Parameters:**
-- `babaId` (required): Baba's ID
-- `videoId` (optional): Get specific video
-- `page` (optional): Page number
-- `limit` (optional): Items per page
-- `category` (optional): Filter by category
-- `search` (optional): Search in title/description
-
-#### Delete Video
-**DELETE** `/api/baba/videos?videoId={videoId}`
-
-Delete a video and its associated files.
-
-### 4. Baba Stories
-
-#### Create Story
-**POST** `/api/baba/stories`
-
-Upload a new story (image or video).
-
-**Request (multipart/form-data):**
-- `babaId` (required): Baba's ID
-- `media` (required): Image or video file
-- `content` (optional): Story text
-- `category` (optional): Story category
-
-#### Get Stories
-**GET** `/api/baba/stories`
-
-Retrieve Baba's active stories.
-
-**Query Parameters:**
-- `babaId` (required): Baba's ID
-- `storyId` (optional): Get specific story
-- `page` (optional): Page number
-- `limit` (optional): Items per page
-- `category` (optional): Filter by category
-
-#### Delete Story
-**DELETE** `/api/baba/stories?storyId={storyId}`
-
-Delete a story and its associated files.
-
-## Database Models
-
-### Baba Model
-```typescript
-{
-  babaId: String,           // Unique identifier
-  babaName: String,         // Display name
-  spiritualName: String,    // Spiritual title
-  description: String,      // Bio/description
-  avatar: String,           // Profile picture URL
-  coverImage: String,       // Cover image URL
-  location: String,         // Physical location
-  ashram: String,           // Ashram/temple name
-  followersCount: Number,   // Follower count
-  postsCount: Number,       // Post count
-  videosCount: Number,      // Video count
-  storiesCount: Number,     // Story count
-  isActive: Boolean,        // Active status
-  isVerified: Boolean,      // Verification status
-  socialLinks: Object,      // Social media links
-  contactInfo: Object,      // Contact information
-  spiritualTeachings: [String], // Teaching topics
-  languages: [String],      // Spoken languages
-  createdBy: ObjectId,      // Creator user ID
-  lastActive: Date          // Last activity
-}
-```
-
-### BabaPost Model
-```typescript
-{
-  babaId: String,           // Baba's ID
-  title: String,            // Post title
-  content: String,          // Post content
-  imageUrl: String,         // Image URL
-  imagePath: String,        // Local file path
-  publicUrl: String,        // Public access URL
-  category: String,         // Post category
-  tags: [String],           // Post tags
-  isPublic: Boolean,        // Public visibility
-  likesCount: Number,       // Like count
-  commentsCount: Number,    // Comment count
-  sharesCount: Number,      // Share count
-  viewsCount: Number,       // View count
-  featured: Boolean,        // Featured status
-  publishedAt: Date         // Publication date
-}
-```
-
-### BabaVideo Model
-```typescript
-{
-  babaId: String,           // Baba's ID
-  title: String,            // Video title
-  description: String,      // Video description
-  videoUrl: String,         // Video URL
-  videoPath: String,        // Local file path
-  publicUrl: String,        // Public access URL
-  thumbnailUrl: String,     // Thumbnail URL
-  thumbnailPath: String,    // Thumbnail file path
-  duration: Number,         // Duration in seconds
-  fileSize: Number,         // File size in bytes
-  resolution: Object,       // Video resolution
-  format: String,           // Video format
-  category: String,         // Video category
-  tags: [String],           // Video tags
-  isPublic: Boolean,        // Public visibility
-  isLive: Boolean,          // Live video status
-  likesCount: Number,       // Like count
-  viewsCount: Number,       // View count
-  sharesCount: Number,      // Share count
-  commentsCount: Number,    // Comment count
-  featured: Boolean,        // Featured status
-  publishedAt: Date         // Publication date
-}
-```
-
-### BabaStory Model
-```typescript
-{
-  babaId: String,           // Baba's ID
-  content: String,          // Story text
-  mediaType: String,        // 'image' or 'video'
-  mediaUrl: String,         // Media URL
-  mediaPath: String,        // Local file path
-  publicUrl: String,        // Public access URL
-  thumbnailUrl: String,     // Thumbnail URL (for videos)
-  thumbnailPath: String,    // Thumbnail file path
-  duration: Number,         // Duration in seconds (for videos)
-  fileSize: Number,         // File size in bytes
-  format: String,           // File format
-  category: String,         // Story category
-  isPublic: Boolean,        // Public visibility
-  viewsCount: Number,       // View count
-  likesCount: Number,       // Like count
-  sharesCount: Number,      // Share count
-  expiresAt: Date,          // Expiration date (24 hours)
-  publishedAt: Date         // Publication date
-}
-```
+This API provides comprehensive functionality for creating and managing Baba Ji pages with posts, videos/reels, and stories. All media files are stored locally in the `public/assets/baba-pages/` directory.
 
 ## Features
 
-### Image Processing
-- Automatic image optimization using Sharp
-- WebP conversion for better compression
-- Automatic resizing for posts (1200x800) and stories (1080x1080)
-- Quality optimization (85% for posts, 90% for stories)
+- ✅ Create Baba Ji pages with auto-generated IDs
+- ✅ Upload and manage posts with media
+- ✅ Upload and manage videos/reels with thumbnails
+- ✅ Upload and manage stories with 24-hour auto-deletion
+- ✅ Local storage for all media files
+- ✅ Automatic cleanup of expired stories
+- ✅ Full CRUD operations for all content types
 
-### Video Processing
-- Support for multiple video formats
-- Automatic thumbnail generation
-- File size validation (500MB max for videos)
-- Duration tracking
+## API Endpoints
 
-### Story Management
-- 24-hour expiration (automatic cleanup)
-- Support for both images and videos
-- Square format optimization for mobile
-- Automatic thumbnail generation for videos
+### 1. Baba Ji Pages Management
 
-### Content Organization
-- Category-based filtering
-- Tag-based search
-- Pagination support
-- Search functionality
-- Featured content support
+#### Create a new Baba Ji page
+```
+POST /api/baba-pages
+Content-Type: application/json
+
+{
+  "name": "Baba Ramdev",
+  "description": "Spiritual leader and yoga guru",
+  "location": "Haridwar, India",
+  "religion": "Hinduism",
+  "website": "https://baba-ramdev.com"
+}
+```
+
+#### Get all Baba Ji pages
+```
+GET /api/baba-pages?page=1&limit=10&search=ramdev&religion=hinduism
+```
+
+#### Get specific Baba Ji page
+```
+GET /api/baba-pages/[id]
+```
+
+#### Update Baba Ji page
+```
+PUT /api/baba-pages/[id]
+Content-Type: application/json
+
+{
+  "name": "Updated Name",
+  "description": "Updated description"
+}
+```
+
+#### Delete Baba Ji page
+```
+DELETE /api/baba-pages/[id]
+```
+
+### 2. Posts Management
+
+#### Create a new post
+```
+POST /api/baba-pages/[id]/posts
+Content-Type: multipart/form-data
+
+{
+  "content": "This is a spiritual post",
+  "media": [file1, file2] // Optional image/video files
+}
+```
+
+#### Get all posts for a page
+```
+GET /api/baba-pages/[id]/posts?page=1&limit=10
+```
+
+#### Get specific post
+```
+GET /api/baba-pages/[id]/posts/[postId]
+```
+
+#### Update post
+```
+PUT /api/baba-pages/[id]/posts/[postId]
+Content-Type: application/json
+
+{
+  "content": "Updated post content"
+}
+```
+
+#### Delete post
+```
+DELETE /api/baba-pages/[id]/posts/[postId]
+```
+
+### 3. Videos/Reels Management
+
+#### Create a new video/reel
+```
+POST /api/baba-pages/[id]/videos
+Content-Type: multipart/form-data
+
+{
+  "title": "Spiritual Video",
+  "description": "Video description",
+  "category": "reel", // or "video"
+  "video": videoFile,
+  "thumbnail": thumbnailFile // Optional
+}
+```
+
+#### Get all videos for a page
+```
+GET /api/baba-pages/[id]/videos?page=1&limit=10&category=reel
+```
+
+#### Get specific video
+```
+GET /api/baba-pages/[id]/videos/[videoId]
+```
+
+#### Update video
+```
+PUT /api/baba-pages/[id]/videos/[videoId]
+Content-Type: application/json
+
+{
+  "title": "Updated title",
+  "description": "Updated description"
+}
+```
+
+#### Delete video
+```
+DELETE /api/baba-pages/[id]/videos/[videoId]
+```
+
+### 4. Stories Management
+
+#### Create a new story
+```
+POST /api/baba-pages/[id]/stories
+Content-Type: multipart/form-data
+
+{
+  "content": "Story content", // Optional
+  "media": mediaFile // Required image/video file
+}
+```
+
+#### Get all active stories for a page
+```
+GET /api/baba-pages/[id]/stories
+```
+
+#### Get specific story
+```
+GET /api/baba-pages/[id]/stories/[storyId]
+```
+
+#### Delete story (manual deletion)
+```
+DELETE /api/baba-pages/[id]/stories/[storyId]
+```
+
+## File Storage Structure
+
+All media files are stored in the following structure:
+
+```
+public/assets/baba-pages/
+├── [pageId]/
+│   ├── posts/
+│   │   ├── post_[timestamp]_[random].jpg
+│   │   └── post_[timestamp]_[random].mp4
+│   ├── videos/
+│   │   ├── video_[timestamp]_[random].mp4
+│   │   └── thumb_[timestamp]_[random].jpg
+│   └── stories/
+│       ├── story_[timestamp]_[random].jpg
+│       └── story_[timestamp]_[random].mp4
+```
+
+## Database Models
+
+### BabaPage
+- `_id`: Auto-generated page ID
+- `name`: Page name (required)
+- `description`: Page description
+- `avatar`: Avatar image URL
+- `coverImage`: Cover image URL
+- `location`: Location
+- `religion`: Religion
+- `website`: Website URL
+- `followersCount`: Number of followers
+- `postsCount`: Number of posts
+- `videosCount`: Number of videos
+- `storiesCount`: Number of stories
+- `isActive`: Active status
+- `createdAt`: Creation timestamp
+- `updatedAt`: Last update timestamp
+
+### BabaPost
+- `_id`: Auto-generated post ID
+- `babaPageId`: Reference to BabaPage
+- `content`: Post content
+- `media`: Array of media objects
+- `likesCount`: Number of likes
+- `commentsCount`: Number of comments
+- `sharesCount`: Number of shares
+- `isActive`: Active status
+- `createdAt`: Creation timestamp
+- `updatedAt`: Last update timestamp
+
+### BabaVideo
+- `_id`: Auto-generated video ID
+- `babaPageId`: Reference to BabaPage
+- `title`: Video title
+- `description`: Video description
+- `video`: Video file object
+- `thumbnail`: Thumbnail file object
+- `category`: 'reel' or 'video'
+- `viewsCount`: Number of views
+- `likesCount`: Number of likes
+- `commentsCount`: Number of comments
+- `sharesCount`: Number of shares
+- `isActive`: Active status
+- `createdAt`: Creation timestamp
+- `updatedAt`: Last update timestamp
+
+### BabaStory
+- `_id`: Auto-generated story ID
+- `babaPageId`: Reference to BabaPage
+- `content`: Story content
+- `media`: Media file object
+- `viewsCount`: Number of views
+- `likesCount`: Number of likes
+- `isActive`: Active status
+- `expiresAt`: Auto-expiration timestamp (24 hours)
+- `createdAt`: Creation timestamp
+- `updatedAt`: Last update timestamp
+
+## Auto-Cleanup for Stories
+
+Stories automatically expire after 24 hours. To run the cleanup script:
+
+```bash
+node scripts/cleanup-expired-baba-stories.js
+```
+
+You can also set up a cron job to run this script periodically:
+
+```bash
+# Run every hour
+0 * * * * cd /path/to/project && node scripts/cleanup-expired-baba-stories.js
+```
+
+## Response Format
+
+All API responses follow this format:
+
+### Success Response
+```json
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": { ... }
+}
+```
+
+### Error Response
+```json
+{
+  "success": false,
+  "message": "Error description"
+}
+```
+
+## Error Codes
+
+- `400`: Bad Request - Invalid input data
+- `404`: Not Found - Resource not found
+- `409`: Conflict - Resource already exists
+- `500`: Internal Server Error - Server error
 
 ## Usage Examples
 
-### Create a Baba Page
+### Creating a complete Baba Ji page with content
+
+1. **Create the page:**
 ```bash
-curl -X POST http://localhost:3000/api/baba \
+curl -X POST http://localhost:3000/api/baba-pages \
   -H "Content-Type: application/json" \
   -d '{
-    "babaId": "baba_ramdev",
-    "babaName": "Baba Ramdev",
-    "spiritualName": "Swami Ramdev",
+    "name": "Baba Ramdev",
     "description": "Yoga guru and spiritual leader",
-    "location": "Haridwar, India",
-    "ashram": "Patanjali Yogpeeth",
-    "createdBy": "64f1a2b3c4d5e6f7g8h9i0j1"
+    "location": "Haridwar",
+    "religion": "Hinduism"
   }'
 ```
 
-### Upload a Post with Image
+2. **Upload a post:**
 ```bash
-curl -X POST http://localhost:3000/api/baba/posts \
-  -F "babaId=baba_ramdev" \
-  -F "title=Daily Yoga Practice" \
-  -F "content=Today we will learn the benefits of Surya Namaskar" \
-  -F "image=@yoga-pose.jpg" \
-  -F "category=teaching" \
-  -F "tags=[\"yoga\", \"health\", \"meditation\"]"
+curl -X POST http://localhost:3000/api/baba-pages/[pageId]/posts \
+  -F "content=This is a spiritual message" \
+  -F "media=@image.jpg"
 ```
 
-### Upload a Video
+3. **Upload a video:**
 ```bash
-curl -X POST http://localhost:3000/api/baba/videos \
-  -F "babaId=baba_ramdev" \
-  -F "title=Morning Satsang" \
-  -F "description=Today's spiritual discourse on inner peace" \
-  -F "video=@satsang.mp4" \
-  -F "thumbnail=@thumbnail.jpg" \
-  -F "category=satsang"
+curl -X POST http://localhost:3000/api/baba-pages/[pageId]/videos \
+  -F "title=Yoga Session" \
+  -F "description=Daily yoga practice" \
+  -F "category=video" \
+  -F "video=@yoga_video.mp4" \
+  -F "thumbnail=@thumbnail.jpg"
 ```
 
-### Create a Story
+4. **Upload a story:**
 ```bash
-curl -X POST http://localhost:3000/api/baba/stories \
-  -F "babaId=baba_ramdev" \
-  -F "media=@daily-blessing.jpg" \
-  -F "content=May you all be blessed with peace and prosperity" \
-  -F "category=blessing"
+curl -X POST http://localhost:3000/api/baba-pages/[pageId]/stories \
+  -F "content=Daily wisdom" \
+  -F "media=@story_image.jpg"
 ```
-
-### Get Baba's Content
-```bash
-# Get all posts
-curl "http://localhost:3000/api/baba/posts?babaId=baba_ramdev&page=1&limit=10"
-
-# Get all videos
-curl "http://localhost:3000/api/baba/videos?babaId=baba_ramdev&page=1&limit=10"
-
-# Get all stories
-curl "http://localhost:3000/api/baba/stories?babaId=baba_ramdev&page=1&limit=20"
-```
-
-## Error Handling
-
-The API provides comprehensive error handling with:
-- Detailed error messages
-- HTTP status codes
-- Validation errors
-- File system errors
-- Database errors
-
-## Security Features
-
-- User authentication required for content creation
-- File type validation
-- File size limits
-- Path traversal protection
-- Input sanitization
-- SQL injection prevention
-
-## Performance Optimizations
-
-- Database indexing for fast queries
-- Pagination support
-- Efficient file operations
-- Image optimization
-- Lazy loading support
-- Caching strategies
-
-## Dependencies
-
-- `sharp`: Image processing and optimization
-- `mongoose`: MongoDB ODM
-- `fs/promises`: File system operations
-- `path`: Path utilities
 
 ## Notes
 
-- Stories automatically expire after 24 hours
-- All images are optimized and converted to WebP
-- Videos are stored as-is with generated thumbnails
-- Content is organized in baba-specific folders
-- All operations are logged for debugging
-- Database models include proper indexing for performance
+- All media files are stored locally in the `public/assets/baba-pages/` directory
+- Stories automatically expire after 24 hours and are cleaned up by the cleanup script
+- File uploads support both images and videos
+- All timestamps are in UTC
+- Pagination is available for list endpoints
+- Search functionality is available for pages
+- All operations are logged for debugging purposes

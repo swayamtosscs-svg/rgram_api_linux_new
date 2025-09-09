@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baba Ji Pages API Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🕉️ Baba Ji Pages API Demo</h1>
+    
+    <div class="grid">
+        <!-- Create Page Section -->
+        <div class="container">
+            <h2>Create Baba Ji Page</h2>
+            <form id="createPageForm">
+                <div class="form-group">
+                    <label for="pageName">Page Name *</label>
+                    <input type="text" id="pageName" required placeholder="e.g., Baba Ramdev">
+                </div>
+                <div class="form-group">
+                    <label for="pageDescription">Description</label>
+                    <textarea id="pageDescription" rows="3" placeholder="Brief description of the Baba Ji"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="pageLocation">Location</label>
+                    <input type="text" id="pageLocation" placeholder="e.g., Haridwar, India">
+                </div>
+                <div class="form-group">
+                    <label for="pageReligion">Religion</label>
+                    <input type="text" id="pageReligion" placeholder="e.g., Hinduism">
+                </div>
+                <div class="form-group">
+                    <label for="pageWebsite">Website</label>
+                    <input type="url" id="pageWebsite" placeholder="https://example.com">
+                </div>
+                <button type="submit">Create Page</button>
+            </form>
+            <div id="createPageResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <!-- Get Pages Section -->
+        <div class="container">
+            <h2>Get Baba Ji Pages</h2>
+            <div class="form-group">
+                <label for="searchQuery">Search</label>
+                <input type="text" id="searchQuery" placeholder="Search by name or description">
+            </div>
+            <div class="form-group">
+                <label for="religionFilter">Religion Filter</label>
+                <input type="text" id="religionFilter" placeholder="Filter by religion">
+            </div>
+            <button onclick="getPages()">Get Pages</button>
+            <div id="getPagesResponse" class="response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- Create Post Section -->
+        <div class="container">
+            <h2>Create Post</h2>
+            <form id="createPostForm">
+                <div class="form-group">
+                    <label for="postPageId">Page ID *</label>
+                    <input type="text" id="postPageId" required placeholder="Enter page ID">
+                </div>
+                <div class="form-group">
+                    <label for="postContent">Content *</label>
+                    <textarea id="postContent" rows="3" required placeholder="Post content"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="postMedia">Media Files</label>
+                    <input type="file" id="postMedia" multiple accept="image/*,video/*">
+                </div>
+                <button type="submit">Create Post</button>
+            </form>
+            <div id="createPostResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <!-- Create Video Section -->
+        <div class="container">
+            <h2>Create Video/Reel</h2>
+            <form id="createVideoForm">
+                <div class="form-group">
+                    <label for="videoPageId">Page ID *</label>
+                    <input type="text" id="videoPageId" required placeholder="Enter page ID">
+                </div>
+                <div class="form-group">
+                    <label for="videoTitle">Title *</label>
+                    <input type="text" id="videoTitle" required placeholder="Video title">
+                </div>
+                <div class="form-group">
+                    <label for="videoDescription">Description</label>
+                    <textarea id="videoDescription" rows="2" placeholder="Video description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="videoCategory">Category</label>
+                    <select id="videoCategory">
+                        <option value="video">Video</option>
+                        <option value="reel">Reel</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="videoFile">Video File *</label>
+                    <input type="file" id="videoFile" accept="video/*">
+                </div>
+                <div class="form-group">
+                    <label for="thumbnailFile">Thumbnail (Optional)</label>
+                    <input type="file" id="thumbnailFile" accept="image/*">
+                </div>
+                <button type="submit">Create Video</button>
+            </form>
+            <div id="createVideoResponse" class="response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- Create Story Section -->
+        <div class="container">
+            <h2>Create Story</h2>
+            <form id="createStoryForm">
+                <div class="form-group">
+                    <label for="storyPageId">Page ID *</label>
+                    <input type="text" id="storyPageId" required placeholder="Enter page ID">
+                </div>
+                <div class="form-group">
+                    <label for="storyContent">Content</label>
+                    <textarea id="storyContent" rows="2" placeholder="Story content (optional)"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="storyMedia">Media File *</label>
+                    <input type="file" id="storyMedia" accept="image/*,video/*">
+                </div>
+                <button type="submit">Create Story</button>
+            </form>
+            <div id="createStoryResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <!-- Get Content Section -->
+        <div class="container">
+            <h2>Get Page Content</h2>
+            <div class="form-group">
+                <label for="contentPageId">Page ID *</label>
+                <input type="text" id="contentPageId" required placeholder="Enter page ID">
+            </div>
+            <button onclick="getPageContent()">Get Posts</button>
+            <button onclick="getPageVideos()">Get Videos</button>
+            <button onclick="getPageStories()">Get Stories</button>
+            <div id="getContentResponse" class="response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        // Create Page
+        document.getElementById('createPageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const responseDiv = document.getElementById('createPageResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/baba-pages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: document.getElementById('pageName').value,
+                        description: document.getElementById('pageDescription').value,
+                        location: document.getElementById('pageLocation').value,
+                        religion: document.getElementById('pageReligion').value,
+                        website: document.getElementById('pageWebsite').value
+                    })
+                });
+                
+                const data = await response.json();
+                responseDiv.style.display = 'block';
+                responseDiv.className = response.ok ? 'response success' : 'response error';
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.style.display = 'block';
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        });
+
+        // Get Pages
+        async function getPages() {
+            const responseDiv = document.getElementById('getPagesResponse');
+            const search = document.getElementById('searchQuery').value;
+            const religion = document.getElementById('religionFilter').value;
+            
+            try {
+                let url = `${API_BASE}/api/baba-pages?page=1&limit=10`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                if (religion) url += `&religion=${encodeURIComponent(religion)}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                responseDiv.style.display = 'block';
+                responseDiv.className = response.ok ? 'response success' : 'response error';
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.style.display = 'block';
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Create Post
+        document.getElementById('createPostForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const responseDiv = document.getElementById('createPostResponse');
+            
+            try {
+                const formData = new FormData();
+                formData.append('content', document.getElementById('postContent').value);
+                
+                const mediaFiles = document.getElementById('postMedia').files;
+                for (let file of mediaFiles) {
+                    formData.append('media', file);
+                }
+                
+                const response = await fetch(`${API_BASE}/api/baba-pages/${document.getElementById('postPageId').value}/posts`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                responseDiv.style.display = 'block';
+                responseDiv.className = response.ok ? 'response success' : 'response error';
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.style.display = 'block';
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        });
+
+        // Create Video
+        document.getElementById('createVideoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const responseDiv = document.getElementById('createVideoResponse');
+            
+            try {
+                const formData = new FormData();
+                formData.append('title', document.getElementById('videoTitle').value);
+                formData.append('description', document.getElementById('videoDescription').value);
+                formData.append('category', document.getElementById('videoCategory').value);
+                formData.append('video', document.getElementById('videoFile').files[0]);
+                
+                const thumbnailFile = document.getElementById('thumbnailFile').files[0];
+                if (thumbnailFile) {
+                    formData.append('thumbnail', thumbnailFile);
+                }
+                
+                const response = await fetch(`${API_BASE}/api/baba-pages/${document.getElementById('videoPageId').value}/videos`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                responseDiv.style.display = 'block';
+                responseDiv.className = response.ok ? 'response success' : 'response error';
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.style.display = 'block';
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        });
+
+        // Create Story
+        document.getElementById('createStoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const responseDiv = document.getElementById('createStoryResponse');
+            
+            try {
+                const formData = new FormData();
+                formData.append('content', document.getElementById('storyContent').value);
+                formData.append('media', document.getElementById('storyMedia').files[0]);
+                
+                const response = await fetch(`${API_BASE}/api/baba-pages/${document.getElementById('storyPageId').value}/stories`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                responseDiv.style.display = 'block';
+                responseDiv.className = response.ok ? 'response success' : 'response error';
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.style.display = 'block';
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        });
+
+        // Get Page Content
+        async function getPageContent() {
+            const pageId = document.getElementById('contentPageId').value;
+            if (!pageId) return;
+            
+            const responseDiv = document.getElementById('getContentResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/baba-pages/${pageId}/posts?page=1&limit=5`);
+                const data = await response.json();
+                
+                responseDiv.style.display = 'block';
+                responseDiv.className = response.ok ? 'response success' : 'response error';
+                responseDiv.textContent = 'POSTS:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.style.display = 'block';
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function getPageVideos() {
+            const pageId = document.getElementById('contentPageId').value;
+            if (!pageId) return;
+            
+            const responseDiv = document.getElementById('getContentResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/baba-pages/${pageId}/videos?page=1&limit=5`);
+                const data = await response.json();
+                
+                responseDiv.style.display = 'block';
+                responseDiv.className = response.ok ? 'response success' : 'response error';
+                responseDiv.textContent = 'VIDEOS:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.style.display = 'block';
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function getPageStories() {
+            const pageId = document.getElementById('contentPageId').value;
+            if (!pageId) return;
+            
+            const responseDiv = document.getElementById('getContentResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/baba-pages/${pageId}/stories`);
+                const data = await response.json();
+                
+                responseDiv.style.display = 'block';
+                responseDiv.className = response.ok ? 'response success' : 'response error';
+                responseDiv.textContent = 'STORIES:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.style.display = 'block';
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
