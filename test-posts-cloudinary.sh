@@ -66,3 +66,4 @@ echo "To test with actual files, run:"
 echo "curl -X POST \"$BASE_URL/$PAGE_ID/posts\" \\"
 echo "  -F \"content=Test post with image\" \\"
 echo "  -F \"media=@/path/to/your-image.jpg\""
+

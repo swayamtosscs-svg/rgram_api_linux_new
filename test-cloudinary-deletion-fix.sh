@@ -59,3 +59,4 @@ echo $VERIFY_RESPONSE | jq '.'
 echo -e "\n=== Test Complete ==="
 echo "Check your Cloudinary console to verify files are deleted from:"
 echo "baba-pages/$PAGE_ID/posts/"
+

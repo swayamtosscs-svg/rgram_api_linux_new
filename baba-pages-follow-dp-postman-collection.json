@@ -1,0 +1,250 @@
+{
+  "info": {
+    "name": "Baba Pages Follow & DP API",
+    "description": "Collection for testing Baba Pages follow/unfollow and profile picture management APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "key": "page_id",
+      "value": "your_page_id_here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Follow/Unfollow",
+      "item": [
+        {
+          "name": "Follow Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/follow",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "follow"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unfollow Page",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/follow",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "follow"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Check Follow Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/follow",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "follow"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Profile Picture Management",
+      "item": [
+        {
+          "name": "Upload Profile Picture",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "path/to/image.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/dp/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "dp", "upload"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Profile Picture",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/dp/delete",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "dp", "delete"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Followers Management",
+      "item": [
+        {
+          "name": "Get Page Followers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/followers?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "followers"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User's Followed Pages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/following?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "following"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Page Management",
+      "item": [
+        {
+          "name": "Create Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Baba Page\",\n  \"description\": \"This is a test page\",\n  \"location\": \"Test Location\",\n  \"religion\": \"Hinduism\",\n  \"website\": \"https://example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Page Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Pages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -13,6 +13,7 @@ export interface IBabaPage extends Document {
   postsCount: number;
   videosCount: number;
   storiesCount: number;
+  followers: mongoose.Types.ObjectId[];
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -73,6 +74,10 @@ const BabaPageSchema = new Schema<IBabaPage>({
     default: 0,
     min: 0
   },
+  followers: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   isActive: {
     type: Boolean,
     default: true

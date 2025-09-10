@@ -187,3 +187,4 @@ https://res.cloudinary.com/mycloud/image/upload/v1756191446/baba-pages/64a1b2c3d
 1. Check file size limits
 2. Verify file format support
 3. Check Cloudinary account limits
+
