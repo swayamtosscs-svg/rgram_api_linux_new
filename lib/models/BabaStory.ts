@@ -1,5 +1,13 @@
 import mongoose, { Document, Schema, Model, Types } from 'mongoose';
 
+export interface IComment {
+  _id: Types.ObjectId;
+  userId: Types.ObjectId;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface IBabaStory extends Document {
   _id: string;
   babaPageId: Types.ObjectId;
@@ -13,7 +21,10 @@ export interface IBabaStory extends Document {
     publicId?: string;
   };
   viewsCount: number;
+  likes: Types.ObjectId[];
   likesCount: number;
+  comments: IComment[];
+  commentsCount: number;
   isActive: boolean;
   expiresAt: Date;
   createdAt: Date;
@@ -63,7 +74,29 @@ const BabaStorySchema = new Schema<IBabaStory>({
     default: 0,
     min: 0
   },
+  likes: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   likesCount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  comments: [{
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    content: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: [500, 'Comment must be less than 500 characters']
+    }
+  }],
+  commentsCount: {
     type: Number,
     default: 0,
     min: 0
