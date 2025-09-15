@@ -1,27 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
 import dbConnect from '@/lib/database';
 import Story from '@/lib/models/Story';
 import User from '@/lib/models/User';
-
-interface CloudinaryUploadResult {
-  url: string;
-  secure_url: string;
-  public_id: string;
-  format: string;
-  width: number;
-  height: number;
-  duration?: number;
-  resource_type: string;
-  folder?: string;
-}
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { uploadFileToLocal } from '@/utils/localStorage';
 
 export async function POST(req: NextRequest) {
   try {
@@ -121,51 +102,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Convert buffer to base64
-    const base64String = buffer.toString('base64');
-    const fileType = file.type;
-    const dataURI = `data:${fileType};base64,${base64String}`;
-
-    // Create user-specific story folder structure in Cloudinary organized by media type
-    const cloudinaryFolder = `users/${user.username}/story/${mediaType}`;
-    console.log('📁 Cloudinary story folder path:', cloudinaryFolder);
-    console.log('👤 Username for folder:', user.username);
-    console.log('📁 Media type folder:', mediaType);
-
-    // Upload to Cloudinary with user-specific story folder organized by media type
-    const uploadResult = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
-      const uploadOptions = {
-        resource_type: mediaType,
-        folder: cloudinaryFolder,
-        public_id: `${user.username}_story_${Date.now()}`,
-        use_filename: false,
-        unique_filename: false,
-        overwrite: false,
-      };
-
-      console.log('☁️ Uploading story to Cloudinary with options:', uploadOptions);
-      
-      cloudinary.uploader.upload(
-        dataURI,
-        uploadOptions,
-        (error, result: any) => {
-          if (error) {
-            console.error('❌ Cloudinary upload error:', error);
-            reject(error);
-          } else {
-            console.log('✅ Cloudinary story upload successful:', {
-              public_id: result.public_id,
-              folder: result.folder,
-              url: result.secure_url
-            });
-            resolve(result as CloudinaryUploadResult);
-          }
-        }
+    // Upload to local storage
+    console.log('📁 Uploading story to local storage...');
+    const uploadResult = await uploadFileToLocal(file, userId, 'stories');
+    
+    if (!uploadResult.success || !uploadResult.data) {
+      return NextResponse.json(
+        { error: 'Failed to upload story to local storage', details: uploadResult.error },
+        { status: 500 }
       );
+    }
+
+    console.log('✅ Local storage upload successful:', {
+      fileName: uploadResult.data.fileName,
+      publicUrl: uploadResult.data.publicUrl,
+      fileSize: uploadResult.data.fileSize
     });
 
     // Parse mentions and hashtags
@@ -191,7 +142,7 @@ export async function POST(req: NextRequest) {
     // Create story in database
     const story = await Story.create({
       author: userId,
-      media: uploadResult.secure_url,
+      media: uploadResult.data.publicUrl,
       type: mediaType,
       caption: caption || undefined,
       mentions: parsedMentions,
@@ -206,20 +157,16 @@ export async function POST(req: NextRequest) {
     // Return success response
     return NextResponse.json({
       success: true,
-      message: 'Story uploaded successfully',
+      message: 'Story uploaded successfully to local storage',
       data: {
         storyId: story._id,
-        publicId: uploadResult.public_id,
-        secureUrl: uploadResult.secure_url,
-        folderPath: cloudinaryFolder,
-        fileName: `${uploadResult.public_id}.${uploadResult.format}`,
+        fileName: uploadResult.data.fileName,
+        publicUrl: uploadResult.data.publicUrl,
+        filePath: uploadResult.data.filePath,
         mediaType: mediaType,
-        fileSize: file.size,
-        dimensions: {
-          width: uploadResult.width,
-          height: uploadResult.height,
-        },
-        duration: uploadResult.duration,
+        fileSize: uploadResult.data.fileSize,
+        dimensions: uploadResult.data.dimensions,
+        duration: uploadResult.data.duration,
         author: {
           id: user._id,
           username: user.username,
@@ -230,7 +177,8 @@ export async function POST(req: NextRequest) {
         hashtags: story.hashtags,
         location: story.location,
         expiresAt: story.expiresAt,
-        createdAt: story.createdAt
+        createdAt: story.createdAt,
+        storageType: 'local'
       }
     });
 
@@ -238,33 +186,22 @@ export async function POST(req: NextRequest) {
     console.error('Story upload error:', error);
     console.error('Error stack:', error.stack);
     
-    // Handle specific Cloudinary errors
-    if (error.http_code === 400) {
+    // Handle file system errors
+    if (error.code === 'ENOENT') {
       return NextResponse.json(
         { 
-          error: 'Invalid file format or size',
-          details: error.message 
+          error: 'File system error',
+          details: 'Directory or file not found'
         },
-        { status: 400 }
+        { status: 500 }
       );
     }
 
-    if (error.http_code === 413) {
+    if (error.code === 'EACCES') {
       return NextResponse.json(
         { 
-          error: 'File too large',
-          details: 'Maximum file size exceeded' 
-        },
-        { status: 413 }
-      );
-    }
-
-    // Handle environment variable errors
-    if (error.message && error.message.includes('CLOUDINARY')) {
-      return NextResponse.json(
-        { 
-          error: 'Cloudinary configuration error',
-          details: 'Please check your Cloudinary environment variables'
+          error: 'Permission denied',
+          details: 'Insufficient permissions to write file'
         },
         { status: 500 }
       );
@@ -283,7 +220,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { 
-        error: 'Error uploading story',
+        error: 'Error uploading story to local storage',
         details: error.message,
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },

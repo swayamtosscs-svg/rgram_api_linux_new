@@ -3,14 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import mongoose from 'mongoose';
 import { verifyToken } from '@/lib/utils/auth';
-import { v2 as cloudinary } from 'cloudinary';
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { uploadBabaPageFileToLocal, deleteBabaPageFileByUrl } from '@/utils/babaPagesLocalStorage';
 
 export async function POST(
   request: NextRequest,
@@ -54,19 +47,11 @@ export async function POST(
       );
     }
 
-    // Check if Cloudinary is configured
-    if (!process.env.CLOUDINARY_CLOUD_NAME || 
-        !process.env.CLOUDINARY_API_KEY || 
-        !process.env.CLOUDINARY_API_SECRET) {
-      return NextResponse.json(
-        { success: false, message: 'Cloudinary not configured' },
-        { status: 500 }
-      );
-    }
+    // No external service configuration needed for local storage
 
     // Parse form data
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get('dp') as File;
     
     if (!file) {
       return NextResponse.json(
@@ -93,68 +78,40 @@ export async function POST(
       );
     }
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Convert buffer to base64 data URI
-    const base64 = buffer.toString('base64');
-    const dataURI = `data:${file.type};base64,${base64}`;
-
-    // Upload to Cloudinary
-    const cloudinaryFolder = `baba-pages/${id}/profile_pictures`;
-    const publicId = `baba-pages/${id}/profile_pictures/${Date.now()}`;
-
-    const uploadResult = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload(
-        dataURI,
-        {
-          resource_type: 'image',
-          folder: cloudinaryFolder,
-          public_id: publicId,
-          use_filename: false,
-          unique_filename: false,
-          overwrite: true,
-          transformation: [
-            { width: 400, height: 400, crop: 'fill', gravity: 'face' },
-            { quality: 'auto' }
-          ]
-        },
-        (error, result) => {
-          if (error) {
-            console.error('Cloudinary upload error:', error);
-            reject(error);
-          } else {
-            resolve(result);
-          }
-        }
+    // Upload to local storage
+    const uploadResult = await uploadBabaPageFileToLocal(file, id, 'dp');
+    
+    if (!uploadResult.success || !uploadResult.data) {
+      return NextResponse.json(
+        { success: false, message: 'Failed to upload profile picture to local storage', details: uploadResult.error },
+        { status: 500 }
       );
-    }) as any;
+    }
 
     // Delete old avatar if exists
-    if (babaPage.avatar) {
+    if (babaPage.avatar && babaPage.avatar.startsWith('/uploads/')) {
       try {
-        const oldPublicId = babaPage.avatar.split('/').slice(-2).join('/').split('.')[0];
-        await cloudinary.uploader.destroy(oldPublicId);
+        await deleteBabaPageFileByUrl(babaPage.avatar);
       } catch (error) {
         console.warn('Error deleting old avatar:', error);
       }
     }
 
     // Update page with new avatar
-    babaPage.avatar = uploadResult.secure_url;
+    babaPage.avatar = uploadResult.data.publicUrl;
     await babaPage.save();
 
     return NextResponse.json({
       success: true,
-      message: 'Profile picture uploaded successfully',
+      message: 'Profile picture uploaded successfully to local storage',
       data: {
-        avatar: uploadResult.secure_url,
-        publicId: uploadResult.public_id,
-        format: uploadResult.format,
-        width: uploadResult.width,
-        height: uploadResult.height,
-        size: uploadResult.bytes
+        avatar: uploadResult.data.publicUrl,
+        fileName: uploadResult.data.fileName,
+        filePath: uploadResult.data.filePath,
+        fileSize: uploadResult.data.fileSize,
+        mimeType: uploadResult.data.mimeType,
+        dimensions: uploadResult.data.dimensions,
+        storageType: 'local'
       }
     }, { status: 201 });
 

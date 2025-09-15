@@ -3,7 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import BabaPost from '@/lib/models/BabaPost';
 import mongoose from 'mongoose';
-import { deleteBabaPageMedia, extractPublicIdFromBabaPageUrl } from '@/utils/babaPagesCloudinary';
+import { deleteBabaPageFileByUrl } from '@/utils/babaPagesLocalStorage';
 
 // Get a specific post
 export async function GET(
@@ -132,53 +132,62 @@ export async function DELETE(
       );
     }
 
-    // Delete media files from Cloudinary
-    let cloudinaryDeleteResults = [];
+    // Delete media files from local storage
+    let localDeleteResults = [];
     for (const media of post.media) {
       try {
-        // Check if media has publicId (new Cloudinary format) or extract from URL
-        let publicId = (media as any).publicId;
-        if (!publicId) {
-          publicId = extractPublicIdFromBabaPageUrl(media.url);
-        }
-        
-        if (publicId) {
-          console.log(`Deleting media from Cloudinary: ${publicId}, type: ${media.type}`);
-          const deleteResult = await deleteBabaPageMedia(publicId, media.type);
-          cloudinaryDeleteResults.push({
-            publicId,
+        // Check if media has local storage URL
+        if (media.url && media.url.startsWith('/uploads/')) {
+          console.log(`Deleting media from local storage: ${media.url}, type: ${media.type}`);
+          const deleteResult = await deleteBabaPageFileByUrl(media.url);
+          localDeleteResults.push({
+            url: media.url,
+            fileName: media.fileName || 'unknown',
             success: deleteResult.success,
             error: deleteResult.error
           });
           
           if (deleteResult.success) {
-            console.log(`Successfully deleted from Cloudinary: ${publicId}`);
+            console.log(`Successfully deleted from local storage: ${media.url}`);
           } else {
-            console.error(`Failed to delete from Cloudinary: ${publicId} - ${deleteResult.error}`);
+            console.error(`Failed to delete from local storage: ${media.url} - ${deleteResult.error}`);
           }
         } else {
-          console.warn(`Could not extract publicId from URL: ${media.url}`);
+          console.warn(`Skipping non-local storage URL: ${media.url}`);
         }
       } catch (fileError) {
         console.error('Error deleting media file:', fileError);
-        cloudinaryDeleteResults.push({
-          publicId: 'unknown',
+        localDeleteResults.push({
+          url: media.url || 'unknown',
+          fileName: media.fileName || 'unknown',
           success: false,
           error: fileError instanceof Error ? fileError.message : 'Unknown error'
         });
       }
     }
 
-    // Soft delete post
-    post.isActive = false;
-    await post.save();
+    // Delete post from MongoDB
+    await BabaPost.findByIdAndDelete(postId);
 
     // Update page posts count
     await BabaPage.findByIdAndUpdate(id, { $inc: { postsCount: -1 } });
 
     return NextResponse.json({
       success: true,
-      message: 'Post deleted successfully'
+      message: 'Post deleted successfully from MongoDB and local storage',
+      data: {
+        deletedPost: {
+          id: post._id,
+          content: post.content,
+          mediaCount: post.media.length
+        },
+        deletedMedia: localDeleteResults,
+        deletedAt: new Date().toISOString(),
+        deletionStatus: {
+          localStorage: localDeleteResults.every(r => r.success) ? 'success' : 'partial',
+          database: 'success'
+        }
+      }
     });
 
   } catch (error) {

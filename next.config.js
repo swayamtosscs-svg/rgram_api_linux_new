@@ -23,6 +23,11 @@ const nextConfig = {
         source: '/assets/:path*',
         destination: '/assets/:path*',
       },
+      // Uploads routes for local storage
+      {
+        source: '/uploads/:path*',
+        destination: '/uploads/:path*',
+      },
       // Dynamic API routes
       {
         source: '/api/:path*',
@@ -30,7 +35,7 @@ const nextConfig = {
       },
     ]
   },
-  // Configure headers for API routes
+  // Configure headers for API routes and uploads
   async headers() {
     return [
       {
@@ -40,6 +45,14 @@ const nextConfig = {
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,DELETE,OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version' },
+        ]
+      },
+      {
+        source: '/uploads/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS' },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ]
       }
     ]

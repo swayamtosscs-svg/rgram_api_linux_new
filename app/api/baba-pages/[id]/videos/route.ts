@@ -3,7 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import BabaVideo from '@/lib/models/BabaVideo';
 import mongoose from 'mongoose';
-import { uploadBabaPageMedia, deleteBabaPageMedia, extractPublicIdFromBabaPageUrl } from '@/utils/babaPagesCloudinary';
+import { uploadBabaPageFileToLocal, deleteBabaPageFileFromLocal } from '@/utils/babaPagesLocalStorage';
 
 // Create a new video/reel for a Baba Ji page
 export async function POST(
@@ -83,20 +83,22 @@ export async function POST(
     let thumbnailData = null;
 
     if (videoFile && videoFile.size > 0) {
-      // Upload video to Cloudinary
-      const videoUploadResult = await uploadBabaPageMedia(videoFile, id, 'videos');
+      // Upload video to local storage
+      const videoUploadResult = await uploadBabaPageFileToLocal(videoFile, id, 'videos');
       
       if (videoUploadResult.success && videoUploadResult.data) {
         videoData = {
-          url: videoUploadResult.data.url,
-          filename: videoUploadResult.data.publicId.split('/').pop() || '',
-          size: videoUploadResult.data.size,
-          duration: 0, // You might want to extract this from the video file
+          url: videoUploadResult.data.publicUrl,
+          fileName: videoUploadResult.data.fileName,
+          filePath: videoUploadResult.data.filePath,
+          size: videoUploadResult.data.fileSize,
+          duration: videoUploadResult.data.duration || 0,
           mimeType: videoFile.type,
-          publicId: videoUploadResult.data.publicId
+          dimensions: videoUploadResult.data.dimensions,
+          storageType: 'local'
         };
       } else {
-        console.error('Failed to upload video to Cloudinary:', videoUploadResult.error);
+        console.error('Failed to upload video to local storage:', videoUploadResult.error);
         return NextResponse.json(
           { success: false, message: 'Failed to upload video: ' + videoUploadResult.error },
           { status: 500 }
@@ -105,18 +107,20 @@ export async function POST(
 
       // Process thumbnail file if provided
       if (thumbnailFile && thumbnailFile.size > 0) {
-        const thumbnailUploadResult = await uploadBabaPageMedia(thumbnailFile, id, 'videos', 'thumbnails');
+        const thumbnailUploadResult = await uploadBabaPageFileToLocal(thumbnailFile, id, 'videos', 'thumbnails');
         
         if (thumbnailUploadResult.success && thumbnailUploadResult.data) {
           thumbnailData = {
-            url: thumbnailUploadResult.data.url,
-            filename: thumbnailUploadResult.data.publicId.split('/').pop() || '',
-            size: thumbnailUploadResult.data.size,
+            url: thumbnailUploadResult.data.publicUrl,
+            fileName: thumbnailUploadResult.data.fileName,
+            filePath: thumbnailUploadResult.data.filePath,
+            size: thumbnailUploadResult.data.fileSize,
             mimeType: thumbnailFile.type,
-            publicId: thumbnailUploadResult.data.publicId
+            dimensions: thumbnailUploadResult.data.dimensions,
+            storageType: 'local'
           };
         } else {
-          console.error('Failed to upload thumbnail to Cloudinary:', thumbnailUploadResult.error);
+          console.error('Failed to upload thumbnail to local storage:', thumbnailUploadResult.error);
           return NextResponse.json(
             { success: false, message: 'Failed to upload thumbnail: ' + thumbnailUploadResult.error },
             { status: 500 }

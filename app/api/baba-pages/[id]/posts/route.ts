@@ -3,7 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import BabaPost from '@/lib/models/BabaPost';
 import mongoose from 'mongoose';
-import { uploadBabaPageMedia, deleteBabaPageMedia, extractPublicIdFromBabaPageUrl } from '@/utils/babaPagesCloudinary';
+import { uploadBabaPageFileToLocal, deleteBabaPageFileFromLocal } from '@/utils/babaPagesLocalStorage';
 
 // Create a new post for a Baba Ji page
 export async function POST(
@@ -47,10 +47,10 @@ export async function POST(
       content = formData.get('content') as string;
       const mediaFiles = formData.getAll('media') as File[];
 
-      // Process media files with Cloudinary
+      // Process media files with local storage
       for (const file of mediaFiles) {
         if (file.size > 0) {
-          const uploadResult = await uploadBabaPageMedia(file, id, 'posts');
+          const uploadResult = await uploadBabaPageFileToLocal(file, id, 'posts');
           
           if (uploadResult.success && uploadResult.data) {
             // Determine file type
@@ -59,14 +59,18 @@ export async function POST(
             
             mediaArray.push({
               type: fileType,
-              url: uploadResult.data.url,
-              filename: uploadResult.data.publicId.split('/').pop() || '',
-              size: uploadResult.data.size,
+              url: uploadResult.data.publicUrl,
+              fileName: uploadResult.data.fileName,
+              filename: uploadResult.data.fileName, // Add legacy filename field
+              filePath: uploadResult.data.filePath,
+              size: uploadResult.data.fileSize,
               mimeType: mimeType,
-              publicId: uploadResult.data.publicId
+              dimensions: uploadResult.data.dimensions,
+              duration: uploadResult.data.duration,
+              storageType: 'local'
             });
           } else {
-            console.error('Failed to upload media to Cloudinary:', uploadResult.error);
+            console.error('Failed to upload media to local storage:', uploadResult.error);
             return NextResponse.json(
               { success: false, message: 'Failed to upload media: ' + uploadResult.error },
               { status: 500 }

@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
 import mongoose from 'mongoose';
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { deleteFileFromLocal } from '@/utils/localStorage';
 
 // Define Media schema inline to avoid import issues
 const mediaSchema = new mongoose.Schema({
-  publicId: { type: String, required: true, unique: true },
-  url: { type: String, required: true },
-  secureUrl: { type: String, required: true },
+  // Legacy Cloudinary fields (keeping for backward compatibility)
+  publicId: { type: String, required: false, unique: false },
+  url: { type: String, required: false },
+  secureUrl: { type: String, required: false },
+  
+  // Local storage fields
+  fileName: { type: String, required: true },
+  filePath: { type: String, required: true },
+  publicUrl: { type: String, required: true },
+  fileSize: { type: Number, required: true },
+  mimeType: { type: String, required: true },
+  
+  // Common fields
   format: { type: String, required: true },
   resourceType: { type: String, enum: ['image', 'video'], required: true },
   width: Number,
@@ -23,6 +26,7 @@ const mediaSchema = new mongoose.Schema({
   description: String,
   tags: [String],
   uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  storageType: { type: String, enum: ['cloudinary', 'local'], default: 'local' },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
@@ -94,42 +98,44 @@ export async function DELETE(req: NextRequest) {
     // Store media info for response
     const mediaInfo = {
       mediaId: media._id,
-      publicId: media.publicId,
-      secureUrl: media.secureUrl,
+      fileName: media.fileName,
+      filePath: media.filePath,
+      publicUrl: media.publicUrl,
       resourceType: media.resourceType,
       title: media.title,
-      uploadedBy: media.uploadedBy
+      uploadedBy: media.uploadedBy,
+      storageType: media.storageType
     };
 
-    console.log('🗑️ Deleting from Cloudinary...');
+    console.log('🗑️ Deleting from local storage...');
 
-    // Delete from Cloudinary
+    // Delete from local storage
     try {
-      const cloudinaryResult = await new Promise((resolve, reject) => {
-        cloudinary.uploader.destroy(
-          media.publicId,
-          { resource_type: media.resourceType || 'auto' },
-          (error, result) => {
-            if (error) {
-              console.error('❌ Cloudinary deletion error:', error);
-              reject(error);
-            } else {
-              console.log('✅ Cloudinary deletion result:', result);
-              resolve(result);
-            }
-          }
-        );
-      });
+      const deleteResult = await deleteFileFromLocal(media.filePath);
       
-      console.log('✅ Cloudinary deletion successful');
-    } catch (cloudinaryError: any) {
-      console.error('❌ Cloudinary deletion failed:', cloudinaryError);
+      if (!deleteResult.success) {
+        console.error('❌ Local storage deletion failed:', deleteResult.error);
+        return NextResponse.json(
+          { 
+            success: false,
+            error: 'Failed to delete from local storage',
+            message: 'Media could not be deleted from local storage',
+            details: deleteResult.error,
+            mediaInfo
+          },
+          { status: 500 }
+        );
+      }
+      
+      console.log('✅ Local storage deletion successful');
+    } catch (localStorageError: any) {
+      console.error('❌ Local storage deletion failed:', localStorageError);
       return NextResponse.json(
         { 
           success: false,
-          error: 'Failed to delete from Cloudinary',
-          message: 'Media could not be deleted from cloud storage',
-          details: cloudinaryError.message,
+          error: 'Failed to delete from local storage',
+          message: 'Media could not be deleted from local storage',
+          details: localStorageError.message,
           mediaInfo
         },
         { status: 500 }
@@ -144,12 +150,12 @@ export async function DELETE(req: NextRequest) {
 
     const response = {
       success: true,
-      message: 'Media deleted successfully',
+      message: 'Media deleted successfully from local storage',
       data: {
         deletedMedia: mediaInfo,
         deletedAt: new Date().toISOString(),
         deletionStatus: {
-          cloudinary: 'success',
+          localStorage: 'success',
           database: 'success'
         }
       }

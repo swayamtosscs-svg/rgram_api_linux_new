@@ -16,7 +16,21 @@
     "test:baba": "node test-baba-pages-api.js",
     "test:story-expiration": "node test-story-expiration.js",
     "cleanup-stories": "node scripts/cleanup-expired-stories.js",
-    "cleanup-scheduled": "node scripts/scheduled-cleanup.js"
+    "cleanup-scheduled": "node scripts/scheduled-cleanup.js",
+    "setup:local": "node setup-local-mongodb.js",
+    "migrate:local": "node migrate-to-local-mongodb.js",
+    "migrate:quick": "node quick-migration-start.js",
+    "fix:local-mongodb": "node fix-local-mongodb.js",
+    "fix:quick": "node quick-fix-mongodb.js",
+    "fix:database": "node fix-mongodb-database.js",
+    "test:local-mongodb": "node test-local-mongodb.js",
+    "test:database": "node test-database-connection.js",
+    "delete:user": "node delete-media-and-data.js user",
+    "delete:baba": "node delete-media-and-data.js baba",
+    "delete:post": "node delete-media-and-data.js post",
+    "delete:video": "node delete-media-and-data.js video",
+    "delete:story": "node delete-media-and-data.js story",
+    "cleanup:orphaned": "node delete-media-and-data.js cleanup"
   },
   "dependencies": {
     "@types/formidable": "^3.4.5",
@@ -27,6 +41,7 @@
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
     "dotenv": "^17.2.1",
+    "form-data": "^4.0.4",
     "formidable": "^3.5.4",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
@@ -38,6 +53,7 @@
     "react-dom": "^18.3.1",
     "sharp": "^0.34.3",
     "typescript": "^5.9.2",
+    "uuid": "^9.0.1",
     "validator": "^13.15.15"
   },
   "devDependencies": {

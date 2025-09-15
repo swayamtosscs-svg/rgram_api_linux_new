@@ -39,6 +39,24 @@ const nextConfig = {
         source: '/api/:path*',
         destination: '/api/:path*',
       },
+      // Uploads routes for local storage
+      {
+        source: '/uploads/:path*',
+        destination: '/uploads/:path*',
+      },
+    ];
+  },
+  // Configure headers for uploads
+  async headers() {
+    return [
+      {
+        source: '/uploads/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS' },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ]
+      }
     ];
   },
   // Disable static generation for specific routes

@@ -13,9 +13,14 @@ const imageSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  fullUrl: {
+  publicUrl: {
     type: String,
     required: true
+  },
+  // Legacy field for backward compatibility
+  fullUrl: {
+    type: String,
+    required: false
   },
   fileSize: {
     type: Number,
@@ -53,6 +58,11 @@ const imageSchema = new mongoose.Schema({
       type: Number,
       default: 0
     }
+  },
+  storageType: {
+    type: String,
+    enum: ['cloudinary', 'local'],
+    default: 'local'
   },
   createdAt: {
     type: Date,

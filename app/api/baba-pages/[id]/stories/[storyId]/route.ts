@@ -3,7 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import BabaStory from '@/lib/models/BabaStory';
 import mongoose from 'mongoose';
-import { deleteBabaPageMedia, extractPublicIdFromBabaPageUrl } from '@/utils/babaPagesCloudinary';
+import { deleteBabaPageFileByUrl } from '@/utils/babaPagesLocalStorage';
 
 // Get a specific story
 export async function GET(
@@ -83,36 +83,48 @@ export async function DELETE(
       );
     }
 
-    // Delete media file from Cloudinary
-    if (story.media && story.media.url) {
+    // Delete media file from local storage
+    let mediaDeleteSuccess = false;
+    if (story.media && story.media.url && story.media.url.startsWith('/uploads/')) {
       try {
-        // Check if media has publicId (new Cloudinary format) or extract from URL
-        let publicId = (story.media as any).publicId;
-        if (!publicId) {
-          publicId = extractPublicIdFromBabaPageUrl(story.media.url);
-        }
-        
-        if (publicId) {
-          const deleteResult = await deleteBabaPageMedia(publicId, story.media.type);
-          if (!deleteResult.success) {
-            console.error('Failed to delete story media from Cloudinary:', deleteResult.error);
-          }
+        const deleteResult = await deleteBabaPageFileByUrl(story.media.url);
+        if (deleteResult.success) {
+          mediaDeleteSuccess = true;
+          console.log('Successfully deleted story media from local storage:', story.media.url);
+        } else {
+          console.error('Failed to delete story media from local storage:', deleteResult.error);
         }
       } catch (fileError) {
         console.error('Error deleting story media file:', fileError);
       }
     }
 
-    // Soft delete story
-    story.isActive = false;
-    await story.save();
+    // Delete story from MongoDB
+    await BabaStory.findByIdAndDelete(storyId);
 
     // Update page stories count
     await BabaPage.findByIdAndUpdate(id, { $inc: { storiesCount: -1 } });
 
     return NextResponse.json({
       success: true,
-      message: 'Story deleted successfully'
+      message: 'Story deleted successfully from MongoDB and local storage',
+      data: {
+        deletedStory: {
+          id: story._id,
+          content: story.content,
+          mediaType: story.media?.type || 'unknown'
+        },
+        deletedMedia: {
+          url: story.media?.url || '',
+          fileName: story.media?.fileName || 'unknown',
+          success: mediaDeleteSuccess
+        },
+        deletedAt: new Date().toISOString(),
+        deletionStatus: {
+          localStorage: mediaDeleteSuccess ? 'success' : 'partial',
+          database: 'success'
+        }
+      }
     });
 
   } catch (error) {

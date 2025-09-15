@@ -1,17 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { v2 as cloudinary } from 'cloudinary';
 import { verifyToken } from '../../../lib/middleware/auth';
 import connectDB from '../../../lib/database';
 import User from '../../../lib/models/User';
 import formidable from 'formidable';
 import fs from 'fs';
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import path from 'path';
+import { uploadFileToLocal, validateFileType, validateFileSize } from '../../../utils/localStorage';
 
 export const config = {
   api: {
@@ -146,57 +140,48 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
         // Determine folder based on file type
-        let folder = 'general';
-        if (file.mimetype?.includes('image/')) folder = 'images';
-        else if (file.mimetype?.includes('video/')) folder = 'videos';
-        else if (file.mimetype?.includes('audio/')) folder = 'audio';
-        else if (file.mimetype?.includes('application/pdf')) folder = 'documents';
-        else if (file.mimetype?.includes('application/')) folder = 'documents';
+        let folderType: 'images' | 'videos' | 'documents' | 'audio' = 'documents';
+        if (file.mimetype?.includes('image/')) folderType = 'images';
+        else if (file.mimetype?.includes('video/')) folderType = 'videos';
+        else if (file.mimetype?.includes('audio/')) folderType = 'audio';
+        else if (file.mimetype?.includes('application/pdf')) folderType = 'documents';
+        else if (file.mimetype?.includes('application/')) folderType = 'documents';
 
-        console.log(`Uploading file to folder: ${folder}`);
+        console.log(`Uploading file to folder: ${folderType}`);
 
-                 // Upload to Cloudinary with user ID organization
-         const result: any = await new Promise((resolve, reject) => {
-           cloudinary.uploader.upload(
-             file.filepath,
-             {
-               folder: `rgram/users/${user._id}/${folder}`,
-               resource_type: 'auto',
-               public_id: `${user._id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-               tags: ['rgram', 'user', user._id.toString(), user.username],
-               context: {
-                 uploaded_by: user._id.toString(),
-                 username: user.username,
-                 fullName: user.fullName,
-                 upload_date: new Date().toISOString(),
-                 user_folder: `users/${user._id}`
-               }
-             },
-             (error, result) => {
-               if (error) reject(error);
-               else resolve(result);
-             }
-           );
-         });
+        // Create a File object from formidable file for our local storage utility
+        const fileBuffer = fs.readFileSync(file.filepath);
+        const fileBlob = new Blob([fileBuffer], { type: file.mimetype || 'application/octet-stream' });
+        const fileForUpload = new File([fileBlob], file.originalFilename || 'unknown', {
+          type: file.mimetype || 'application/octet-stream'
+        });
+
+        // Upload to local storage
+        const uploadResult = await uploadFileToLocal(fileForUpload, user._id.toString(), folderType);
+        
+        if (!uploadResult.success || !uploadResult.data) {
+          throw new Error(uploadResult.error || 'Failed to upload file to local storage');
+        }
 
         uploadedFiles.push({
           originalName: file.originalFilename,
-          fileName: file.newFilename,
-          publicId: result.public_id,
-          url: result.secure_url,
-          format: result.format,
-          size: result.bytes,
-          width: result.width,
-          height: result.height,
-          duration: result.duration,
-          resourceType: result.resource_type,
-          folder: folder,
+          fileName: uploadResult.data.fileName,
+          filePath: uploadResult.data.filePath,
+          publicUrl: uploadResult.data.publicUrl,
+          format: file.originalFilename?.split('.').pop() || 'unknown',
+          size: uploadResult.data.fileSize,
+          width: uploadResult.data.dimensions?.width,
+          height: uploadResult.data.dimensions?.height,
+          duration: uploadResult.data.duration,
+          mimeType: uploadResult.data.mimeType,
+          folder: folderType,
           uploadedAt: new Date(),
           uploadedBy: {
             userId: user._id,
             username: user.username,
             fullName: user.fullName
-          }
+          },
+          storageType: 'local'
         });
 
         console.log(`✅ Successfully uploaded: ${file.originalFilename}`);

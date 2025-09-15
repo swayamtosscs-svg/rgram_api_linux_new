@@ -1,24 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { uploadFileToLocal, validateFileType, validateFileSize } from '@/utils/localStorage';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if Cloudinary is configured
-    if (!process.env.CLOUDINARY_CLOUD_NAME || 
-        !process.env.CLOUDINARY_API_KEY || 
-        !process.env.CLOUDINARY_API_SECRET) {
-      return NextResponse.json({ 
-        error: 'Cloudinary not configured. Please check environment variables.',
-        required: ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET']
-      }, { status: 500 });
-    }
 
     // Parse form data
     const formData = await request.formData();
@@ -31,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
+    if (!validateFileType(file, allowedTypes)) {
       return NextResponse.json({ 
         error: 'Invalid file type. Only JPEG, PNG, and WebP are allowed',
         receivedType: file.type,
@@ -41,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
+    if (!validateFileSize(file, maxSize)) {
       return NextResponse.json({ 
         error: 'File size too large. Maximum size is 5MB',
         receivedSize: file.size,
@@ -49,49 +33,31 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Create folder path using username instead of userId
-    const folderPath = `users/${username}/profile_pictures`;
-
-    // Upload to Cloudinary with username-based folder
-    const uploadResult = await new Promise<any>((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: folderPath,
-          public_id: `dp_${Date.now()}`,
-          transformation: [
-            { width: 400, height: 400, crop: 'fill', gravity: 'face' },
-            { quality: 'auto', fetch_format: 'auto' }
-          ],
-          overwrite: false,
-          unique_filename: true
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
+    // Upload to local storage
+    const uploadResult = await uploadFileToLocal(file, username, 'profile_pictures');
+    
+    if (!uploadResult.success || !uploadResult.data) {
+      return NextResponse.json(
+        { error: 'Failed to upload profile picture to local storage', details: uploadResult.error },
+        { status: 500 }
       );
-
-      uploadStream.end(buffer);
-    });
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Profile picture uploaded successfully',
+      message: 'Profile picture uploaded successfully to local storage',
       data: {
-        avatar: uploadResult.secure_url,
-        publicId: uploadResult.public_id,
-        width: uploadResult.width,
-        height: uploadResult.height,
-        format: uploadResult.format,
-        size: uploadResult.bytes,
+        avatar: uploadResult.data.publicUrl,
+        fileName: uploadResult.data.fileName,
+        filePath: uploadResult.data.filePath,
+        width: uploadResult.data.dimensions?.width,
+        height: uploadResult.data.dimensions?.height,
+        format: file.name.split('.').pop() || 'unknown',
+        size: uploadResult.data.fileSize,
+        mimeType: uploadResult.data.mimeType,
         uploadedAt: new Date(),
         username: username,
-        folderPath: folderPath,
-        cloudinaryResult: uploadResult
+        storageType: 'local'
       }
     }, { status: 201 });
 

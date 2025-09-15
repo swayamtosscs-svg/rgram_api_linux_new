@@ -1,27 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
 import dbConnect from '@/lib/database';
 import Media from '@/models/Media';
 import User from '@/lib/models/User';
-
-interface CloudinaryUploadResult {
-  url: string;
-  secure_url: string;
-  public_id: string;
-  format: string;
-  width: number;
-  height: number;
-  duration?: number;
-  resource_type: string;
-  folder?: string;
-}
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { uploadFileToLocal, validateFileType, validateFileSize } from '@/utils/localStorage';
 
 export async function POST(req: NextRequest) {
   try {
@@ -133,67 +114,64 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Convert buffer to base64
-    const base64String = buffer.toString('base64');
-    const fileType = file.type;
-    const dataURI = `data:${fileType};base64,${base64String}`;
-
-    // Create user-specific folder structure in Cloudinary using username
-    const cloudinaryFolder = `users/${user.username}/${detectedType}s`;
-    console.log('📁 Cloudinary folder path:', cloudinaryFolder);
-    console.log('👤 Username for folder:', user.username);
-
-    // Upload to Cloudinary with user-specific folder
-    const uploadResult = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
-      const uploadOptions = {
-        resource_type: detectedType,
-        folder: cloudinaryFolder, // This will automatically create the folder structure
-        tags: tags ? JSON.parse(tags) : undefined,
-        public_id: `${user.username}_${Date.now()}`, // Unique public ID using username
-        use_filename: false, // Don't use original filename
-        unique_filename: false, // Don't add random strings
-        overwrite: false, // Don't overwrite existing files
-      };
-
-      console.log('☁️ Uploading to Cloudinary with options:', uploadOptions);
-      
-      cloudinary.uploader.upload(
-        dataURI,
-        uploadOptions,
-        (error, result: any) => {
-          if (error) {
-            console.error('❌ Cloudinary upload error:', error);
-            reject(error);
-          } else {
-            console.log('✅ Cloudinary upload successful:', {
-              public_id: result.public_id,
-              folder: result.folder,
-              url: result.secure_url
-            });
-            resolve(result as CloudinaryUploadResult);
-          }
-        }
+    // Validate file type
+    const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'];
+    const allowedVideoTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/webm', 'video/mkv'];
+    const allowedTypes = detectedType === 'image' ? allowedImageTypes : allowedVideoTypes;
+    
+    if (!validateFileType(file, allowedTypes)) {
+      return NextResponse.json(
+        { error: `Invalid file type for ${detectedType}. Allowed types: ${allowedTypes.join(', ')}` },
+        { status: 400 }
       );
+    }
+
+    // Validate file size (max 100MB)
+    const maxSize = 100 * 1024 * 1024; // 100MB
+    if (!validateFileSize(file, maxSize)) {
+      return NextResponse.json(
+        { error: 'File size too large. Maximum size is 100MB' },
+        { status: 400 }
+      );
+    }
+
+    // Upload to local storage
+    console.log('📁 Uploading to local storage...');
+    const uploadResult = await uploadFileToLocal(file, userId, detectedType === 'image' ? 'images' : 'videos');
+    
+    if (!uploadResult.success || !uploadResult.data) {
+      return NextResponse.json(
+        { error: 'Failed to upload file to local storage', details: uploadResult.error },
+        { status: 500 }
+      );
+    }
+
+    console.log('✅ Local storage upload successful:', {
+      fileName: uploadResult.data.fileName,
+      publicUrl: uploadResult.data.publicUrl,
+      fileSize: uploadResult.data.fileSize
     });
 
     // Save to MongoDB with user association
     const media = await Media.create({
-      publicId: uploadResult.public_id,
-      url: uploadResult.url,
-      secureUrl: uploadResult.secure_url,
-      format: uploadResult.format,
+      // Local storage fields
+      fileName: uploadResult.data.fileName,
+      filePath: uploadResult.data.filePath,
+      publicUrl: uploadResult.data.publicUrl,
+      fileSize: uploadResult.data.fileSize,
+      mimeType: uploadResult.data.mimeType,
+      
+      // Common fields
+      format: file.name.split('.').pop() || 'unknown',
       resourceType: detectedType,
-      width: uploadResult.width,
-      height: uploadResult.height,
-      duration: uploadResult.duration,
+      width: uploadResult.data.dimensions?.width,
+      height: uploadResult.data.dimensions?.height,
+      duration: uploadResult.data.duration,
       title: title || undefined,
       description: description || undefined,
       tags: tags ? JSON.parse(tags) : undefined,
       uploadedBy: userId, // Associate with specific user
+      storageType: 'local'
     });
 
     // Update user's media count based on type
@@ -203,65 +181,31 @@ export async function POST(req: NextRequest) {
       await User.findByIdAndUpdate(userId, { $inc: { videosCount: 1 } });
     }
 
-    // Return success response with secure_url and folder path
+    // Return success response with local storage data
     return NextResponse.json({
       success: true,
-      message: 'File uploaded successfully',
-              data: {
-          mediaId: media._id,
-          publicId: uploadResult.public_id,
-          secureUrl: uploadResult.secure_url,
-          folderPath: cloudinaryFolder,
-          fileName: `${uploadResult.public_id}.${uploadResult.format}`,
-          fileType: detectedType,
-          fileSize: file.size,
-          dimensions: {
-            width: uploadResult.width,
-            height: uploadResult.height,
-          },
-          duration: uploadResult.duration,
-          uploadedBy: userId,
-          username: user.username,
-          uploadedAt: media.createdAt
-        }
+      message: 'File uploaded successfully to local storage',
+      data: {
+        mediaId: media._id,
+        fileName: uploadResult.data.fileName,
+        publicUrl: uploadResult.data.publicUrl,
+        filePath: uploadResult.data.filePath,
+        fileType: detectedType,
+        fileSize: uploadResult.data.fileSize,
+        mimeType: uploadResult.data.mimeType,
+        dimensions: uploadResult.data.dimensions,
+        duration: uploadResult.data.duration,
+        uploadedBy: userId,
+        username: user.username,
+        uploadedAt: media.createdAt,
+        storageType: 'local'
+      }
     });
 
   } catch (error: any) {
     console.error('Upload error:', error);
     console.error('Error stack:', error.stack);
     
-    // Handle specific Cloudinary errors
-    if (error.http_code === 400) {
-      return NextResponse.json(
-        { 
-          error: 'Invalid file format or size',
-          details: error.message 
-        },
-        { status: 400 }
-      );
-    }
-
-    if (error.http_code === 413) {
-      return NextResponse.json(
-        { 
-          error: 'File too large',
-          details: 'Maximum file size exceeded' 
-        },
-        { status: 413 }
-      );
-    }
-
-    // Handle environment variable errors
-    if (error.message && error.message.includes('CLOUDINARY')) {
-      return NextResponse.json(
-        { 
-          error: 'Cloudinary configuration error',
-          details: 'Please check your Cloudinary environment variables'
-        },
-        { status: 500 }
-      );
-    }
-
     // Handle database connection errors
     if (error.message && error.message.includes('MONGODB')) {
       return NextResponse.json(
@@ -273,9 +217,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Handle file system errors
+    if (error.code === 'ENOENT') {
+      return NextResponse.json(
+        { 
+          error: 'File system error',
+          details: 'Directory or file not found'
+        },
+        { status: 500 }
+      );
+    }
+
+    if (error.code === 'EACCES') {
+      return NextResponse.json(
+        { 
+          error: 'Permission denied',
+          details: 'Insufficient permissions to write file'
+        },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(
       { 
-        error: 'Error uploading file',
+        error: 'Error uploading file to local storage',
         details: error.message,
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },

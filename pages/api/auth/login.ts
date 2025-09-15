@@ -2,7 +2,18 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
 import User from '../../../lib/models/User';
 import { generateToken } from '../../../lib/middleware/auth';
-import { validateEmail } from '../../../lib/utils/validation';
+import { validateEmail, validateUsername } from '../../../lib/utils/validation';
+
+// Helper function to determine if input is email or username
+const isEmail = (input: string): boolean => {
+  return validateEmail(input);
+};
+
+// Helper function to determine if input is username
+const isUsername = (input: string): boolean => {
+  const usernameValidation = validateUsername(input);
+  return usernameValidation.isValid;
+};
 
 export default async function handler(
   req: NextApiRequest,
@@ -18,17 +29,39 @@ export default async function handler(
   try {
     await connectDB();
 
-    const { email, password } = req.body;
+    const { email, username, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Email and password are required' });
+    // Accept either email or username, but not both
+    const loginField = email || username;
+    if (!loginField || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please provide either email or username along with password' 
+      });
     }
 
-    if (!validateEmail(email)) {
-      return res.status(400).json({ success: false, message: 'Please provide a valid email address' });
+    if (email && username) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please provide either email or username, not both' 
+      });
     }
 
-    const user = await (User as any).findOne({ email }).select('+password');
+    // Determine if the input is email or username
+    let user;
+    if (isEmail(loginField)) {
+      // Login with email
+      user = await (User as any).findOne({ email: loginField.toLowerCase() }).select('+password');
+    } else if (isUsername(loginField)) {
+      // Login with username
+      user = await (User as any).findOne({ username: loginField.toLowerCase() }).select('+password');
+    } else {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please provide a valid email address or username' 
+      });
+    }
+
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }

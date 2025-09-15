@@ -3,7 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import BabaVideo from '@/lib/models/BabaVideo';
 import mongoose from 'mongoose';
-import { deleteBabaPageMedia, extractPublicIdFromBabaPageUrl } from '@/utils/babaPagesCloudinary';
+import { deleteBabaPageFileByUrl } from '@/utils/babaPagesLocalStorage';
 
 // Get a specific video
 export async function GET(
@@ -134,56 +134,69 @@ export async function DELETE(
       );
     }
 
-    // Delete video file from Cloudinary
-    if (video.video && video.video.url) {
+    // Delete video file from local storage
+    let videoDeleteSuccess = false;
+    if (video.video && video.video.url && video.video.url.startsWith('/uploads/')) {
       try {
-        // Check if video has publicId (new Cloudinary format) or extract from URL
-        let publicId = (video.video as any).publicId;
-        if (!publicId) {
-          publicId = extractPublicIdFromBabaPageUrl(video.video.url);
-        }
-        
-        if (publicId) {
-          const deleteResult = await deleteBabaPageMedia(publicId, 'video');
-          if (!deleteResult.success) {
-            console.error('Failed to delete video from Cloudinary:', deleteResult.error);
-          }
+        const deleteResult = await deleteBabaPageFileByUrl(video.video.url);
+        if (deleteResult.success) {
+          videoDeleteSuccess = true;
+          console.log('Successfully deleted video from local storage:', video.video.url);
+        } else {
+          console.error('Failed to delete video from local storage:', deleteResult.error);
         }
       } catch (fileError) {
         console.error('Error deleting video file:', fileError);
       }
     }
 
-    // Delete thumbnail file from Cloudinary if exists
-    if (video.thumbnail && video.thumbnail.url) {
+    // Delete thumbnail file from local storage if exists
+    let thumbnailDeleteSuccess = false;
+    if (video.thumbnail && video.thumbnail.url && video.thumbnail.url.startsWith('/uploads/')) {
       try {
-        // Check if thumbnail has publicId (new Cloudinary format) or extract from URL
-        let publicId = (video.thumbnail as any).publicId;
-        if (!publicId) {
-          publicId = extractPublicIdFromBabaPageUrl(video.thumbnail.url);
-        }
-        
-        if (publicId) {
-          const deleteResult = await deleteBabaPageMedia(publicId, 'image');
-          if (!deleteResult.success) {
-            console.error('Failed to delete thumbnail from Cloudinary:', deleteResult.error);
-          }
+        const deleteResult = await deleteBabaPageFileByUrl(video.thumbnail.url);
+        if (deleteResult.success) {
+          thumbnailDeleteSuccess = true;
+          console.log('Successfully deleted thumbnail from local storage:', video.thumbnail.url);
+        } else {
+          console.error('Failed to delete thumbnail from local storage:', deleteResult.error);
         }
       } catch (fileError) {
         console.error('Error deleting thumbnail file:', fileError);
       }
     }
 
-    // Soft delete video
-    video.isActive = false;
-    await video.save();
+    // Delete video from MongoDB
+    await BabaVideo.findByIdAndDelete(videoId);
 
     // Update page videos count
     await BabaPage.findByIdAndUpdate(id, { $inc: { videosCount: -1 } });
 
     return NextResponse.json({
       success: true,
-      message: 'Video deleted successfully'
+      message: 'Video deleted successfully from MongoDB and local storage',
+      data: {
+        deletedVideo: {
+          id: video._id,
+          title: video.title,
+          category: video.category
+        },
+        deletedFiles: {
+          video: {
+            url: video.video?.url || '',
+            success: videoDeleteSuccess
+          },
+          thumbnail: {
+            url: video.thumbnail?.url || '',
+            success: thumbnailDeleteSuccess
+          }
+        },
+        deletedAt: new Date().toISOString(),
+        deletionStatus: {
+          localStorage: videoDeleteSuccess && thumbnailDeleteSuccess ? 'success' : 'partial',
+          database: 'success'
+        }
+      }
     });
 
   } catch (error) {

@@ -120,13 +120,97 @@ export async function DELETE(
       );
     }
 
-    // Soft delete
-    babaPage.isActive = false;
-    await babaPage.save();
+    // Import models for cascading delete
+    const BabaPost = (await import('@/lib/models/BabaPost')).default;
+    const BabaVideo = (await import('@/lib/models/BabaVideo')).default;
+    const BabaStory = (await import('@/lib/models/BabaStory')).default;
+    const { deleteBabaPageFileByUrl } = await import('@/utils/babaPagesLocalStorage');
+
+    // Delete all associated posts and their media
+    const posts = await BabaPost.find({ babaPageId: id });
+    for (const post of posts) {
+      // Delete post media files
+      for (const media of post.media) {
+        if (media.url && media.url.startsWith('/uploads/')) {
+          try {
+            await deleteBabaPageFileByUrl(media.url);
+          } catch (error) {
+            console.warn('Error deleting post media:', error);
+          }
+        }
+      }
+    }
+    await BabaPost.deleteMany({ babaPageId: id });
+
+    // Delete all associated videos and their media
+    const videos = await BabaVideo.find({ babaPageId: id });
+    for (const video of videos) {
+      // Delete video files
+      if (video.video?.url && video.video.url.startsWith('/uploads/')) {
+        try {
+          await deleteBabaPageFileByUrl(video.video.url);
+        } catch (error) {
+          console.warn('Error deleting video file:', error);
+        }
+      }
+      // Delete thumbnail files
+      if (video.thumbnail?.url && video.thumbnail.url.startsWith('/uploads/')) {
+        try {
+          await deleteBabaPageFileByUrl(video.thumbnail.url);
+        } catch (error) {
+          console.warn('Error deleting thumbnail file:', error);
+        }
+      }
+    }
+    await BabaVideo.deleteMany({ babaPageId: id });
+
+    // Delete all associated stories and their media
+    const stories = await BabaStory.find({ babaPageId: id });
+    for (const story of stories) {
+      // Delete story media files
+      if (story.media?.url && story.media.url.startsWith('/uploads/')) {
+        try {
+          await deleteBabaPageFileByUrl(story.media.url);
+        } catch (error) {
+          console.warn('Error deleting story media:', error);
+        }
+      }
+    }
+    await BabaStory.deleteMany({ babaPageId: id });
+
+    // Delete page avatar and cover image
+    if (babaPage.avatar && babaPage.avatar.startsWith('/uploads/')) {
+      try {
+        await deleteBabaPageFileByUrl(babaPage.avatar);
+      } catch (error) {
+        console.warn('Error deleting page avatar:', error);
+      }
+    }
+    if (babaPage.coverImage && babaPage.coverImage.startsWith('/uploads/')) {
+      try {
+        await deleteBabaPageFileByUrl(babaPage.coverImage);
+      } catch (error) {
+        console.warn('Error deleting page cover image:', error);
+      }
+    }
+
+    // Delete the page from MongoDB
+    await BabaPage.findByIdAndDelete(id);
 
     return NextResponse.json({
       success: true,
-      message: 'Baba Ji page deleted successfully'
+      message: 'Baba Ji page deleted successfully from MongoDB',
+      data: {
+        deletedPage: {
+          id: babaPage._id,
+          name: babaPage.name,
+          postsCount: posts.length,
+          videosCount: videos.length,
+          storiesCount: stories.length
+        },
+        deletedAt: new Date().toISOString(),
+        message: 'Baba Ji page and all associated data deleted from MongoDB'
+      }
     });
 
   } catch (error) {

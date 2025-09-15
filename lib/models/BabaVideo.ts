@@ -15,17 +15,33 @@ export interface IBabaVideo extends Document {
   description?: string;
   video?: {
     url: string;
-    filename: string;
+    fileName: string;
+    filePath?: string;
     size: number;
     duration: number;
     mimeType: string;
+    dimensions?: {
+      width: number;
+      height: number;
+    };
+    storageType?: 'cloudinary' | 'local';
+    // Legacy fields for backward compatibility
+    filename?: string;
     publicId?: string;
   };
   thumbnail?: {
     url: string;
-    filename: string;
+    fileName: string;
+    filePath?: string;
     size: number;
     mimeType: string;
+    dimensions?: {
+      width: number;
+      height: number;
+    };
+    storageType?: 'cloudinary' | 'local';
+    // Legacy fields for backward compatibility
+    filename?: string;
     publicId?: string;
   };
   category: 'reel' | 'video';
@@ -62,9 +78,13 @@ const BabaVideoSchema = new Schema<IBabaVideo>({
       type: String,
       default: ''
     },
-    filename: {
+    fileName: {
       type: String,
       default: ''
+    },
+    filePath: {
+      type: String,
+      required: false
     },
     size: {
       type: Number,
@@ -78,6 +98,26 @@ const BabaVideoSchema = new Schema<IBabaVideo>({
       type: String,
       default: ''
     },
+    dimensions: {
+      width: {
+        type: Number,
+        default: 0
+      },
+      height: {
+        type: Number,
+        default: 0
+      }
+    },
+    storageType: {
+      type: String,
+      enum: ['cloudinary', 'local'],
+      default: 'local'
+    },
+    // Legacy fields for backward compatibility
+    filename: {
+      type: String,
+      required: false
+    },
     publicId: {
       type: String,
       required: false
@@ -88,9 +128,13 @@ const BabaVideoSchema = new Schema<IBabaVideo>({
       type: String,
       default: ''
     },
-    filename: {
+    fileName: {
       type: String,
       default: ''
+    },
+    filePath: {
+      type: String,
+      required: false
     },
     size: {
       type: Number,
@@ -99,6 +143,26 @@ const BabaVideoSchema = new Schema<IBabaVideo>({
     mimeType: {
       type: String,
       default: ''
+    },
+    dimensions: {
+      width: {
+        type: Number,
+        default: 0
+      },
+      height: {
+        type: Number,
+        default: 0
+      }
+    },
+    storageType: {
+      type: String,
+      enum: ['cloudinary', 'local'],
+      default: 'local'
+    },
+    // Legacy fields for backward compatibility
+    filename: {
+      type: String,
+      required: false
     },
     publicId: {
       type: String,

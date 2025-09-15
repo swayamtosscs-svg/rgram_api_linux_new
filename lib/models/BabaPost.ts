@@ -15,9 +15,18 @@ export interface IBabaPost extends Document {
   media: {
     type: 'image' | 'video';
     url: string;
-    filename: string;
+    fileName: string;
+    filePath?: string;
     size: number;
     mimeType: string;
+    dimensions?: {
+      width: number;
+      height: number;
+    };
+    duration?: number;
+    storageType?: 'cloudinary' | 'local';
+    // Legacy fields for backward compatibility
+    filename?: string;
     publicId?: string;
   }[];
   likes: Types.ObjectId[];
@@ -52,9 +61,13 @@ const BabaPostSchema = new Schema<IBabaPost>({
       type: String,
       required: true
     },
-    filename: {
+    fileName: {
       type: String,
       required: true
+    },
+    filePath: {
+      type: String,
+      required: false
     },
     size: {
       type: Number,
@@ -63,6 +76,30 @@ const BabaPostSchema = new Schema<IBabaPost>({
     mimeType: {
       type: String,
       required: true
+    },
+    dimensions: {
+      width: {
+        type: Number,
+        default: 0
+      },
+      height: {
+        type: Number,
+        default: 0
+      }
+    },
+    duration: {
+      type: Number,
+      required: false
+    },
+    storageType: {
+      type: String,
+      enum: ['cloudinary', 'local'],
+      default: 'local'
+    },
+    // Legacy fields for backward compatibility
+    filename: {
+      type: String,
+      required: false
     },
     publicId: {
       type: String,

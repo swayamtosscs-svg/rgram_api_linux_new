@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
 import dbConnect from '@/lib/database';
 import Story from '@/lib/models/Story';
 import User from '@/lib/models/User';
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { deleteFileByUrl } from '@/utils/localStorage';
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -64,41 +57,20 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // Extract public ID from Cloudinary URL if not provided
-    let cloudinaryPublicId = publicId;
-    if (!cloudinaryPublicId) {
-      // Extract public ID from the media URL
-      const urlParts = story.media.split('/');
-      const filename = urlParts[urlParts.length - 1];
-      const filenameWithoutExtension = filename.split('.')[0];
-      
-      // Reconstruct the public ID based on the new folder structure (story/mediaType/filename)
-      cloudinaryPublicId = `users/${user.username}/story/${story.type}/${filenameWithoutExtension}`;
-    }
+    console.log('🗑️ Deleting from local storage with URL:', story.media);
 
-    console.log('🗑️ Deleting from Cloudinary with public ID:', cloudinaryPublicId);
-
-    // Delete from Cloudinary
+    // Delete from local storage
     try {
-      const deleteResult = await new Promise((resolve, reject) => {
-        cloudinary.uploader.destroy(
-          cloudinaryPublicId,
-          { resource_type: story.type === 'video' ? 'video' : 'image' },
-          (error, result: any) => {
-            if (error) {
-              console.error('❌ Cloudinary deletion error:', error);
-              reject(error);
-            } else {
-              console.log('✅ Cloudinary deletion successful:', result);
-              resolve(result);
-            }
-          }
-        );
-      });
-      console.log('✅ Cloudinary deletion result:', deleteResult);
-    } catch (cloudinaryError: any) {
-      console.warn('⚠️ Cloudinary deletion failed, but continuing with database cleanup:', cloudinaryError.message);
-      // Continue with database cleanup even if Cloudinary deletion fails
+      const deleteResult = await deleteFileByUrl(story.media);
+      
+      if (!deleteResult.success) {
+        console.warn('⚠️ Local storage deletion failed, but continuing with database cleanup:', deleteResult.error);
+      } else {
+        console.log('✅ Local storage deletion successful');
+      }
+    } catch (localStorageError: any) {
+      console.warn('⚠️ Local storage deletion failed, but continuing with database cleanup:', localStorageError.message);
+      // Continue with database cleanup even if local storage deletion fails
     }
 
     // Delete from database
@@ -107,10 +79,10 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Story deleted successfully',
+      message: 'Story deleted successfully from local storage',
       data: {
         storyId: story._id,
-        deletedFromCloudinary: !!cloudinaryPublicId,
+        deletedFromLocalStorage: true,
         deletedFromDatabase: true,
         mediaType: story.type,
         author: {
@@ -123,33 +95,22 @@ export async function DELETE(req: NextRequest) {
   } catch (error: any) {
     console.error('Story deletion error:', error);
     
-    // Handle specific Cloudinary errors
-    if (error.http_code === 400) {
+    // Handle file system errors
+    if (error.code === 'ENOENT') {
       return NextResponse.json(
         { 
-          error: 'Invalid Cloudinary public ID',
-          details: error.message 
-        },
-        { status: 400 }
-      );
-    }
-
-    if (error.http_code === 404) {
-      return NextResponse.json(
-        { 
-          error: 'Story not found in Cloudinary',
+          error: 'File not found',
           details: 'The media file may have already been deleted' 
         },
         { status: 404 }
       );
     }
 
-    // Handle environment variable errors
-    if (error.message && error.message.includes('CLOUDINARY')) {
+    if (error.code === 'EACCES') {
       return NextResponse.json(
         { 
-          error: 'Cloudinary configuration error',
-          details: 'Please check your Cloudinary environment variables'
+          error: 'Permission denied',
+          details: 'Insufficient permissions to delete file'
         },
         { status: 500 }
       );
@@ -168,7 +129,7 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json(
       { 
-        error: 'Error deleting story',
+        error: 'Error deleting story from local storage',
         details: error.message,
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
@@ -241,32 +202,17 @@ export async function POST(req: NextRequest) {
     // Delete each story
     for (const story of storiesToDelete) {
       try {
-        // Extract public ID from the media URL
-        const urlParts = story.media.split('/');
-        const filename = urlParts[urlParts.length - 1];
-        const filenameWithoutExtension = filename.split('.')[0];
-        const cloudinaryPublicId = `users/${user.username}/story/${story.type}/${filenameWithoutExtension}`;
-
-        // Delete from Cloudinary
+        // Delete from local storage
         try {
-          await new Promise((resolve, reject) => {
-            cloudinary.uploader.destroy(
-              cloudinaryPublicId,
-              { resource_type: story.type === 'video' ? 'video' : 'image' },
-              (error, result: any) => {
-                if (error) {
-                  console.warn('⚠️ Cloudinary deletion failed for story:', story._id, error.message);
-                  reject(error);
-                } else {
-                  console.log('✅ Cloudinary deletion successful for story:', story._id);
-                  resolve(result);
-                }
-              }
-            );
-          });
-          deletedFromCloudinary++;
-        } catch (cloudinaryError) {
-          console.warn('⚠️ Cloudinary deletion failed for story:', story._id);
+          const deleteResult = await deleteFileByUrl(story.media);
+          if (deleteResult.success) {
+            deletedFromCloudinary++; // Keep the same variable name for compatibility
+            console.log('✅ Local storage deletion successful for story:', story._id);
+          } else {
+            console.warn('⚠️ Local storage deletion failed for story:', story._id, deleteResult.error);
+          }
+        } catch (localStorageError) {
+          console.warn('⚠️ Local storage deletion failed for story:', story._id);
         }
 
         // Delete from database
@@ -280,10 +226,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Bulk story deletion completed',
+      message: 'Bulk story deletion completed from local storage',
       data: {
         totalStories: storiesToDelete.length,
-        deletedFromCloudinary,
+        deletedFromLocalStorage: deletedFromCloudinary, // Renamed for clarity
         deletedFromDatabase,
         author: {
           id: user._id,

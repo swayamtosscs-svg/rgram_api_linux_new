@@ -3,7 +3,7 @@ import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import BabaStory from '@/lib/models/BabaStory';
 import mongoose from 'mongoose';
-import { uploadBabaPageMedia, deleteBabaPageMedia, extractPublicIdFromBabaPageUrl } from '@/utils/babaPagesCloudinary';
+import { uploadBabaPageFileToLocal, deleteBabaPageFileFromLocal } from '@/utils/babaPagesLocalStorage';
 
 // Create a new story for a Baba Ji page
 export async function POST(
@@ -59,8 +59,8 @@ export async function POST(
     let mediaData = null;
 
     if (mediaFile && mediaFile.size > 0) {
-      // Upload media to Cloudinary
-      const uploadResult = await uploadBabaPageMedia(mediaFile, id, 'stories');
+      // Upload media to local storage
+      const uploadResult = await uploadBabaPageFileToLocal(mediaFile, id, 'stories');
       
       if (uploadResult.success && uploadResult.data) {
         // Determine file type
@@ -69,14 +69,17 @@ export async function POST(
 
         mediaData = {
           type: fileType,
-          url: uploadResult.data.url,
-          filename: uploadResult.data.publicId.split('/').pop() || '',
-          size: uploadResult.data.size,
+          url: uploadResult.data.publicUrl,
+          fileName: uploadResult.data.fileName,
+          filePath: uploadResult.data.filePath,
+          size: uploadResult.data.fileSize,
           mimeType: mimeType,
-          publicId: uploadResult.data.publicId
+          dimensions: uploadResult.data.dimensions,
+          duration: uploadResult.data.duration,
+          storageType: 'local'
         };
       } else {
-        console.error('Failed to upload media to Cloudinary:', uploadResult.error);
+        console.error('Failed to upload media to local storage:', uploadResult.error);
         return NextResponse.json(
           { success: false, message: 'Failed to upload media: ' + uploadResult.error },
           { status: 500 }
