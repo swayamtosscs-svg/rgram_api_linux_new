@@ -1,7 +1,18 @@
 import mongoose from 'mongoose';
 require('dotenv').config();
 
-const MONGODB_URI = process.env.MONGODB_URI;
+// Dynamic MongoDB URI selection based on environment
+let MONGODB_URI: string;
+
+if (process.env.NODE_ENV === 'production' || process.env.HOST_ENV === 'VPS') {
+  // VPS MongoDB connection - using your VPS MongoDB server
+  MONGODB_URI = process.env.MONGO_URI_VPS || 'mongodb://Toss:Toss%40123@103.14.120.163:27017/admin';
+} else {
+  // Local MongoDB connection
+  MONGODB_URI = process.env.MONGO_URI_LOCAL || 'mongodb://Toss:Toss%40123@localhost:27017/admin';
+}
+
+console.log(`🔗 Connecting to MongoDB: ${MONGODB_URI.replace(/\/\/.*@/, '//***:***@')}`);  // Hide credentials in logs
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
