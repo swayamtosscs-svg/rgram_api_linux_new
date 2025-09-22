@@ -47,8 +47,7 @@ const OTPSchema = new Schema<IOTP>({
   },
   expiresAt: {
     type: Date,
-    required: true,
-    index: { expireAfterSeconds: 0 }
+    required: true
   }
 }, {
   timestamps: true
@@ -56,7 +55,9 @@ const OTPSchema = new Schema<IOTP>({
 
 // Index for better query performance
 OTPSchema.index({ email: 1, purpose: 1 });
-OTPSchema.index({ expiresAt: 1 });
+
+// TTL index for auto-cleanup of expired OTPs
+OTPSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 // Generate random 6-digit OTP
 const generateOTP = (): string => {

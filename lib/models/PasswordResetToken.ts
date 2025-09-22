@@ -46,10 +46,9 @@ const PasswordResetTokenSchema = new Schema<IPasswordResetToken>({
 // Index for better query performance
 PasswordResetTokenSchema.index({ token: 1 });
 PasswordResetTokenSchema.index({ userId: 1 });
-PasswordResetTokenSchema.index({ expiresAt: 1 });
 PasswordResetTokenSchema.index({ createdAt: 1 });
 
-// Auto-cleanup expired tokens
+// Auto-cleanup expired tokens (TTL index)
 PasswordResetTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const PasswordResetToken: Model<IPasswordResetToken> = mongoose.models.PasswordResetToken || mongoose.model<IPasswordResetToken>('PasswordResetToken', PasswordResetTokenSchema);

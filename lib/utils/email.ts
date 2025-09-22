@@ -1,5 +1,8 @@
 import nodemailer from 'nodemailer';
 
+// Load environment variables
+require('dotenv').config({ path: '.env.local' });
+
 // Create transporter
 const createTransporter = () => {
   return nodemailer.createTransport({

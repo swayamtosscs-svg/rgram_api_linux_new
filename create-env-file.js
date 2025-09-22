@@ -4,7 +4,7 @@ const path = require('path');
 console.log('📝 Creating .env.local file...\n');
 
 const envContent = `# MongoDB Connection
-MONGODB_URI=mongodb://localhost:27017/rgram
+MONGODB_URI=mongodb://Toss:Toss%40123@localhost:27018/swayam?authSource=admin
 
 # Email Configuration (SMTP)
 SMTP_HOST=smtp.gmail.com

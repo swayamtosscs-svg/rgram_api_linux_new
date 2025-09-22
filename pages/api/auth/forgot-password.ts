@@ -5,6 +5,9 @@ import PasswordResetToken from '../../../lib/models/PasswordResetToken';
 import * as crypto from 'crypto';
 import { sendPasswordResetEmail } from '../../../lib/utils/email';
 
+// Load environment variables
+require('dotenv').config({ path: '.env.local' });
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, message: 'Method not allowed' });

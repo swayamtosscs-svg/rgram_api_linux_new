@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 async function testMongoDBConnection() {
   console.log('🔍 Testing MongoDB connection...');
