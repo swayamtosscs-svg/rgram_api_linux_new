@@ -4,6 +4,7 @@ import BabaPage from '@/lib/models/BabaPage';
 import BabaPost from '@/lib/models/BabaPost';
 import mongoose from 'mongoose';
 import { uploadBabaPageFileToLocal, deleteBabaPageFileFromLocal } from '@/utils/babaPagesLocalStorage';
+import { verifyToken } from '@/lib/utils/auth';
 
 // Create a new post for a Baba Ji page
 export async function POST(
@@ -14,6 +15,23 @@ export async function POST(
     await connectDB();
     
     const { id } = params;
+
+    // Verify authentication
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
@@ -28,6 +46,14 @@ export async function POST(
       return NextResponse.json(
         { success: false, message: 'Baba Ji page not found' },
         { status: 404 }
+      );
+    }
+
+    // Check if the user is the creator of the page
+    if (babaPage.createdBy.toString() !== decoded.userId) {
+      return NextResponse.json(
+        { success: false, message: 'Only the page creator can create posts' },
+        { status: 403 }
       );
     }
 

@@ -22,7 +22,6 @@ const BlacklistedTokenSchema = new Schema<BlacklistedTokenDocument>(
     expiresAt: {
       type: Date,
       required: true,
-      index: { expires: 0 }, // This will automatically remove documents when they expire
     },
     createdAt: {
       type: Date,
@@ -33,7 +32,7 @@ const BlacklistedTokenSchema = new Schema<BlacklistedTokenDocument>(
 );
 
 // Create indexes for faster queries
-BlacklistedTokenSchema.index({ token: 1 });
+// Note: token index is automatically created by unique: true
 BlacklistedTokenSchema.index({ userId: 1 });
 
 // Create a TTL index to automatically remove expired tokens

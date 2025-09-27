@@ -4,6 +4,7 @@ import BabaPage from '@/lib/models/BabaPage';
 import BabaPost from '@/lib/models/BabaPost';
 import mongoose from 'mongoose';
 import { deleteBabaPageFileByUrl } from '@/utils/babaPagesLocalStorage';
+import { verifyToken } from '@/lib/utils/auth';
 
 // Get a specific post
 export async function GET(
@@ -58,12 +59,46 @@ export async function PUT(
     await connectDB();
     
     const { id, postId } = params;
+
+    // Verify authentication
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
 
     if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(postId)) {
       return NextResponse.json(
         { success: false, message: 'Invalid page ID or post ID' },
         { status: 400 }
+      );
+    }
+
+    // Check if page exists and user is the creator
+    const babaPage = await BabaPage.findById(id);
+    if (!babaPage) {
+      return NextResponse.json(
+        { success: false, message: 'Baba Ji page not found' },
+        { status: 404 }
+      );
+    }
+
+    if (babaPage.createdBy.toString() !== decoded.userId) {
+      return NextResponse.json(
+        { success: false, message: 'Only the page creator can update posts' },
+        { status: 403 }
       );
     }
 
@@ -112,10 +147,43 @@ export async function DELETE(
     
     const { id, postId } = params;
 
+    // Verify authentication
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
     if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(postId)) {
       return NextResponse.json(
         { success: false, message: 'Invalid page ID or post ID' },
         { status: 400 }
+      );
+    }
+
+    // Check if page exists and user is the creator
+    const babaPage = await BabaPage.findById(id);
+    if (!babaPage) {
+      return NextResponse.json(
+        { success: false, message: 'Baba Ji page not found' },
+        { status: 404 }
+      );
+    }
+
+    if (babaPage.createdBy.toString() !== decoded.userId) {
+      return NextResponse.json(
+        { success: false, message: 'Only the page creator can delete posts' },
+        { status: 403 }
       );
     }
 

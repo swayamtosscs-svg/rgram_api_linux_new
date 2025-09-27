@@ -1,12 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
+import { verifyToken } from '@/lib/utils/auth';
+import mongoose from 'mongoose';
 
 // Create a new Baba Ji page
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
     
+    // Verify authentication
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { name, description, location, religion, website } = body;
 
@@ -36,7 +55,8 @@ export async function POST(request: NextRequest) {
       description: description?.trim() || '',
       location: location?.trim() || '',
       religion: religion?.trim() || '',
-      website: website?.trim() || ''
+      website: website?.trim() || '',
+      createdBy: new mongoose.Types.ObjectId(decoded.userId)
     });
 
     await babaPage.save();

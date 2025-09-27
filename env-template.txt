@@ -22,7 +22,7 @@ CLOUDINARY_API_SECRET=your_api_secret_here
 JWT_SECRET=your_jwt_secret_key_here
 
 # App Configuration
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://103.14.120.163:8081
 APP_NAME=R-GRAM
 NODE_ENV=development
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/database';
 import BabaPage from '@/lib/models/BabaPage';
 import mongoose from 'mongoose';
+import { verifyToken } from '@/lib/utils/auth';
 
 // Get a specific Baba Ji page by ID
 export async function GET(
@@ -52,6 +53,24 @@ export async function PUT(
     await connectDB();
     
     const { id } = params;
+
+    // Verify authentication
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -67,6 +86,14 @@ export async function PUT(
       return NextResponse.json(
         { success: false, message: 'Baba Ji page not found' },
         { status: 404 }
+      );
+    }
+
+    // Check if the user is the creator of the page
+    if (babaPage.createdBy.toString() !== decoded.userId) {
+      return NextResponse.json(
+        { success: false, message: 'Only the page creator can update this page' },
+        { status: 403 }
       );
     }
 
@@ -104,6 +131,23 @@ export async function DELETE(
     
     const { id } = params;
 
+    // Verify authentication
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, message: 'Invalid page ID' },
@@ -117,6 +161,14 @@ export async function DELETE(
       return NextResponse.json(
         { success: false, message: 'Baba Ji page not found' },
         { status: 404 }
+      );
+    }
+
+    // Check if the user is the creator of the page
+    if (babaPage.createdBy.toString() !== decoded.userId) {
+      return NextResponse.json(
+        { success: false, message: 'Only the page creator can delete this page' },
+        { status: 403 }
       );
     }
 

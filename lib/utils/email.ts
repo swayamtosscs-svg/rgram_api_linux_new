@@ -3,17 +3,36 @@ import nodemailer from 'nodemailer';
 // Load environment variables
 require('dotenv').config({ path: '.env.local' });
 
-// Create transporter
+// Create optimized transporter for fast email sending
 const createTransporter = () => {
+  const port = parseInt(process.env.EMAIL_PORT || '465');
+  const isSecure = port === 465;
+  
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT || '587'),
-    secure: process.env.EMAIL_PORT === '465',
+    port: port,
+    secure: isSecure, // true for 465, false for other ports
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
-  });
+    // Optimize for speed
+    pool: true, // Use connection pooling
+    maxConnections: 5, // Maximum number of connections
+    maxMessages: 100, // Maximum messages per connection
+    rateLimit: 14, // Maximum messages per second
+    // Timeout settings for faster response
+    connectionTimeout: 8000, // 8 seconds (reduced from 10)
+    greetingTimeout: 3000, // 3 seconds (reduced from 5)
+    socketTimeout: 8000, // 8 seconds (reduced from 10)
+    // Keep connection alive
+    keepAlive: true,
+    keepAliveInitialDelay: 20000, // 20 seconds (reduced from 30)
+    // Additional optimizations
+    tls: {
+      rejectUnauthorized: false, // Faster TLS handshake
+    },
+  } as any);
 };
 
 /**
@@ -183,7 +202,7 @@ export const sendWelcomeEmail = async (
             </div>
             
             <div style="text-align: center; margin: 40px 0;">
-              <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}" 
+              <a href="${process.env.NEXTAUTH_URL || 'http://103.14.120.163:8081'}" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 35px; text-decoration: none; border-radius: 30px; display: inline-block; font-weight: bold; font-size: 16px;">
                 Start Exploring R-GRAM
               </a>
@@ -273,7 +292,7 @@ export const sendPasswordResetConfirmationEmail = async (
             </div>
             
             <div style="text-align: center; margin: 40px 0;">
-              <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login" 
+              <a href="${process.env.NEXTAUTH_URL || 'http://103.14.120.163:8081'}/auth/login" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 35px; text-decoration: none; border-radius: 30px; display: inline-block; font-weight: bold; font-size: 16px;">
                 Login to R-GRAM
               </a>
@@ -329,8 +348,8 @@ export const sendPasswordResetEmail = async (
         // In production or on Vercel, use the Vercel domain
         baseUrl = 'https://api-rgram1.vercel.app';
       } else {
-        // Fallback to localhost for development
-        baseUrl = 'http://localhost:3000';
+        // Use server IP instead of localhost for development
+        baseUrl = 'http://103.14.120.163:8081';
       }
     }
     

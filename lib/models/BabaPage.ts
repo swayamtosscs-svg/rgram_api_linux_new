@@ -9,6 +9,7 @@ export interface IBabaPage extends Document {
   location?: string;
   religion?: string;
   website?: string;
+  createdBy: mongoose.Types.ObjectId;
   followersCount: number;
   postsCount: number;
   videosCount: number;
@@ -53,6 +54,11 @@ const BabaPageSchema = new Schema<IBabaPage>({
   website: {
     type: String,
     default: ''
+  },
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   followersCount: {
     type: Number,

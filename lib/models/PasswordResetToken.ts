@@ -44,7 +44,7 @@ const PasswordResetTokenSchema = new Schema<IPasswordResetToken>({
 });
 
 // Index for better query performance
-PasswordResetTokenSchema.index({ token: 1 });
+// Note: token index is automatically created by unique: true
 PasswordResetTokenSchema.index({ userId: 1 });
 PasswordResetTokenSchema.index({ createdAt: 1 });
 
