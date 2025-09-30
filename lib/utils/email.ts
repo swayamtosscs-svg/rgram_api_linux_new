@@ -202,7 +202,7 @@ export const sendWelcomeEmail = async (
             </div>
             
             <div style="text-align: center; margin: 40px 0;">
-              <a href="${process.env.NEXTAUTH_URL || 'http://103.14.120.163:8081'}" 
+              <a href="${process.env.NEXTAUTH_URL || 'http://103.14.120.160:8081'}" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 35px; text-decoration: none; border-radius: 30px; display: inline-block; font-weight: bold; font-size: 16px;">
                 Start Exploring R-GRAM
               </a>
@@ -292,7 +292,7 @@ export const sendPasswordResetConfirmationEmail = async (
             </div>
             
             <div style="text-align: center; margin: 40px 0;">
-              <a href="${process.env.NEXTAUTH_URL || 'http://103.14.120.163:8081'}/auth/login" 
+              <a href="${process.env.NEXTAUTH_URL || 'http://103.14.120.160:8081'}/auth/login" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 35px; text-decoration: none; border-radius: 30px; display: inline-block; font-weight: bold; font-size: 16px;">
                 Login to R-GRAM
               </a>

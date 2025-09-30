@@ -20,7 +20,7 @@ CLOUDINARY_API_SECRET=your_api_secret_here
 JWT_SECRET=rgram_jwt_secret_key_2024_secure_random_string_12345
 
 # App Configuration
-NEXT_PUBLIC_APP_URL=http://103.14.120.163:8081
+NEXT_PUBLIC_APP_URL=http://103.14.120.160:8081
 APP_NAME=R-GRAM
 NODE_ENV=production
 
@@ -30,5 +30,5 @@ OTP_EXPIRE_MINUTES=10
 # Google OAuth (Optional)
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
-NEXTAUTH_URL=http://103.14.120.163:8081
+NEXTAUTH_URL=http://103.14.120.160:8081
 NEXTAUTH_SECRET=your_nextauth_secret
