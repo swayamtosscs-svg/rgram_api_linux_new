@@ -344,18 +344,16 @@ export const sendPasswordResetEmail = async (
       if (process.env.VERCEL_URL) {
         // Use Vercel's auto-generated URL
         baseUrl = `https://${process.env.VERCEL_URL}`;
-      } else if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-        // In production or on Vercel, use the Vercel domain
+      } else if (process.env.NODE_ENV === 'production' && process.env.VERCEL) {
+        // In production on Vercel, use the Vercel domain
         baseUrl = 'https://api-rgram1.vercel.app';
-      } else {
-        // Use server IP instead of localhost for development
+      } else if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
+        // In production on server, use server IP
         baseUrl = 'http://103.14.120.163:8081';
+      } else {
+        // In development, use localhost
+        baseUrl = 'http://localhost:3000';
       }
-    }
-    
-    // Force server IP for production deployment
-    if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
-      baseUrl = 'http://103.14.120.163:8081';
     }
     
     // Force Vercel domain only if we're actually on Vercel
