@@ -1,5 +1,8 @@
 const nodemailer = require('nodemailer');
 
+// Load environment variables
+require('dotenv').config({ path: '.env.local' });
+
 async function checkEmailConfig() {
   console.log('🔍 Checking Email Configuration...\n');
 
