@@ -339,27 +339,33 @@ export const sendPasswordResetEmail = async (
     // Determine the correct base URL for the reset link
     let baseUrl = process.env.NEXT_PUBLIC_APP_URL;
     
-    // If NEXT_PUBLIC_APP_URL is not set, try to determine from other environment variables
+    // If NEXT_PUBLIC_APP_URL is not set, determine based on environment
     if (!baseUrl) {
-      if (process.env.VERCEL_URL) {
-        // Use Vercel's auto-generated URL
-        baseUrl = `https://${process.env.VERCEL_URL}`;
-      } else if (process.env.NODE_ENV === 'production' && process.env.VERCEL) {
-        // In production on Vercel, use the Vercel domain
+      // Check if we're on Vercel
+      if (process.env.VERCEL || process.env.VERCEL_URL) {
         baseUrl = 'https://api-rgram1.vercel.app';
-      } else if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
-        // In production on server, use server IP
+      }
+      // Check if we're in production on server (not Vercel)
+      else if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
         baseUrl = 'http://103.14.120.163:8081';
-      } else {
-        // In development, use localhost
+      }
+      // Default to localhost for development
+      else {
         baseUrl = 'http://localhost:3000';
       }
     }
     
-    // Force Vercel domain only if we're actually on Vercel
-    if (process.env.VERCEL || process.env.VERCEL_URL) {
-      baseUrl = 'https://api-rgram1.vercel.app';
+    // Additional checks for Vercel
+    if (process.env.VERCEL_URL) {
+      baseUrl = `https://${process.env.VERCEL_URL}`;
     }
+    
+    // Force localhost for development (override any other settings)
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === undefined) {
+      baseUrl = 'http://localhost:3000';
+    }
+    
+    console.log(`🔗 Password reset URL will use: ${baseUrl}`);
     
     // Include email in the reset URL for direct password reset
     const resetUrl = `${baseUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
