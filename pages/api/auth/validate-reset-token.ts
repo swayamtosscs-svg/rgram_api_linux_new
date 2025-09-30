@@ -14,7 +14,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectDB();
     const { token } = req.body;
 
+    console.log('🔍 Validating reset token:', token);
+
     if (!token) {
+      console.log('❌ No token provided');
       return res.status(400).json({
         success: false,
         message: 'Token is required'
@@ -22,18 +25,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Find the reset token
+    console.log('🔍 Searching for token in database...');
     const resetTokenData = await PasswordResetToken.findOne({
       token,
       isUsed: false,
       expiresAt: { $gt: new Date() }
     }).populate('userId', 'email username fullName') as IPopulatedPasswordResetToken | null;
 
+    console.log('🔍 Token search result:', resetTokenData ? 'Found' : 'Not found');
+
     if (!resetTokenData) {
+      console.log('❌ Token not found or expired');
       return res.status(400).json({
         success: false,
         message: 'Invalid or expired reset token'
       });
     }
+
+    console.log('✅ Token is valid for user:', resetTokenData.userId.email);
 
     res.json({
       success: true,

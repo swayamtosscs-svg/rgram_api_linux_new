@@ -66,6 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Remove old tokens for this user
     await PasswordResetToken.deleteMany({ userId: user._id });
+    console.log('🗑️  Removed old tokens for user:', user.email);
 
     // Store reset token in database
     const resetTokenData = new PasswordResetToken({
