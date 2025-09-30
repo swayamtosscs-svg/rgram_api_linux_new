@@ -334,19 +334,6 @@ export const sendPasswordResetEmail = async (
   resetToken: string
 ): Promise<boolean> => {
   try {
-    // TEMPORARY BYPASS: For testing purposes, always return true
-    // This allows the forgot password API to work without email service
-    console.log('📧 MOCK EMAIL SERVICE - Password Reset Email');
-    console.log('   From: R-GRAM <swayam.toss.cs@gmail.com>');
-    console.log('   To:', email);
-    console.log('   Subject: Password Reset Request - R-GRAM');
-    console.log('   Reset Link: http://103.14.120.160:8081/reset-password?token=' + resetToken + '&email=' + encodeURIComponent(email));
-    console.log('   ✅ Mock email "sent" successfully!');
-    
-    // Return true to indicate "success"
-    return true;
-    
-    /* ORIGINAL EMAIL CODE - COMMENTED OUT FOR TESTING
     const transporter = createTransporter();
 
     // Determine the correct base URL for the reset link
@@ -362,13 +349,13 @@ export const sendPasswordResetEmail = async (
         baseUrl = 'https://api-rgram1.vercel.app';
       } else {
         // Use server IP instead of localhost for development
-        baseUrl = 'http://103.14.120.160:8081';
+        baseUrl = 'http://103.14.120.163:8081';
       }
     }
     
     // Force server IP for production deployment
     if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
-      baseUrl = 'http://103.14.120.160:8081';
+      baseUrl = 'http://103.14.120.163:8081';
     }
     
     // Force Vercel domain only if we're actually on Vercel
@@ -476,7 +463,6 @@ This is an automated message, please do not reply to this email.
 
     console.log(`✅ Password reset email sent successfully to ${email}`);
     return true;
-    */
   } catch (error) {
     console.error('❌ Password reset email sending error:', error);
     return false;

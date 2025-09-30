@@ -1,226 +1,232 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
 
 export default function ResetPassword() {
   const router = useRouter();
   const { token, email } = router.query;
-  
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [userEmail, setUserEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isValidToken, setIsValidToken] = useState(true); // Always allow password reset
+  const [error, setError] = useState('');
+  const [tokenValid, setTokenValid] = useState(false);
+  const [validating, setValidating] = useState(true);
 
   useEffect(() => {
-    if (email) {
-      setUserEmail(email as string);
-      setMessage('Enter your new password below');
-    } else if (token) {
-      // Skip strict validation - allow direct password reset
-      setIsValidToken(true);
-      setMessage('Enter your email and new password below');
+    if (token && email) {
+      validateToken();
+    } else {
+      setValidating(false);
+      setError('Invalid reset link');
     }
   }, [token, email]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!userEmail) {
-      setMessage('Please enter your email address');
-      return;
-    }
-    
-    if (password !== confirmPassword) {
-      setMessage('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 6) {
-      setMessage('Password must be at least 6 characters long');
-      return;
-    }
-
-    setIsLoading(true);
-    setMessage('');
-
+  const validateToken = async () => {
     try {
-      // Use direct reset API that doesn't require token validation
-      const response = await fetch('/api/auth/direct-reset-password', {
+      const response = await fetch('/api/auth/validate-reset-token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: userEmail, password }),
+        body: JSON.stringify({ token }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setTokenValid(true);
+      } else {
+        setError(data.message || 'Invalid or expired reset token');
+      }
+    } catch (err) {
+      setError('Failed to validate reset token');
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!password || !confirmPassword) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          token, 
+          password, 
+          email 
+        }),
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        setIsSuccess(true);
+      if (data.success) {
         setMessage('Password reset successfully! You can now login with your new password.');
-        // Redirect to login page after 3 seconds
         setTimeout(() => {
-          router.push('/login');
+          router.push('/auth/login');
         }, 3000);
       } else {
-        setMessage(data.message || 'Failed to reset password');
+        setError(data.message || 'Something went wrong. Please try again.');
       }
-    } catch (error) {
-      setMessage('An error occurred. Please try again.');
+    } catch (err) {
+      setError('Network error. Please check your connection and try again.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  if (!token) {
+  if (validating) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-          <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
-            Invalid Reset Link
-          </h1>
-          <p className="text-gray-600 text-center mb-6">
-            This reset link is invalid. Please request a new password reset.
-          </p>
-          <button
-            onClick={() => router.push('/forgot-password')}
-            className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors"
-          >
-            Request New Reset
-          </button>
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+            <p className="mt-4 text-sm text-gray-600">Validating reset token...</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!isValidToken) {
+  if (!tokenValid) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-          <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
-            Reset Token Invalid
-          </h1>
-          <p className="text-gray-600 text-center mb-6">
-            {message}
-          </p>
-          <button
-            onClick={() => router.push('/forgot-password')}
-            className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors"
-          >
-            Request New Reset
-          </button>
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">R-GRAM</h1>
+            <p className="text-sm text-gray-600">Spiritual & Religious Social Media</p>
+          </div>
+          <div className="mt-8 bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="text-sm text-red-700">{error}</div>
+            </div>
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => router.push('/forgot-password')}
+                className="text-sm text-indigo-600 hover:text-indigo-500"
+              >
+                Request a new reset link
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <>
-      <Head>
-        <title>Reset Password - RGram</title>
-        <meta name="description" content="Reset your password" />
-      </Head>
-      
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div>
-            <div className="mx-auto h-12 w-12 bg-purple-600 rounded-full flex items-center justify-center">
-              <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Reset Your Password
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Enter your new password below
-            </p>
-          </div>
-          
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="rounded-md shadow-sm -space-y-px">
-              {!email && (
-                <div>
-                  <label htmlFor="email" className="sr-only">
-                    Email Address
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                    placeholder="Email Address"
-                    value={userEmail}
-                    onChange={(e) => setUserEmail(e.target.value)}
-                  />
-                </div>
-              )}
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  New Password
-                </label>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">R-GRAM</h1>
+          <p className="text-sm text-gray-600">Spiritual & Religious Social Media</p>
+        </div>
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Reset your password
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          Enter your new password below
+        </p>
+      </div>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                New Password
+              </label>
+              <div className="mt-1">
                 <input
                   id="password"
                   name="password"
                   type="password"
+                  autoComplete="new-password"
                   required
-                  className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm ${!email ? 'rounded-none' : 'rounded-t-md'}`}
-                  placeholder="New Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  minLength={6}
-                />
-              </div>
-              <div>
-                <label htmlFor="confirm-password" className="sr-only">
-                  Confirm Password
-                </label>
-                <input
-                  id="confirm-password"
-                  name="confirm-password"
-                  type="password"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                  placeholder="Confirm Password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  minLength={6}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Enter new password"
                 />
               </div>
             </div>
 
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                Confirm New Password
+              </label>
+              <div className="mt-1">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Confirm new password"
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="rounded-md bg-red-50 p-4">
+                <div className="text-sm text-red-700">{error}</div>
+              </div>
+            )}
+
             {message && (
-              <div className={`text-center p-3 rounded-md ${
-                isSuccess 
-                  ? 'bg-green-100 text-green-700 border border-green-300' 
-                  : 'bg-red-100 text-red-700 border border-red-300'
-              }`}>
-                {message}
+              <div className="rounded-md bg-green-50 p-4">
+                <div className="text-sm text-green-700">{message}</div>
               </div>
             )}
 
             <div>
               <button
                 type="submit"
-                disabled={isLoading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? (
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : null}
-                {isLoading ? 'Resetting Password...' : 'Reset Password'}
+                {loading ? 'Resetting...' : 'Reset Password'}
+              </button>
+            </div>
+
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => router.push('/auth/login')}
+                className="text-sm text-indigo-600 hover:text-indigo-500"
+              >
+                Back to Login
               </button>
             </div>
           </form>
         </div>
       </div>
-    </>
+    </div>
   );
 }
+

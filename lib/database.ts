@@ -51,6 +51,8 @@ async function connectDB() {
       require('./models/BabaPost');
       require('./models/BabaVideo');
       require('./models/BabaStory');
+      require('./models/Like');
+      require('./models/UserAssets');
       
       return mongoose;
     }).catch((error) => {

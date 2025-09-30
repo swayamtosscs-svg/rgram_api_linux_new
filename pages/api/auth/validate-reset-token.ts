@@ -1,6 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/database';
-import { validateResetToken } from './forgot-password';
+import PasswordResetToken, { IPopulatedPasswordResetToken } from '../../../lib/models/PasswordResetToken';
+
+// Load environment variables
+require('dotenv').config({ path: '.env.local' });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -18,51 +21,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Validate the token
-    const resetToken = await validateResetToken(token);
-    
-    if (!resetToken) {
+    // Find the reset token
+    const resetTokenData = await PasswordResetToken.findOne({
+      token,
+      isUsed: false,
+      expiresAt: { $gt: new Date() }
+    }).populate('userId', 'email username fullName') as IPopulatedPasswordResetToken | null;
+
+    if (!resetTokenData) {
       return res.status(400).json({
         success: false,
         message: 'Invalid or expired reset token'
       });
     }
 
-    // Check if token is expired
-    if (resetToken.expiresAt < new Date()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Reset token has expired'
-      });
-    }
-
-    // Check if token has already been used
-    if (resetToken.isUsed) {
-      return res.status(400).json({
-        success: false,
-        message: 'Reset token has already been used'
-      });
-    }
-
-    // Type assertion for the populated user data
-    const userData = resetToken.userId as any;
-
     res.json({
       success: true,
       message: 'Token is valid',
-      data: {
-        userId: userData._id,
-        email: userData.email,
-        username: userData.username,
-        fullName: userData.fullName
+      user: {
+        email: resetTokenData.userId.email,
+        username: resetTokenData.userId.username,
+        fullName: resetTokenData.userId.fullName
       }
     });
 
   } catch (error: any) {
-    console.error('Token validation error:', error);
+    console.error('Validate reset token error:', error);
+    
+    if (error.name === 'MongoError' || error.name === 'MongooseError') {
+      return res.status(500).json({
+        success: false,
+        message: 'Database connection error'
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
   }
 }
+

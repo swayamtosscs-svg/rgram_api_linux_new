@@ -1,8 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import bcrypt from 'bcryptjs';
 import connectDB from '../../../lib/database';
 import User from '../../../lib/models/User';
-import bcrypt from 'bcryptjs';
-import { validateResetToken, markTokenAsUsed } from './forgot-password';
+import PasswordResetToken from '../../../lib/models/PasswordResetToken';
+import { sendPasswordResetConfirmationEmail } from '../../../lib/utils/email';
+
+// Load environment variables
+require('dotenv').config({ path: '.env.local' });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -11,15 +15,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await connectDB();
-    const { token, password } = req.body;
+    const { token, password, email } = req.body;
 
-    if (!token || !password) {
+    if (!token || !password || !email) {
       return res.status(400).json({
         success: false,
-        message: 'Token and password are required'
+        message: 'Token, password, and email are required'
       });
     }
 
+    // Validate password strength
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
@@ -27,52 +32,51 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Try to validate the token, but don't fail if it's not found
-    let resetToken = null;
-    let userData = null;
-    
-    try {
-      resetToken = await validateResetToken(token);
-      if (resetToken) {
-        userData = resetToken.userId as any;
-      }
-    } catch (error) {
-      console.log('Token validation failed, proceeding with direct reset:', error);
-    }
+    // Find the reset token
+    const resetTokenData = await PasswordResetToken.findOne({
+      token,
+      isUsed: false,
+      expiresAt: { $gt: new Date() }
+    }).populate('userId');
 
-    // If token validation fails, try to find user by email from token or allow direct reset
-    if (!userData) {
-      // For now, we'll allow password reset without strict token validation
-      // In a production environment, you might want to implement additional security measures
+    if (!resetTokenData) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid reset token. Please request a new password reset link.'
+        message: 'Invalid or expired reset token'
+      });
+    }
+
+    // Verify the email matches the token's user
+    const user = resetTokenData.userId as any;
+    if (user.email.toLowerCase() !== email.toLowerCase()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email does not match the reset token'
       });
     }
 
     // Hash the new password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Update the user's password
-    const updatedUser = await User.findByIdAndUpdate(
-      userData._id,
-      { 
-        password: hashedPassword,
-        passwordChangedAt: new Date(),
-        updatedAt: new Date()
-      },
-      { new: true }
-    );
+    // Update user password
+    await User.findByIdAndUpdate(user._id, {
+      password: hashedPassword,
+      passwordChangedAt: new Date()
+    });
 
-    if (!updatedUser) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
+    // Mark token as used
+    await PasswordResetToken.findByIdAndUpdate(resetTokenData._id, {
+      isUsed: true
+    });
+
+    // Send confirmation email
+    try {
+      await sendPasswordResetConfirmationEmail(user.email, user.fullName || user.username);
+    } catch (emailError) {
+      console.error('Failed to send confirmation email:', emailError);
+      // Don't fail the password reset if email fails
     }
-
-    // Mark the token as used
-    await markTokenAsUsed(token);
 
     res.json({
       success: true,
@@ -80,10 +84,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error: any) {
-    console.error('Password reset error:', error);
+    console.error('Reset password error:', error);
+    
+    if (error.name === 'MongoError' || error.name === 'MongooseError') {
+      return res.status(500).json({
+        success: false,
+        message: 'Database connection error'
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
   }
 }
+

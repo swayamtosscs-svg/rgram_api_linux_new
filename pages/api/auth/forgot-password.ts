@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import crypto from 'crypto';
 import connectDB from '../../../lib/database';
 import User from '../../../lib/models/User';
 import PasswordResetToken from '../../../lib/models/PasswordResetToken';
-import * as crypto from 'crypto';
 import { sendPasswordResetEmail } from '../../../lib/utils/email';
 
 // Load environment variables
@@ -113,44 +113,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 }
-
-// Helper function to validate reset token
-export async function validateResetToken(token: string) {
-  try {
-    const resetToken = await PasswordResetToken.findOne({
-      token,
-      isUsed: false,
-      expiresAt: { $gt: new Date() }
-    }).populate('userId', 'email username fullName').lean();
-    
-    return resetToken;
-  } catch (error) {
-    console.error('Error validating reset token:', error);
-    return null;
-  }
-}
-
-// Helper function to mark token as used
-export async function markTokenAsUsed(token: string) {
-  try {
-    await PasswordResetToken.findOneAndUpdate(
-      { token },
-      { isUsed: true }
-    );
-  } catch (error) {
-    console.error('Error marking token as used:', error);
-  }
-}
-
-// Clean up expired tokens (run this periodically)
-export async function cleanupExpiredTokens() {
-  try {
-    await PasswordResetToken.deleteMany({
-      expiresAt: { $lt: new Date() }
-    });
-  } catch (error) {
-    console.error('Error cleaning up expired tokens:', error);
-  }
-}
-
 
