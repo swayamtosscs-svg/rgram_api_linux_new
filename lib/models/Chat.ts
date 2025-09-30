@@ -8,6 +8,16 @@ export interface IMessage extends Document {
   content: string;
   messageType: 'text' | 'image' | 'video' | 'audio' | 'file' | 'location';
   mediaUrl?: string;
+  mediaInfo?: {
+    fileName: string;
+    originalName: string;
+    localPath: string;
+    publicUrl: string;
+    size: number;
+    mimetype: string;
+    folder: string;
+    uploadedAt: Date;
+  };
   isRead: boolean;
   readAt?: Date;
   reactions: Array<{
@@ -56,6 +66,16 @@ const MessageSchema = new Schema<IMessage>({
   content: { type: String, required: true, maxlength: 2000 },
   messageType: { type: String, enum: ['text', 'image', 'video', 'audio', 'file', 'location'], default: 'text' },
   mediaUrl: { type: String },
+  mediaInfo: {
+    fileName: { type: String },
+    originalName: { type: String },
+    localPath: { type: String },
+    publicUrl: { type: String },
+    size: { type: Number },
+    mimetype: { type: String },
+    folder: { type: String },
+    uploadedAt: { type: Date }
+  },
   isRead: { type: Boolean, default: false },
   readAt: { type: Date },
   reactions: [{

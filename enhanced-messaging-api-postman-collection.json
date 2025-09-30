@@ -1,0 +1,460 @@
+{
+  "info": {
+    "name": "Enhanced Messaging API with Media Support",
+    "description": "Comprehensive messaging system with image and video support, including local storage management and database operations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "key": "test_user_1",
+      "value": "68ad57cdceb840899bef3404",
+      "type": "string"
+    },
+    {
+      "key": "test_user_2",
+      "value": "68ad57cdceb840899bef3405",
+      "type": "string"
+    },
+    {
+      "key": "thread_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "message_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Enhanced Messaging",
+      "item": [
+        {
+          "name": "Send Text Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toUserId\": \"{{test_user_2}}\",\n  \"content\": \"Hello! This is a test text message.\",\n  \"messageType\": \"text\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/enhanced-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "enhanced-message"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success) {",
+                  "        pm.collectionVariables.set('thread_id', response.data.threadId);",
+                  "        pm.collectionVariables.set('message_id', response.data.message._id);",
+                  "        console.log('Thread ID saved:', response.data.threadId);",
+                  "        console.log('Message ID saved:', response.data.message._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Send Image Message",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "toUserId",
+                  "value": "{{test_user_2}}",
+                  "type": "text"
+                },
+                {
+                  "key": "content",
+                  "value": "Check out this test image!",
+                  "type": "text"
+                },
+                {
+                  "key": "messageType",
+                  "value": "image",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/test-image.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/enhanced-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "enhanced-message"]
+            }
+          }
+        },
+        {
+          "name": "Send Video Message",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "toUserId",
+                  "value": "{{test_user_2}}",
+                  "type": "text"
+                },
+                {
+                  "key": "content",
+                  "value": "Check out this test video!",
+                  "type": "text"
+                },
+                {
+                  "key": "messageType",
+                  "value": "video",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/test-video.mp4"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/enhanced-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "enhanced-message"]
+            }
+          }
+        },
+        {
+          "name": "Get Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/chat/enhanced-message?threadId={{thread_id}}&limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "enhanced-message"],
+              "query": [
+                {
+                  "key": "threadId",
+                  "value": "{{thread_id}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit Message",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{message_id}}\",\n  \"content\": \"This message has been edited!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/enhanced-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "enhanced-message"]
+            }
+          }
+        },
+        {
+          "name": "Soft Delete Message",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{message_id}}\",\n  \"deleteType\": \"soft\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/enhanced-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "enhanced-message"]
+            }
+          }
+        },
+        {
+          "name": "Hard Delete Message",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{message_id}}\",\n  \"deleteType\": \"hard\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/enhanced-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "enhanced-message"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Media Management",
+      "item": [
+        {
+          "name": "Get All Media Files",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/chat/media-management",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "media-management"]
+            }
+          }
+        },
+        {
+          "name": "Get Media Files by Folder",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/chat/media-management?folder=images",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "media-management"],
+              "query": [
+                {
+                  "key": "folder",
+                  "value": "images"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Media Files by Message ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/chat/media-management?messageId={{message_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "media-management"],
+              "query": [
+                {
+                  "key": "messageId",
+                  "value": "{{message_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Media File (File Only)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{message_id}}\",\n  \"deleteFromDB\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/media-management",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "media-management"]
+            }
+          }
+        },
+        {
+          "name": "Delete Media File (File + DB)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{message_id}}\",\n  \"deleteFromDB\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/media-management",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "media-management"]
+            }
+          }
+        },
+        {
+          "name": "Delete Media File by Name",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fileName\": \"user_id_1640995200000_abc123def.jpg\",\n  \"deleteFromDB\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/media-management",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "media-management"]
+            }
+          }
+        },
+        {
+          "name": "Cleanup Orphaned Media (Dry Run)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dryRun\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/media-management",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "media-management"]
+            }
+          }
+        },
+        {
+          "name": "Cleanup Orphaned Media (Actual)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dryRun\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/media-management",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "media-management"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Legacy Messaging (for comparison)",
+      "item": [
+        {
+          "name": "Send Message (Legacy)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toUserId\": \"{{test_user_2}}\",\n  \"content\": \"Hello! This is a legacy message.\",\n  \"messageType\": \"text\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/send",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "send"]
+            }
+          }
+        },
+        {
+          "name": "Get Chat Threads",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/chat/list?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "list"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
