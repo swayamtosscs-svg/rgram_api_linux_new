@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
     .btn{margin-top:16px;background:#3657ff;border:0;color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer}
     .btn:disabled{opacity:.6, cursor:not-allowed}
     .err{color:#ff8896;margin-top:12px;font-size:14px}
+    .success{color:#7aa2ff;margin-top:12px;font-size:14px}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
   <script>
@@ -53,16 +54,26 @@ export async function GET(request: NextRequest) {
         document.getElementById('err').textContent = 'Failed to load Razorpay. Please try again.';
         return;
       }
+      
+      console.log('Opening Razorpay checkout with:', {
+        key: ${JSON.stringify(keyId)},
+        order_id: ${JSON.stringify(orderId)},
+        amount: ${JSON.stringify(amount)},
+        currency: ${JSON.stringify(currency)}
+      });
+      
       var options = {
         key: ${JSON.stringify(keyId)},
         order_id: ${JSON.stringify(orderId)},
         amount: ${JSON.stringify(amount)},
         currency: ${JSON.stringify(currency)},
         name: 'R-GRAM',
-        description: 'Payment',
+        description: 'Payment for R-GRAM',
         timeout: 300,
-        // Avoid HTTPS->HTTP redirect warnings by using handler instead of redirect
         handler: function(resp){
+          console.log('Payment response:', resp);
+          document.getElementById('err').textContent = 'Verifying payment...';
+          
           fetch(${JSON.stringify(origin ? `${origin}/api/payments/callback` : '/api/payments/callback')}, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -72,20 +83,45 @@ export async function GET(request: NextRequest) {
               razorpay_signature: resp.razorpay_signature
             })
           }).then(async function(r){
+            console.log('Callback response status:', r.status);
             var ok = false;
-            try { var j = await r.json(); ok = j && j.success; } catch(e){}
-            if (ok && ${JSON.stringify(!!successUrl)}) {
-              window.location.href = ${JSON.stringify(successUrl)};
-              return;
+            var errorMsg = '';
+            var responseData = null;
+            
+            try { 
+              responseData = await r.json(); 
+              console.log('Callback response:', responseData);
+              ok = responseData && responseData.success;
+              if (!ok) {
+                errorMsg = responseData.message || 'Payment verification failed';
+              }
+            } catch(e){
+              console.error('Error parsing callback response:', e);
+              errorMsg = 'Failed to verify payment';
             }
-            if (!ok && ${JSON.stringify(!!failureUrl)}) {
-              window.location.href = ${JSON.stringify(failureUrl)};
-              return;
+            
+            if (ok) {
+              document.getElementById('err').className = 'success';
+              document.getElementById('err').textContent = 'Payment successful! Redirecting...';
+              
+              if (${JSON.stringify(!!successUrl)}) {
+                setTimeout(() => {
+                  window.location.href = ${JSON.stringify(successUrl)};
+                }, 1000);
+              } else {
+                setTimeout(() => {
+                  alert('Payment successful! Order ID: ' + resp.razorpay_order_id);
+                  window.close();
+                }, 1000);
+              }
+            } else {
+              document.getElementById('err').textContent = 'Payment failed: ' + errorMsg;
+              document.getElementById('payBtn').disabled = false;
             }
-            window.close();
-          }).catch(function(){
-            // If fetch fails, show a simple message
+          }).catch(function(e){
+            console.error('Callback error:', e);
             document.getElementById('err').textContent = 'Payment captured but callback failed to notify server. Please contact support.';
+            document.getElementById('payBtn').disabled = false;
           });
         },
         modal: {
@@ -93,13 +129,19 @@ export async function GET(request: NextRequest) {
             document.getElementById('err').textContent = 'Payment window closed. Click Pay Now to retry.';
             document.getElementById('payBtn').disabled = false;
           }
+        },
+        prefill: {
+          name: 'Customer',
+          email: 'customer@example.com'
         }
       };
+      
       try {
         var rzp = new window.Razorpay(options);
         rzp.open();
       } catch (e) {
-        document.getElementById('err').textContent = 'Unable to open Razorpay checkout.';
+        console.error('Error opening Razorpay:', e);
+        document.getElementById('err').textContent = 'Unable to open Razorpay checkout: ' + e.message;
       }
     }
 
@@ -107,15 +149,20 @@ export async function GET(request: NextRequest) {
       var btn = document.getElementById('payBtn');
       btn.addEventListener('click', function(){
         btn.disabled = true;
+        document.getElementById('err').textContent = '';
         openCheckout();
       });
-      setTimeout(function(){ openCheckout(); }, 200);
+      
+      // Auto-open after a short delay
+      setTimeout(function(){ 
+        openCheckout(); 
+      }, 500);
     });
   </script>
 </head>
 <body>
   <div class="card">
-    <h1>Opening Razorpay…</h1>
+    <h1>Processing Payment…</h1>
     <p>Do not close this window. If it doesn't open, click Pay Now.</p>
     <div class="spinner"></div>
     <button id="payBtn" class="btn">Pay Now</button>
@@ -128,5 +175,3 @@ export async function GET(request: NextRequest) {
 		headers: { 'Content-Type': 'text/html; charset=utf-8' }
 	});
 }
-
-
