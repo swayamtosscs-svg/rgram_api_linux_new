@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ success: false, message: 'Razorpay keys not configured' }, { status: 500 });
 		}
 
-		const { amount, currency = 'INR', notes } = await request.json();
+		const { amount, currency = 'INR', notes, success_url, failure_url } = await request.json();
 		if (!amount || typeof amount !== 'number' || amount < 100) {
 			return NextResponse.json({ success: false, message: 'amount (in paise) >= 100 required' }, { status: 400 });
 		}
@@ -69,7 +69,14 @@ export async function POST(request: NextRequest) {
 			});
 		}
 
-		const checkoutUrl = `/api/payments/checkout?order_id=${encodeURIComponent(order.id)}&amount=${encodeURIComponent(order.amount)}&currency=${encodeURIComponent(order.currency)}`;
+		const params = new URLSearchParams({
+			order_id: String(order.id),
+			amount: String(order.amount),
+			currency: String(order.currency)
+		});
+		if (success_url) params.set('success_url', String(success_url));
+		if (failure_url) params.set('failure_url', String(failure_url));
+		const checkoutUrl = `/api/payments/checkout?${params.toString()}`;
 		return NextResponse.json({
 			success: true,
 			order,
