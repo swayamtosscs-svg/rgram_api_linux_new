@@ -1,0 +1,12 @@
+# Razorpay Payment Env Vars (copy to .env.local or .env)
+
+# Public key used on the client (do NOT expose secret)
+RAZORPAY_KEY_ID=
+
+# Secret key used ONLY on the server for signature verification
+RAZORPAY_KEY_SECRET=
+
+# Optional: webhook secret for verifying Razorpay webhooks (if you add webhooks)
+RAZORPAY_WEBHOOK_SECRET=
+
+
