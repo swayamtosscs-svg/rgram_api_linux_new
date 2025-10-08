@@ -361,7 +361,8 @@ export const sendPasswordResetEmail = async (
     }
     
     // Force localhost for development (override any other settings)
-    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === undefined) {
+    // Only force localhost if NEXT_PUBLIC_APP_URL is not explicitly set
+    if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === undefined) && !process.env.NEXT_PUBLIC_APP_URL) {
       baseUrl = 'http://localhost:3000';
     }
     
