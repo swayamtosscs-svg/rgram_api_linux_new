@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { adminMiddleware } from '../../../lib/middleware/adminAuth';
+import { requireAdmin } from '../../../lib/middleware/adminAuth';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -19,7 +19,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 }
 
 export default async function wrappedHandler(req: NextApiRequest, res: NextApiResponse) {
-  await adminMiddleware(req, res, async () => {
+  await requireAdmin()(req, res, async () => {
     await handler(req, res);
   });
 }

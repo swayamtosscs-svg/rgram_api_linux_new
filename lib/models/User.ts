@@ -18,7 +18,9 @@ export interface IUser extends Document {
   isEmailVerified: boolean;
   isActive: boolean;
   isVerified: boolean;
+  verificationType?: 'blue_tick' | 'gold_tick' | 'silver_tick' | 'business_tick' | null;
   isAdmin?: boolean;
+  role?: string;
   verificationRequest?: {
     idDocument: string;
     status: 'pending' | 'approved' | 'rejected';
@@ -119,9 +121,19 @@ const UserSchema = new Schema<IUser>({
     type: Boolean,
     default: false
   },
+  verificationType: {
+    type: String,
+    enum: ['blue_tick', 'gold_tick', 'silver_tick', 'business_tick'],
+    default: null
+  },
   isAdmin: {
     type: Boolean,
     default: false
+  },
+  role: {
+    type: String,
+    default: 'user',
+    enum: ['user', 'admin', 'super_admin', 'moderator']
   },
   verificationRequest: {
     idDocument: {

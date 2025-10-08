@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import bcrypt from 'bcryptjs';
 import dbConnect from '../../../lib/database';
 import User, { IUser } from '../../../lib/models/User';
-import { adminMiddleware } from '../../../lib/middleware/adminAuth';
+import { requireAdmin } from '../../../lib/middleware/adminAuth';
 
 type Data =
   | { message: string }
@@ -22,7 +22,7 @@ export default async function handler(
 
     // Check if requester is admin
     await new Promise<void>((resolve, reject) => {
-      adminMiddleware(req, res, async () => {
+      requireAdmin()(req, res, async () => {
         try {
           await resolve();
         } catch (err) {

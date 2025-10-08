@@ -1,0 +1,676 @@
+{
+  "info": {
+    "name": "Enhanced Social Media API Collection",
+    "description": "Comprehensive API collection for posts, reels, stories, and admin functionality",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    },
+    {
+      "key": "post_id",
+      "value": "post-id-here",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "user-id-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This is my post content with @username mention and #hashtag\",\n  \"type\": \"post\",\n  \"title\": \"Post Title\",\n  \"description\": \"Post description\",\n  \"category\": \"general\",\n  \"religion\": \"hinduism\",\n  \"location\": \"Mumbai, India\",\n  \"mentions\": [\"{{user_id}}\"],\n  \"hashtags\": [\"trending\", \"viral\"],\n  \"collaborators\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/enhanced",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "enhanced"]
+            }
+          }
+        },
+        {
+          "name": "Get Posts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/posts/enhanced?page=1&limit=10&type=post&category=general",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "enhanced"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "type",
+                  "value": "post"
+                },
+                {
+                  "key": "category",
+                  "value": "general"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Updated post content\",\n  \"title\": \"Updated title\",\n  \"collaborators\": [\"{{user_id}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/enhanced?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "enhanced"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/posts/enhanced?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "enhanced"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Individual Post Operations",
+      "item": [
+        {
+          "name": "Get Specific Post",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Like Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"like\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Unlike Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"unlike\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Comment on Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"comment\",\n  \"content\": \"Great post!\",\n  \"mentions\": [\"{{user_id}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Reply to Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"reply\",\n  \"commentId\": \"comment-id-here\",\n  \"content\": \"Thanks!\",\n  \"mentions\": [\"{{user_id}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Share Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"share\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Save Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"save\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Request Collaboration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"collaborate\",\n  \"message\": \"Let's collaborate on this!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reels",
+      "item": [
+        {
+          "name": "Create Reel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Check out this amazing reel! @username #viral\",\n  \"title\": \"Amazing Reel\",\n  \"description\": \"Description of the reel\",\n  \"category\": \"entertainment\",\n  \"song\": {\n    \"title\": \"Song Title\",\n    \"artist\": \"Artist Name\",\n    \"duration\": 180,\n    \"audioUrl\": \"https://example.com/audio.mp3\",\n    \"thumbnailUrl\": \"https://example.com/thumbnail.jpg\"\n  },\n  \"mentions\": [\"{{user_id}}\"],\n  \"hashtags\": [\"dance\", \"music\"],\n  \"collaborators\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/reels/enhanced",
+              "host": ["{{base_url}}"],
+              "path": ["reels", "enhanced"]
+            }
+          }
+        },
+        {
+          "name": "Get Reels",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/reels/enhanced?page=1&limit=10&trending=true&category=entertainment",
+              "host": ["{{base_url}}"],
+              "path": ["reels", "enhanced"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "trending",
+                  "value": "true"
+                },
+                {
+                  "key": "category",
+                  "value": "entertainment"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stories",
+      "item": [
+        {
+          "name": "Create Story",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Story content with @username mention\",\n  \"mentions\": [\"{{user_id}}\"],\n  \"hashtags\": [\"story\"],\n  \"location\": \"Mumbai, India\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/stories/enhanced",
+              "host": ["{{base_url}}"],
+              "path": ["stories", "enhanced"]
+            }
+          }
+        },
+        {
+          "name": "Get Stories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/stories/enhanced?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["stories", "enhanced"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get Dashboard Overview",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/enhanced?type=overview",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "enhanced"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "overview"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Statistics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/enhanced?type=stats&period=7d",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "enhanced"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "stats"
+                },
+                {
+                  "key": "period",
+                  "value": "7d"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/enhanced?type=users&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "enhanced"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "users"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Block User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"block_user\",\n  \"targetId\": \"{{user_id}}\",\n  \"reason\": \"Inappropriate behavior\",\n  \"type\": \"temporary\",\n  \"duration\": 24\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/enhanced",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "enhanced"]
+            }
+          }
+        },
+        {
+          "name": "Unblock User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"unblock_user\",\n  \"targetId\": \"{{user_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/enhanced",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "enhanced"]
+            }
+          }
+        },
+        {
+          "name": "Delete Content",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"delete_content\",\n  \"targetId\": \"{{post_id}}\",\n  \"reason\": \"Violates community guidelines\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/enhanced",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "enhanced"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/notifications/enhanced?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "enhanced"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Unread Notifications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/notifications/enhanced?page=1&limit=20&unreadOnly=true",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "enhanced"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "unreadOnly",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"markAll\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications/enhanced",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "enhanced"]
+            }
+          }
+        },
+        {
+          "name": "Mark Specific as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notificationIds\": [\"notification-id-1\", \"notification-id-2\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications/enhanced",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "enhanced"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Create Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"{{post_id}}\",\n  \"contentType\": \"post\",\n  \"reason\": \"Inappropriate content\",\n  \"description\": \"Detailed description of the issue\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/reports/enhanced",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "enhanced"]
+            }
+          }
+        },
+        {
+          "name": "Get User Reports",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/reports/enhanced?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "enhanced"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

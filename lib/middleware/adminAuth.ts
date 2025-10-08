@@ -1,41 +1,101 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import User from '../models/User';
-import dbConnect from '../database';
-import { verifyToken } from './auth';
-import { NextApiRequestWithUser } from '../types/next';
+import jwt from 'jsonwebtoken';
+import connectDB from '../database';
+import { Admin } from '../models/Admin';
 
-export async function adminMiddleware(
-  req: NextApiRequestWithUser,
-  res: NextApiResponse,
-  next: () => Promise<void>
-) {
+export interface AdminTokenPayload {
+  userId: string;
+  username: string;
+  email: string;
+  role: 'super_admin' | 'admin' | 'moderator';
+  permissions: {
+    canManageUsers: boolean;
+    canDeleteContent: boolean;
+    canBlockUsers: boolean;
+    canViewAnalytics: boolean;
+    canModerateContent: boolean;
+    canManageReports: boolean;
+  };
+  isAdmin: boolean;
+  iat: number;
+  exp: number;
+}
+
+export async function verifyAdminToken(token: string): Promise<AdminTokenPayload | null> {
   try {
-    await dbConnect();
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as AdminTokenPayload;
     
-    // Get token from header
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) {
-      return res.status(401).json({ message: 'Authentication required' });
+    // Verify admin is still active
+    await connectDB();
+    const admin = await Admin.findOne({ 
+      user: decoded.userId, 
+      isActive: true 
+    });
+
+    if (!admin) {
+      return null;
     }
 
-    // Verify token and get user ID
-    const decoded = await verifyToken(token);
-    if (!decoded || !decoded.userId) {
-      return res.status(401).json({ message: 'Invalid token' });
-    }
-
-    // Get user from database
-    const user = await User.findOne({ _id: decoded.userId });
-
-    if (!user || !user.isAdmin) {
-      return res.status(403).json({ message: 'Admin access required' });
-    }
-
-    // Add user to request for further use
-    req.adminUser = user;
-    await next();
+    return decoded;
   } catch (error) {
-    console.error('Admin middleware error:', error);
-    return res.status(500).json({ message: 'Server error in admin middleware' });
+    return null;
   }
 }
+
+export function requireAdmin(requiredRole?: 'super_admin' | 'admin' | 'moderator') {
+  return async (req: NextApiRequest, res: NextApiResponse, next: () => void) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Admin authentication required' 
+      });
+    }
+
+    const decoded = await verifyAdminToken(token);
+    
+    if (!decoded) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid or expired admin token' 
+      });
+    }
+
+    if (requiredRole && decoded.role !== requiredRole) {
+      return res.status(403).json({ 
+        success: false, 
+        message: `${requiredRole} role required` 
+      });
+    }
+
+    // Add admin info to request
+    (req as any).admin = decoded;
+    next();
+  };
+}
+
+export function requirePermission(permission: keyof AdminTokenPayload['permissions']) {
+  return async (req: NextApiRequest, res: NextApiResponse, next: () => void) => {
+    const admin = (req as any).admin as AdminTokenPayload;
+    
+    if (!admin) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Admin authentication required' 
+      });
+    }
+
+    if (!admin.permissions[permission]) {
+      return res.status(403).json({ 
+        success: false, 
+        message: `Permission required: ${permission}` 
+      });
+    }
+
+    next();
+  };
+}
+
+// Export adminMiddleware as an alias for requireAdmin for backward compatibility
+export const adminMiddleware = requireAdmin;

@@ -89,6 +89,7 @@ export default async function handler(
           email: user.email,
           username: user.username,
           fullName: user.fullName,
+          role: user.role,
           avatar: user.avatar,
           bio: user.bio,
           website: user.website,

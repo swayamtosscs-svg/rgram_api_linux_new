@@ -53,6 +53,8 @@ async function connectDB() {
       require('./models/BabaStory');
       require('./models/Like');
       require('./models/UserAssets');
+      require('./models/Admin');
+      require('./models/Verification');
       
       return mongoose;
     }).catch((error) => {
