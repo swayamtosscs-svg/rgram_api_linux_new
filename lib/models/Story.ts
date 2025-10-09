@@ -13,6 +13,26 @@ export interface IStory extends Document {
   expiresAt: Date;
   views: mongoose.Types.ObjectId[];
   viewsCount: number;
+  likes?: mongoose.Types.ObjectId[];
+  likesCount?: number;
+  comments?: mongoose.Types.ObjectId[];
+  commentsCount?: number;
+  // Highlight support
+  highlightedBy?: mongoose.Types.ObjectId[];
+  highlightedCount?: number;
+  // Close story support
+  isCloseStory?: boolean;
+  allowedViewers?: mongoose.Types.ObjectId[];
+  // Optional song/audio metadata for story
+  song?: {
+    title?: string;
+    artist?: string;
+    url: string; // public URL in local storage
+    fileName: string;
+    filePath: string;
+    duration?: number;
+    storageType: 'local' | 'cloudinary';
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -66,6 +86,33 @@ const StorySchema = new Schema<IStory>({
     type: Number,
     default: 0,
     min: 0
+  },
+  likes: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  likesCount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  comments: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment'
+  }],
+  commentsCount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  highlightedBy: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  highlightedCount: {
+    type: Number,
+    default: 0,
+    min: 0
   }
 }, {
   timestamps: true
@@ -76,6 +123,9 @@ StorySchema.index({ author: 1, createdAt: -1 });
 StorySchema.index({ expiresAt: 1 });
 StorySchema.index({ isActive: 1, expiresAt: 1 });
 StorySchema.index({ hashtags: 1 });
+// Close story indexes
+StorySchema.index({ isCloseStory: 1 });
+StorySchema.index({ allowedViewers: 1 });
 
 // Update views count when views change
 StorySchema.pre('save', function(next) {
