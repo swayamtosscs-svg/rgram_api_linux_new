@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import crypto from 'crypto';
-import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
-import PasswordResetToken from '../../../lib/models/PasswordResetToken';
+import connectDB from '@/lib/database';
+import User from '@/lib/models/User';
+import PasswordResetToken from '@/lib/models/PasswordResetToken';
 import { sendPasswordResetEmail } from '../../../lib/utils/email';
 
 // Load environment variables

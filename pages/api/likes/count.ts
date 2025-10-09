@@ -1,11 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import Like from '../../../lib/models/Like';
-import Post from '../../../lib/models/Post';
-import BabaPost from '../../../lib/models/BabaPost';
-import BabaVideo from '../../../lib/models/BabaVideo';
-import BabaStory from '../../../lib/models/BabaStory';
-import UserAssets from '../../../lib/models/UserAssets';
+import connectDB from '@/lib/database';
+import Like from '@/lib/models/Like';
+import Post from '@/lib/models/Post';
+import BabaPost from '@/lib/models/BabaPost';
+import BabaVideo from '@/lib/models/BabaVideo';
+import BabaStory from '@/lib/models/BabaStory';
+import UserAssets from '@/lib/models/UserAssets';
 
 export default async function handler(
   req: NextApiRequest,

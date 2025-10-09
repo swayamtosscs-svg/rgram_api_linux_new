@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { verifyToken } from '../../../lib/middleware/auth';
-import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
+import { verifyToken } from '@/lib/middleware/auth';
+import connectDB from '@/lib/database';
+import User from '@/lib/models/User';
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';

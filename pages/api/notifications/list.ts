@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import Notification from '../../../lib/models/Notification';
-import { verifyToken } from '../../../lib/middleware/auth';
+import connectDB from '@/lib/database';
+import Notification from '@/lib/models/Notification';
+import { verifyToken } from '@/lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -33,8 +33,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const notifications = await Notification.find(query)
       .populate('sender', 'username fullName avatar')
-      .populate('post', 'content images videos')
-      .populate('story', 'content media')
+      .populate('relatedPost', 'content images videos')
+      .populate('relatedStory', 'content media')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit))

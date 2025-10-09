@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
+import connectDB from '@/lib/database';
+import User from '@/lib/models/User';
 import { Admin } from '../../../lib/models/Admin';
-import Post from '../../../lib/models/Post';
-import Notification from '../../../lib/models/Notification';
-import { verifyToken } from '../../../lib/middleware/auth';
+import Post from '@/lib/models/Post';
+import Notification from '@/lib/models/Notification';
+import { verifyToken } from '@/lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectDB();

@@ -1,11 +1,22 @@
 import mongoose from 'mongoose';
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 
-const MONGODB_URI = process.env.MONGODB_URI!;
+// Try to get MongoDB URI from environment, with fallback
+let MONGODB_URI: string = process.env.MONGODB_URI || '';
 
+console.log('🔍 Environment check:');
+console.log('MONGODB_URI from env:', MONGODB_URI);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
+// Use MongoDB Atlas connection directly
+MONGODB_URI = 'mongodb+srv://tossitswayam:Qwert123%23%24@cluster0.tpk0nle.mongodb.net/api_rgram?retryWrites=true&w=majority';
+
+// Ensure MONGODB_URI is defined
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+  throw new Error('MONGODB_URI is not defined');
 }
+
+console.log('🔗 Attempting to connect to MongoDB...');
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
@@ -52,13 +63,20 @@ async function connectDB() {
       require('./models/BabaVideo');
       require('./models/BabaStory');
       require('./models/Like');
+      require('./models/Follow');
       require('./models/UserAssets');
       require('./models/Admin');
       require('./models/Verification');
+      require('./models/Notification');
+      require('./models/BlacklistedToken');
       
       return mongoose;
     }).catch((error) => {
-      console.error('❌ MongoDB connection error:', error);
+      console.error('❌ MongoDB connection error:', error.message);
+      console.log('💡 To fix this issue:');
+      console.log('1. Install MongoDB locally: https://www.mongodb.com/try/download/community');
+      console.log('2. Start MongoDB service');
+      console.log('3. Or set up MongoDB Atlas and configure MONGODB_URI in .env.local');
       throw error;
     });
   }

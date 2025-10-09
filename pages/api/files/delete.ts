@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { verifyToken } from '../../../lib/middleware/auth';
-import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
+import { verifyToken } from '@/lib/middleware/auth';
+import connectDB from '@/lib/database';
+import User from '@/lib/models/User';
 import { deleteFileByUrl } from '../../../utils/localStorage';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

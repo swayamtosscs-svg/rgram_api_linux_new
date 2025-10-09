@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
+import connectDB from '@/lib/database';
 import { ChatThread, Message } from '../../../lib/models/Chat';
-import { verifyToken } from '../../../lib/middleware/auth';
+import { verifyToken } from '@/lib/middleware/auth';
 import { validateAndCreateObjectIds, isValidObjectId } from '../../../lib/utils/objectId';
 import mongoose from 'mongoose';
 import fs from 'fs';

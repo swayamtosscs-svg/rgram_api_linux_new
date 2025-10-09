@@ -1,8 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import Post from '../../../lib/models/Post';
-import Follow from '../../../lib/models/Follow';
-import User from '../../../lib/models/User';
+import connectDB from '@/lib/database';
+import Post from '@/lib/models/Post';
+import Follow from '@/lib/models/Follow';
+import User from '@/lib/models/User';
+import { verifyToken } from '@/lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -11,95 +12,102 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await connectDB();
-
-    // Get userId from query parameter or header
-    const userId = req.query.userId as string || req.headers['x-user-id'] as string;
     
-    if (!userId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'userId is required. Provide it as query parameter ?userId=123 or header x-user-id: 123' 
-      });
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
+    
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+      return res.status(401).json({ success: false, message: 'Invalid token' });
     }
 
-    // Verify user exists
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
+    const currentUserId = decoded.userId;
+    const { page = 1, limit = 10, type } = req.query;
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+    const skip = (pageNum - 1) * limitNum;
 
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const skip = (page - 1) * limit;
+    // Get current user's blocked users
+    const currentUser = await User.findById(currentUserId).select('blockedUsers').lean();
+    const blockedUserIds = currentUser?.blockedUsers || [];
 
-    // Get users that the current user follows
-    const following = await Follow.find({ follower: userId })
-      .select('following')
-      .lean();
+    // Get users that the current user follows (accepted follows only)
+    const following = await Follow.find({ 
+      follower: currentUserId,
+      status: 'accepted'
+    }).select('following').lean();
 
-    const followingIds = following.map((f: any) => f.following);
+    const followingIds = following.map(f => f.following);
 
-    // If user is not following anyone, return empty feed
+    // If user doesn't follow anyone, return empty feed
     if (followingIds.length === 0) {
-      return res.json({
+      return res.status(200).json({
         success: true,
-        message: 'Following feed retrieved (no following users)',
+        message: 'Feed retrieved successfully',
         data: {
           posts: [],
           pagination: {
-            currentPage: page,
+            currentPage: pageNum,
             totalPages: 0,
             totalPosts: 0,
             hasNextPage: false,
-            hasPrevPage: page > 1
-          }
+            hasPrevPage: false
+          },
+          message: 'Follow some users to see their posts in your feed!'
         }
       });
     }
 
-    // Get posts from followed users only (excluding current user's own posts)
-    const posts = await Post.find({
-      author: { $in: followingIds },
+    // Build query filter for posts from followed users (excluding blocked users)
+    const filter: any = {
+      author: { 
+        $in: followingIds,
+        $nin: blockedUserIds  // Exclude blocked users
+      },
       isActive: true
-    })
-    .populate('author', 'username fullName avatar religion isPrivate')
-    .populate('likes', 'username fullName avatar')
-    .populate('comments.author', 'username fullName avatar')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .lean();
+    };
 
-    // Get total count for pagination
-    const totalPosts = await Post.countDocuments({
-      author: { $in: followingIds },
-      isActive: true
-    });
+    if (type && type !== 'all') {
+      filter.type = type;
+    }
 
-    const totalPages = Math.ceil(totalPosts / limit);
+    // Get posts from followed users
+    const posts = await Post.find(filter)
+      .populate('author', 'username fullName avatar isPrivate religion')
+      .populate('likes', 'username fullName avatar')
+      .populate('comments.author', 'username fullName avatar')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
 
-    res.json({
+    const totalPosts = await Post.countDocuments(filter);
+    const totalPages = Math.ceil(totalPosts / limitNum);
+
+    return res.status(200).json({
       success: true,
       message: 'Following feed retrieved successfully',
       data: {
         posts,
         pagination: {
-          currentPage: page,
+          currentPage: pageNum,
           totalPages,
           totalPosts,
-          hasNextPage: page < totalPages,
-          hasPrevPage: page > 1,
-          limit: limit
+          hasNextPage: pageNum < totalPages,
+          hasPrevPage: pageNum > 1
         },
         followingCount: followingIds.length
       }
     });
 
   } catch (error: any) {
-    console.error('Following feed error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error'
+    console.error('Get following feed error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error', 
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined 
     });
   }
 }

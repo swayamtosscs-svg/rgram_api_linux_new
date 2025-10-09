@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
+import connectDB from '@/lib/database';
 import { Message } from '../../../lib/models/Chat';
-import { verifyToken } from '../../../lib/middleware/auth';
+import { verifyToken } from '@/lib/middleware/auth';
 import fs from 'fs';
 import path from 'path';
 

@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
+import connectDB from '@/lib/database';
 import { Message } from '../../../lib/models/Chat';
-import { verifyToken } from '../../../lib/middleware/auth';
+import { verifyToken } from '@/lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'DELETE') {

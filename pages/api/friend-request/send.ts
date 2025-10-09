@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import FriendRequest from '../../../lib/models/FriendRequest';
-import User from '../../../lib/models/User';
-import Notification from '../../../lib/models/Notification';
-import { verifyToken } from '../../../lib/middleware/auth';
+import connectDB from '@/lib/database';
+import FriendRequest from '@/lib/models/FriendRequest';
+import User from '@/lib/models/User';
+import Notification from '@/lib/models/Notification';
+import { verifyToken } from '@/lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

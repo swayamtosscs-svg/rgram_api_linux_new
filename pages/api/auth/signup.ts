@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
+import connectDB from '@/lib/database';
+import User from '@/lib/models/User';
 import { generateToken } from '../../../lib/middleware/auth';
 import { sendWelcomeEmail } from '../../../lib/utils/email';
-import { validateEmail, validatePassword } from '../../../lib/utils/validation';
+import { validateEmail, validatePassword } from '@/lib/utils/validation';
 import { ensureUserMediaFolders } from '../../../utils/mediaLibrary';
 
 // Valid religion options

@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import Post from '../../../lib/models/Post';
-import User from '../../../lib/models/User';
-import { verifyToken } from '../../../lib/middleware/auth';
+import connectDB from '@/lib/database';
+import Post from '@/lib/models/Post';
+import User from '@/lib/models/User';
+import { verifyToken } from '@/lib/middleware/auth';
 
 export default async function handler(
   req: NextApiRequest,

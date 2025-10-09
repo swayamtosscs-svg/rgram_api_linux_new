@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
+import connectDB from '@/lib/database';
 import { ChatThread, Message } from '../../../lib/models/Chat';
-import { verifyToken } from '../../../lib/middleware/auth';
+import { verifyToken } from '@/lib/middleware/auth';
 import mongoose from 'mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

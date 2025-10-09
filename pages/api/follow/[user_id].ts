@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import Follow from '../../../lib/models/Follow';
-import User from '../../../lib/models/User';
-import Notification from '../../../lib/models/Notification';
-import { verifyToken } from '../../../lib/middleware/auth';
+import connectDB from '@/lib/database';
+import Follow from '@/lib/models/Follow';
+import User from '@/lib/models/User';
+import Notification from '@/lib/models/Notification';
+import { verifyToken } from '@/lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST' && req.method !== 'DELETE') {
@@ -85,11 +85,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             requestedAt: new Date()
           });
 
-          // Create notification
+          // Create notification for follow request
+          const followerUser = await User.findById(followerId);
           await Notification.create({
             recipient: user_id,
             sender: followerId,
-            type: 'follow'
+            type: 'follow_request',
+            content: `${followerUser?.fullName || followerUser?.username} sent you a follow request`
           });
 
           await followRequest.populate('follower', 'username fullName avatar');
@@ -117,11 +119,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           throw e;
         }
 
-        // Create notification
+        // Create notification for follow
+        const followerUser = await User.findById(followerId);
         await Notification.create({
           recipient: user_id,
           sender: followerId,
-          type: 'follow'
+          type: 'follow',
+          content: `${followerUser?.fullName || followerUser?.username} started following you`
         });
 
         // Update user counts

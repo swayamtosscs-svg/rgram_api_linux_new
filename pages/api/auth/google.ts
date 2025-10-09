@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
+import connectDB from '@/lib/database';
+import User from '@/lib/models/User';
 import { generateToken } from '../../../lib/middleware/auth';
 
 export default async function handler(

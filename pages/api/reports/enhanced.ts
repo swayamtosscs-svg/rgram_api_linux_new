@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
+import connectDB from '@/lib/database';
 import { ContentReport } from '../../../lib/models/Admin';
-import { verifyToken } from '../../../lib/middleware/auth';
+import { verifyToken } from '@/lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectDB();

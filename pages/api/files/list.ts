@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { v2 as cloudinary } from 'cloudinary';
-import { verifyToken } from '../../../lib/middleware/auth';
-import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
+import { verifyToken } from '@/lib/middleware/auth';
+import connectDB from '@/lib/database';
+import User from '@/lib/models/User';
 
 // Configure Cloudinary
 cloudinary.config({

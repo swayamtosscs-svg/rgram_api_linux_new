@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import cloudinary from '../../../utils/cloudinary';
 import { getUserFolderPath } from '../../../utils/cloudinaryFolders';
-import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
+import connectDB from '@/lib/database';
+import User from '@/lib/models/User';
 import formidable from 'formidable';
 import fs from 'fs';
 

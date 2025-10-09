@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import PhoneOTP from '../../../lib/models/PhoneOTP';
+import connectDB from '@/lib/database';
+import PhoneOTP from '@/lib/models/PhoneOTP';
 import smsService from '../../../lib/utils/sms';
-import OTP from '../../../lib/models/OTP';
+import OTP from '@/lib/models/OTP';
 import { sendOTPEmail } from '../../../lib/utils/email';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

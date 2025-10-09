@@ -32,6 +32,7 @@ export interface IUser extends Document {
   postsCount: number;
   reelsCount: number;
   videosCount: number;
+  blockedUsers: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
   lastActive: Date;
@@ -178,6 +179,10 @@ const UserSchema = new Schema<IUser>({
     default: 0,
     min: 0
   },
+  blockedUsers: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   lastActive: {
     type: Date,
     default: Date.now

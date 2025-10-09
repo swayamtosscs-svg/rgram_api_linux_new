@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
+import connectDB from '@/lib/database';
 import Post, { IPost } from '../../../lib/models/Post';
-import User from '../../../lib/models/User';
-import { verifyToken } from '../../../lib/middleware/auth';
+import User from '@/lib/models/User';
+import { verifyToken } from '@/lib/middleware/auth';
 import { Document } from 'mongoose';
 
 // Interface for populated post with author data

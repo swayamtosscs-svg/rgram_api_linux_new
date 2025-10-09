@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { fetchReligiousVideos, isReligiousContent } from '../../../lib/utils/videoFetcher';
-import ReligiousReel from '../../../lib/models/ReligiousReel';
+import ReligiousReel from '@/lib/models/ReligiousReel';
 import dbConnect from '../../../lib/database';
 
 export default async function handler(

@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
-import { verifyToken } from '../../../lib/middleware/auth';
+import connectDB from '@/lib/database';
+import User from '@/lib/models/User';
+import { verifyToken } from '@/lib/middleware/auth';
 import { validateEmail } from '../../../lib/utils/validation';
 
 export default async function handler(

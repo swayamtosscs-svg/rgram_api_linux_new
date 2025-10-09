@@ -36,6 +36,10 @@ export interface IPost extends Document {
   removedAt?: Date;
   saves: mongoose.Types.ObjectId[];
   savesCount: number;
+  views: mongoose.Types.ObjectId[];
+  viewsCount: number;
+  collaborators: mongoose.Types.ObjectId[];
+  allowComments: boolean;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -148,6 +152,23 @@ const PostSchema = new Schema<IPost>({
     type: Number,
     default: 0,
     min: 0
+  },
+  views: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  viewsCount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  collaborators: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  allowComments: {
+    type: Boolean,
+    default: true
   },
   isActive: {
     type: Boolean,

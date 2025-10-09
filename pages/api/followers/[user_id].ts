@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import Follow from '../../../lib/models/Follow';
+import connectDB from '@/lib/database';
+import Follow from '@/lib/models/Follow';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

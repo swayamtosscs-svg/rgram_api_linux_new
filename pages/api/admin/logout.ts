@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
+import connectDB from '@/lib/database';
+import User from '@/lib/models/User';
 import { verifyAdminToken } from '../../../lib/middleware/adminAuth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

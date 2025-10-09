@@ -1,16 +1,11 @@
 import mongoose from 'mongoose';
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 
 // Dynamic MongoDB URI selection based on environment
 let MONGODB_URI: string;
 
-if (process.env.NODE_ENV === 'production' || process.env.HOST_ENV === 'VPS') {
-  // VPS MongoDB connection - using your VPS MongoDB server
-  MONGODB_URI = process.env.MONGO_URI_VPS || 'mongodb://Toss:Toss%40123@103.14.120.163:27017/admin';
-} else {
-  // Local MongoDB connection
-  MONGODB_URI = process.env.MONGO_URI_LOCAL || 'mongodb://Toss:Toss%40123@localhost:27017/admin';
-}
+// Use MongoDB Atlas connection for all environments
+MONGODB_URI = 'mongodb+srv://tossitswayam:Qwert123%23%24@cluster0.tpk0nle.mongodb.net/api_rgram?retryWrites=true&w=majority';
 
 console.log(`🔗 Connecting to MongoDB: ${MONGODB_URI.replace(/\/\/.*@/, '//***:***@')}`);  // Hide credentials in logs
 

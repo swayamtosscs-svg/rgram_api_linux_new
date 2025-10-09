@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import Post from '../../../lib/models/Post';
+import connectDB from '@/lib/database';
+import Post from '@/lib/models/Post';
 import '../../../lib/models/User'; // Import User model to register it with Mongoose
-import { verifyToken } from '../../../lib/middleware/auth';
+import { verifyToken } from '@/lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

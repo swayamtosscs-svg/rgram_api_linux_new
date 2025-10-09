@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import Post from '../../../lib/models/Post';
-import User from '../../../lib/models/User';
-import { verifyToken } from '../../../lib/middleware/auth';
+import connectDB from '@/lib/database';
+import Post from '@/lib/models/Post';
+import User from '@/lib/models/User';
+import { verifyToken } from '@/lib/middleware/auth';
 
 // Predefined religious video sources (you can expand this)
 const RELIGIOUS_VIDEO_SOURCES = {

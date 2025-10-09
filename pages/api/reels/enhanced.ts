@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import Post from '../../../lib/models/Post';
-import Notification from '../../../lib/models/Notification';
-import { verifyToken } from '../../../lib/middleware/auth';
+import connectDB from '@/lib/database';
+import Post from '@/lib/models/Post';
+import Notification from '@/lib/models/Notification';
+import { verifyToken } from '@/lib/middleware/auth';
 import { deleteFileByUrl } from '../../../utils/localStorage';
 import { extractMentions, extractHashtags } from '../../../utils/textUtils';
 import { mediaUploadMiddleware, getFileInfo } from '../../../lib/middleware/upload';

@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
-import BlacklistedToken from '../../../lib/models/BlacklistedToken';
+import connectDB from '@/lib/database';
+import User from '@/lib/models/User';
+import BlacklistedToken from '@/lib/models/BlacklistedToken';
 import { blacklistToken, verifyToken } from '../../../lib/middleware/auth';
 
 export default async function handler(

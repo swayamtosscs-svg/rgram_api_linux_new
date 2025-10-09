@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import Comment from '../../../lib/models/Comment';
-import User from '../../../lib/models/User';
+import connectDB from '@/lib/database';
+import Comment from '@/lib/models/Comment';
+import User from '@/lib/models/User';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

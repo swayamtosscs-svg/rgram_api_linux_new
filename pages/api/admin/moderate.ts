@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { requireAdmin } from '../../../lib/middleware/adminAuth';
-import Post from '../../../lib/models/Post';
-import ReligiousReel from '../../../lib/models/ReligiousReel';
+import Post from '@/lib/models/Post';
+import ReligiousReel from '@/lib/models/ReligiousReel';
 import dbConnect from '../../../lib/database';
 
 const withAdminAuth = (handler: Function) => async (req: NextApiRequest, res: NextApiResponse) => {

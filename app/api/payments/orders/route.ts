@@ -19,6 +19,15 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ success: false, message: 'Razorpay keys not configured' }, { status: 500 });
 		}
 
+		// Check if using demo keys
+		if (keyId === 'rzp_test_demo_key_id' || keySecret === 'demo_secret_key') {
+			return NextResponse.json({ 
+				success: false, 
+				message: 'Demo Razorpay keys detected. Please configure real Razorpay keys from https://dashboard.razorpay.com/app/keys',
+				instructions: 'Add your real Razorpay keys to .env.local file'
+			}, { status: 400 });
+		}
+
 		const { amount, currency = 'INR', notes, success_url, failure_url } = await request.json();
 		if (!amount || typeof amount !== 'number' || amount < 100) {
 			return NextResponse.json({ success: false, message: 'amount (in paise) >= 100 required' }, { status: 400 });

@@ -4,7 +4,7 @@ export interface INotification extends Document {
   _id: string;
   recipient: mongoose.Types.ObjectId;
   sender: mongoose.Types.ObjectId;
-  type: 'mention' | 'like' | 'comment' | 'reply' | 'share' | 'collaboration_request' | 'collaboration_accepted' | 'collaboration_rejected' | 'follow' | 'story_view';
+  type: 'mention' | 'like' | 'comment' | 'reply' | 'share' | 'collaboration_request' | 'collaboration_accepted' | 'collaboration_rejected' | 'follow' | 'follow_request' | 'follow_accepted' | 'story_view' | 'block' | 'unblock';
   content: string;
   relatedPost?: mongoose.Types.ObjectId;
   relatedComment?: mongoose.Types.ObjectId;
@@ -28,7 +28,7 @@ const NotificationSchema = new Schema<INotification>({
   },
   type: {
     type: String,
-    enum: ['mention', 'like', 'comment', 'reply', 'share', 'collaboration_request', 'collaboration_accepted', 'collaboration_rejected', 'follow', 'story_view'],
+    enum: ['mention', 'like', 'comment', 'reply', 'share', 'collaboration_request', 'collaboration_accepted', 'collaboration_rejected', 'follow', 'follow_request', 'follow_accepted', 'story_view', 'block', 'unblock'],
     required: true
   },
   content: {

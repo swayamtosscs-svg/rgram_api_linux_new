@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import Notification from '../../../lib/models/Notification';
-import { verifyToken } from '../../../lib/middleware/auth';
+import connectDB from '@/lib/database';
+import Notification from '@/lib/models/Notification';
+import { verifyToken } from '@/lib/middleware/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -22,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const currentUserId = decoded.userId;
-    const { notificationId, markAll = false } = req.body;
+    const { notificationId, notificationIds, markAll = false } = req.body;
 
     if (markAll) {
       // Mark all notifications as read
@@ -35,12 +35,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         success: true,
         message: 'All notifications marked as read'
       });
-    } else {
-      // Mark specific notification as read
-      if (!notificationId) {
-        return res.status(400).json({ success: false, message: 'Notification ID is required' });
-      }
+    } else if (notificationIds && Array.isArray(notificationIds) && notificationIds.length > 0) {
+      // Mark multiple notifications as read
+      const result = await Notification.updateMany(
+        { 
+          _id: { $in: notificationIds }, 
+          recipient: currentUserId 
+        },
+        { isRead: true }
+      );
 
+      return res.status(200).json({
+        success: true,
+        message: `${result.modifiedCount} notifications marked as read`,
+        data: { modifiedCount: result.modifiedCount }
+      });
+    } else if (notificationId) {
+      // Mark single notification as read
       const notification = await Notification.findOneAndUpdate(
         { _id: notificationId, recipient: currentUserId },
         { isRead: true },
@@ -55,6 +66,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         success: true,
         message: 'Notification marked as read',
         data: { notification }
+      });
+    } else {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Notification ID(s) or markAll flag is required' 
       });
     }
 

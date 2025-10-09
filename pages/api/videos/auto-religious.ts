@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { fetchReligiousVideos, isReligiousContent } from '../../../lib/utils/videoFetcher';
-import connectDB from '../../../lib/database';
-import ReligiousReel from '../../../lib/models/ReligiousReel';
+import connectDB from '@/lib/database';
+import ReligiousReel from '@/lib/models/ReligiousReel';
 
 // List of major religions to fetch videos for
 const RELIGIONS = [

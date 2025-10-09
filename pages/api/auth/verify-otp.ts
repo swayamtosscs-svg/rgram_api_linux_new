@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
-import User from '../../../lib/models/User';
-import PhoneOTP from '../../../lib/models/PhoneOTP';
-import OTP from '../../../lib/models/OTP';
+import connectDB from '@/lib/database';
+import User from '@/lib/models/User';
+import PhoneOTP from '@/lib/models/PhoneOTP';
+import OTP from '@/lib/models/OTP';
 import { generateToken } from '../../../lib/middleware/auth';
 
 const generateUsername = async (base: string) => {

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/database';
+import connectDB from '@/lib/database';
 import PasswordResetToken, { IPopulatedPasswordResetToken } from '../../../lib/models/PasswordResetToken';
 
 // Load environment variables
