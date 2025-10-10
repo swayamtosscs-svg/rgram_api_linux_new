@@ -1,0 +1,286 @@
+{
+  "info": {
+    "name": "Story Media API",
+    "description": "Postman collection for testing Story Media API endpoints including upload, retrieve, and delete operations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload Story Media",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "userId",
+              "value": "507f1f77bcf86cd799439011",
+              "type": "text",
+              "description": "MongoDB ObjectId of the user"
+            },
+            {
+              "key": "caption",
+              "value": "My amazing story!",
+              "type": "text",
+              "description": "Story caption (optional)"
+            },
+            {
+              "key": "mentions",
+              "value": "[]",
+              "type": "text",
+              "description": "JSON array of user IDs to mention (optional)"
+            },
+            {
+              "key": "hashtags",
+              "value": "[\"fun\", \"life\"]",
+              "type": "text",
+              "description": "JSON array of hashtag strings (optional)"
+            },
+            {
+              "key": "location",
+              "value": "New York",
+              "type": "text",
+              "description": "Location string (optional)"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/story/upload",
+          "host": ["{{base_url}}"],
+          "path": ["api", "story", "upload"]
+        },
+        "description": "Upload story media (image or video) to Cloudinary and create a story record in the database."
+      },
+      "response": []
+    },
+    {
+      "name": "Retrieve User Stories",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/story/retrieve?userId={{user_id}}&page=1&limit=10&type=image&sortBy=createdAt&sortOrder=desc&includeExpired=false",
+          "host": ["{{base_url}}"],
+          "path": ["api", "story", "retrieve"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{user_id}}",
+              "description": "MongoDB ObjectId of the user"
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Page number for pagination"
+            },
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "Number of items per page"
+            },
+            {
+              "key": "type",
+              "value": "image",
+              "description": "Filter by media type (image or video)"
+            },
+            {
+              "key": "sortBy",
+              "value": "createdAt",
+              "description": "Field to sort by"
+            },
+            {
+              "key": "sortOrder",
+              "value": "desc",
+              "description": "Sort order (asc or desc)"
+            },
+            {
+              "key": "includeExpired",
+              "value": "false",
+              "description": "Include expired stories"
+            }
+          ]
+        },
+        "description": "Retrieve stories for a specific user with pagination and filtering options."
+      },
+      "response": []
+    },
+    {
+      "name": "Retrieve Specific Story",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/story/retrieve?storyId={{story_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "story", "retrieve"],
+          "query": [
+            {
+              "key": "storyId",
+              "value": "{{story_id}}",
+              "description": "MongoDB ObjectId of the story"
+            }
+          ]
+        },
+        "description": "Retrieve a specific story by its ID."
+      },
+      "response": []
+    },
+    {
+      "name": "Add Story View",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/story/retrieve?storyId={{story_id}}&userId={{user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "story", "retrieve"],
+          "query": [
+            {
+              "key": "storyId",
+              "value": "{{story_id}}",
+              "description": "MongoDB ObjectId of the story"
+            },
+            {
+              "key": "userId",
+              "value": "{{user_id}}",
+              "description": "MongoDB ObjectId of the user viewing the story"
+            }
+          ]
+        },
+        "description": "Add a view to a specific story (increment view count)."
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Story",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/story/delete?storyId={{story_id}}&userId={{user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "story", "delete"],
+          "query": [
+            {
+              "key": "storyId",
+              "value": "{{story_id}}",
+              "description": "MongoDB ObjectId of the story to delete"
+            },
+            {
+              "key": "userId",
+              "value": "{{user_id}}",
+              "description": "MongoDB ObjectId of the user (for authorization)"
+            },
+            {
+              "key": "publicId",
+              "value": "",
+              "description": "Cloudinary public ID (optional, auto-extracted if not provided)"
+            }
+          ]
+        },
+        "description": "Delete a specific story from both Cloudinary and the database."
+      },
+      "response": []
+    },
+    {
+      "name": "Bulk Delete Stories",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/story/delete?userId={{user_id}}&deleteExpired=true",
+          "host": ["{{base_url}}"],
+          "path": ["api", "story", "delete"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{user_id}}",
+              "description": "MongoDB ObjectId of the user"
+            },
+            {
+              "key": "deleteExpired",
+              "value": "true",
+              "description": "Delete expired stories only"
+            }
+          ]
+        },
+        "description": "Delete multiple stories for a user (useful for cleanup operations)."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Base URL for the API"
+    },
+    {
+      "key": "user_id",
+      "value": "507f1f77bcf86cd799439011",
+      "type": "string",
+      "description": "Test user ID (MongoDB ObjectId)"
+    },
+    {
+      "key": "story_id",
+      "value": "507f1f77bcf86cd799439012",
+      "type": "string",
+      "description": "Test story ID (MongoDB ObjectId)"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Pre-request script to set up test data",
+          "console.log('Setting up Story Media API test...');",
+          "console.log('Base URL:', pm.environment.get('base_url') || pm.collectionVariables.get('base_url'));",
+          "console.log('User ID:', pm.environment.get('user_id') || pm.collectionVariables.get('user_id'));",
+          "console.log('Story ID:', pm.environment.get('story_id') || pm.collectionVariables.get('story_id'));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Test script to validate responses",
+          "pm.test('Status code is 200', function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "",
+          "pm.test('Response has success property', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response).to.have.property('success');",
+          "});",
+          "",
+          "pm.test('Success is true', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response.success).to.be.true;",
+          "});",
+          "",
+          "pm.test('Response has data property', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response).to.have.property('data');",
+          "});",
+          "",
+          "// Store story ID for subsequent requests",
+          "if (pm.response.json().data && pm.response.json().data.storyId) {",
+          "    pm.collectionVariables.set('story_id', pm.response.json().data.storyId);",
+          "    console.log('Story ID stored:', pm.response.json().data.storyId);",
+          "}"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DP API Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="file"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🖼️ DP API Demo</h1>
+    <p>Test the Display Picture API endpoints without authentication</p>
+
+    <!-- Upload Section -->
+    <div class="container">
+        <h2>📤 Upload Display Picture</h2>
+        <form id="uploadForm">
+            <div class="form-group">
+                <label for="imageFile">Select Image:</label>
+                <input type="file" id="imageFile" accept="image/*" required>
+            </div>
+            <div class="form-group">
+                <label for="userId">User ID (optional):</label>
+                <input type="text" id="userId" placeholder="default_user" value="demo_user">
+            </div>
+            <button type="submit">Upload DP</button>
+        </form>
+        <div id="uploadResult" class="result" style="display: none;"></div>
+        <img id="imagePreview" class="image-preview" style="display: none;">
+    </div>
+
+    <!-- Retrieve Section -->
+    <div class="container">
+        <h2>🔍 Retrieve Display Picture</h2>
+        <div class="form-group">
+            <label for="retrieveUserId">User ID:</label>
+            <input type="text" id="retrieveUserId" placeholder="Enter user ID" value="demo_user">
+        </div>
+        <button onclick="retrieveDP()">Get DP Info</button>
+        <div id="retrieveResult" class="result" style="display: none;"></div>
+    </div>
+
+    <!-- Delete Section -->
+    <div class="container">
+        <h2>🗑️ Delete Display Picture</h2>
+        <div class="form-group">
+            <label for="deletePublicId">Public ID:</label>
+            <input type="text" id="deletePublicId" placeholder="Enter Cloudinary public ID">
+        </div>
+        <div class="form-group">
+            <label for="deleteImageUrl">Image URL:</label>
+            <input type="text" id="deleteImageUrl" placeholder="Enter full image URL">
+        </div>
+        <div class="form-group">
+            <label for="deleteUserId">User ID:</label>
+            <input type="text" id="deleteUserId" placeholder="Enter user ID">
+        </div>
+        <button class="delete-btn" onclick="deleteDP()">Delete DP</button>
+        <div id="deleteResult" class="result" style="display: none;"></div>
+    </div>
+
+    <!-- API Info Section -->
+    <div class="container">
+        <h2>ℹ️ API Information</h2>
+        <button onclick="getAPIInfo()">Get API Info</button>
+        <div id="apiInfoResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/dp';
+
+        // Upload DP
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const imageFile = document.getElementById('imageFile').files[0];
+            const userId = document.getElementById('userId').value || 'default_user';
+            
+            if (!imageFile) {
+                showResult('uploadResult', 'Please select an image file', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', imageFile);
+            formData.append('userId', userId);
+
+            try {
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult('uploadResult', JSON.stringify(result, null, 2), 'success');
+                    
+                    // Show image preview
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = result.data.avatar;
+                    preview.style.display = 'block';
+                    
+                    // Auto-fill delete fields
+                    document.getElementById('deletePublicId').value = result.data.publicId;
+                    document.getElementById('deleteImageUrl').value = result.data.avatar;
+                    document.getElementById('deleteUserId').value = userId;
+                } else {
+                    showResult('uploadResult', JSON.stringify(result, null, 2), 'error');
+                }
+            } catch (error) {
+                showResult('uploadResult', `Error: ${error.message}`, 'error');
+            }
+        });
+
+        // Retrieve DP
+        async function retrieveDP() {
+            const userId = document.getElementById('retrieveUserId').value;
+            
+            if (!userId) {
+                showResult('retrieveResult', 'Please enter a user ID', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/retrieve?userId=${encodeURIComponent(userId)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult('retrieveResult', JSON.stringify(result, null, 2), 'success');
+                } else {
+                    showResult('retrieveResult', JSON.stringify(result, null, 2), 'error');
+                }
+            } catch (error) {
+                showResult('retrieveResult', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Delete DP
+        async function deleteDP() {
+            const publicId = document.getElementById('deletePublicId').value;
+            const imageUrl = document.getElementById('deleteImageUrl').value;
+            const userId = document.getElementById('deleteUserId').value;
+            
+            if (!publicId && !imageUrl && !userId) {
+                showResult('deleteResult', 'Please provide either publicId, imageUrl, or userId', 'error');
+                return;
+            }
+
+            const body = {};
+            if (publicId) body.publicId = publicId;
+            if (imageUrl) body.imageUrl = imageUrl;
+            if (userId) body.userId = userId;
+
+            try {
+                const response = await fetch(`${API_BASE}/delete`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult('deleteResult', JSON.stringify(result, null, 2), 'success');
+                    // Clear fields after successful deletion
+                    document.getElementById('deletePublicId').value = '';
+                    document.getElementById('deleteImageUrl').value = '';
+                    document.getElementById('deleteUserId').value = '';
+                } else {
+                    showResult('deleteResult', JSON.stringify(result, null, 2), 'error');
+                }
+            } catch (error) {
+                showResult('deleteResult', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Get API Info
+        async function getAPIInfo() {
+            try {
+                const response = await fetch(API_BASE);
+                const result = await response.json();
+                showResult('apiInfoResult', JSON.stringify(result, null, 2), 'success');
+            } catch (error) {
+                showResult('apiInfoResult', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Helper function to show results
+        function showResult(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            element.className = `result ${type}`;
+        }
+
+        // File preview
+        document.getElementById('imageFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
+

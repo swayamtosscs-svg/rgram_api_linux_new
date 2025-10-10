@@ -1,0 +1,406 @@
+{
+  "info": {
+    "name": "Baba Ji Pages API",
+    "description": "Complete API collection for Baba Ji pages with posts, videos, and stories",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Baba Pages Management",
+      "item": [
+        {
+          "name": "Create Baba Ji Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Baba Ramdev\",\n  \"description\": \"Yoga guru and spiritual leader\",\n  \"location\": \"Haridwar, India\",\n  \"religion\": \"Hinduism\",\n  \"website\": \"https://baba-ramdev.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages"]
+            }
+          }
+        },
+        {
+          "name": "Get All Baba Ji Pages",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages?page=1&limit=10&search=ramdev",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "ramdev"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Baba Ji Page",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Baba Ji Page",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Baba Ramdev\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Baba Ji Page",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts Management",
+      "item": [
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "content",
+                  "value": "This is a spiritual post about yoga and meditation",
+                  "type": "text"
+                },
+                {
+                  "key": "media",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/posts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "posts"]
+            }
+          }
+        },
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/posts?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "posts"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Post",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "posts", "{{post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Updated post content\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "posts", "{{post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "posts", "{{post_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Videos/Reels Management",
+      "item": [
+        {
+          "name": "Create Video/Reel",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Yoga Session - Morning Practice",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Daily yoga practice for spiritual growth",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "video",
+                  "type": "text"
+                },
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "thumbnail",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/videos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "videos"]
+            }
+          }
+        },
+        {
+          "name": "Get All Videos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/videos?page=1&limit=10&category=video",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "videos"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "category",
+                  "value": "video"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Video",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/videos/{{video_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "videos", "{{video_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Video",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated video title\",\n  \"description\": \"Updated video description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/videos/{{video_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "videos", "{{video_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Video",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/videos/{{video_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "videos", "{{video_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stories Management",
+      "item": [
+        {
+          "name": "Create Story",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "content",
+                  "value": "Daily spiritual wisdom",
+                  "type": "text"
+                },
+                {
+                  "key": "media",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/stories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "stories"]
+            }
+          }
+        },
+        {
+          "name": "Get All Stories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/stories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "stories"]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Story",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/stories/{{story_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "stories", "{{story_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Story",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/baba-pages/{{page_id}}/stories/{{story_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "baba-pages", "{{page_id}}", "stories", "{{story_id}}"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "page_id",
+      "value": "YOUR_PAGE_ID_HERE",
+      "type": "string"
+    },
+    {
+      "key": "post_id",
+      "value": "YOUR_POST_ID_HERE",
+      "type": "string"
+    },
+    {
+      "key": "video_id",
+      "value": "YOUR_VIDEO_ID_HERE",
+      "type": "string"
+    },
+    {
+      "key": "story_id",
+      "value": "YOUR_STORY_ID_HERE",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,1280 @@
+{
+  "info": {
+    "name": "Comprehensive Post & Reel API",
+    "description": "Complete social media API with posts, reels, comments, likes, shares, saves, mentions, and notifications",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "post_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reel_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "content",
+                  "value": "This is my amazing post with @username mention and #hashtag",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "post",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "My Post Title",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Post description",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "general",
+                  "type": "text"
+                },
+                {
+                  "key": "religion",
+                  "value": "hinduism",
+                  "type": "text"
+                },
+                {
+                  "key": "location",
+                  "value": "Mumbai, India",
+                  "type": "text"
+                },
+                {
+                  "key": "hashtags",
+                  "value": "[\"trending\", \"viral\", \"amazing\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "mentions",
+                  "value": "[\"{{user_id}}\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "collaborators",
+                  "value": "[]",
+                  "type": "text"
+                },
+                {
+                  "key": "allowComments",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "allowLikes",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "allowShares",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "allowSaves",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "isPublic",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "media",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/posts/comprehensive",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "comprehensive"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/comprehensive?page=1&limit=10&type=post&category=general&my_posts=false&following_posts=false&saved_posts=false",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "comprehensive"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "type",
+                  "value": "post"
+                },
+                {
+                  "key": "category",
+                  "value": "general"
+                },
+                {
+                  "key": "my_posts",
+                  "value": "false"
+                },
+                {
+                  "key": "following_posts",
+                  "value": "false"
+                },
+                {
+                  "key": "saved_posts",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/comprehensive?page=1&limit=10&my_posts=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "comprehensive"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "my_posts",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Following Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/comprehensive?page=1&limit=10&following_posts=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "comprehensive"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "following_posts",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Saved Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/comprehensive?page=1&limit=10&saved_posts=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "comprehensive"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "saved_posts",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Updated post content with new @username mention and #updated hashtag\",\n  \"title\": \"Updated Post Title\",\n  \"description\": \"Updated description\",\n  \"hashtags\": [\"updated\", \"new\", \"content\"],\n  \"mentions\": [\"{{user_id}}\"],\n  \"allowComments\": true,\n  \"allowLikes\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/posts/comprehensive?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "comprehensive"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/comprehensive?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "comprehensive"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reels",
+      "item": [
+        {
+          "name": "Create Reel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "content",
+                  "value": "Check out this amazing reel! #reel #viral #dance",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "My Amazing Reel",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Reel description",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "entertainment",
+                  "type": "text"
+                },
+                {
+                  "key": "religion",
+                  "value": "hinduism",
+                  "type": "text"
+                },
+                {
+                  "key": "hashtags",
+                  "value": "[\"reel\", \"viral\", \"dance\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "mentions",
+                  "value": "[\"{{user_id}}\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "collaborators",
+                  "value": "[]",
+                  "type": "text"
+                },
+                {
+                  "key": "reelDuration",
+                  "value": "60",
+                  "type": "text"
+                },
+                {
+                  "key": "videos",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "song",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "song.title",
+                  "value": "Amazing Song",
+                  "type": "text"
+                },
+                {
+                  "key": "song.artist",
+                  "value": "Great Artist",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reels/comprehensive",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reels", "comprehensive"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Reels",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reels/comprehensive?page=1&limit=10&category=entertainment&my_reels=false&following_reels=false&saved_reels=false",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reels", "comprehensive"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "category",
+                  "value": "entertainment"
+                },
+                {
+                  "key": "my_reels",
+                  "value": "false"
+                },
+                {
+                  "key": "following_reels",
+                  "value": "false"
+                },
+                {
+                  "key": "saved_reels",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Reels",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reels/comprehensive?page=1&limit=10&my_reels=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reels", "comprehensive"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "my_reels",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Reel",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Updated reel content with new hashtags #updated #reel\",\n  \"title\": \"Updated Reel Title\",\n  \"description\": \"Updated description\",\n  \"hashtags\": [\"updated\", \"reel\", \"new\"],\n  \"mentions\": [\"{{user_id}}\"],\n  \"reelDuration\": 90\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reels/comprehensive?reelId={{reel_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reels", "comprehensive"],
+              "query": [
+                {
+                  "key": "reelId",
+                  "value": "{{reel_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Reel",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reels/comprehensive?reelId={{reel_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reels", "comprehensive"],
+              "query": [
+                {
+                  "key": "reelId",
+                  "value": "{{reel_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Post Interactions",
+      "item": [
+        {
+          "name": "Like Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"like\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unlike Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"unlike\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Comment on Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"comment\",\n  \"content\": \"Great post! @username check this out #amazing\",\n  \"mentions\": [\"{{user_id}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reply to Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"comment\",\n  \"content\": \"Thanks for the comment! @username\",\n  \"mentions\": [\"{{user_id}}\"],\n  \"parentCommentId\": \"{{comment_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Share Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"share\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Save Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"save\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unsave Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"unsave\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "View Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"view\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Post Interactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Post Likes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}&type=likes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                },
+                {
+                  "key": "type",
+                  "value": "likes"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Post Comments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}&type=comments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                },
+                {
+                  "key": "type",
+                  "value": "comments"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Post Shares",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}&type=shares",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                },
+                {
+                  "key": "type",
+                  "value": "shares"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Post Saves",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}&type=saves",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                },
+                {
+                  "key": "type",
+                  "value": "saves"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Post Views",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/interactions?postId={{post_id}}&type=views",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "interactions"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                },
+                {
+                  "key": "type",
+                  "value": "views"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Create Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "content",
+                  "value": "This is a comment with @username mention and #hashtag",
+                  "type": "text"
+                },
+                {
+                  "key": "parentCommentId",
+                  "value": "",
+                  "type": "text"
+                },
+                {
+                  "key": "mentions",
+                  "value": "[\"{{user_id}}\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "media",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/comments/comprehensive",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments", "comprehensive"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Reply",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "content",
+                  "value": "This is a reply to a comment",
+                  "type": "text"
+                },
+                {
+                  "key": "parentCommentId",
+                  "value": "{{comment_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "mentions",
+                  "value": "[]",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/comments/comprehensive",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments", "comprehensive"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Comments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/comments/comprehensive?postId={{post_id}}&page=1&limit=20&replies=false",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments", "comprehensive"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "replies",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Comment Replies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/comments/comprehensive?commentId={{comment_id}}&page=1&limit=10&replies=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments", "comprehensive"],
+              "query": [
+                {
+                  "key": "commentId",
+                  "value": "{{comment_id}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "replies",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Comment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Updated comment content with new @username mention\",\n  \"mentions\": [\"{{user_id}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/comments/comprehensive?commentId={{comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments", "comprehensive"],
+              "query": [
+                {
+                  "key": "commentId",
+                  "value": "{{comment_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/comments/comprehensive?commentId={{comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments", "comprehensive"],
+              "query": [
+                {
+                  "key": "commentId",
+                  "value": "{{comment_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Comment Interactions",
+      "item": [
+        {
+          "name": "Like Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"like\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/comments/interactions?commentId={{comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments", "interactions"],
+              "query": [
+                {
+                  "key": "commentId",
+                  "value": "{{comment_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unlike Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"unlike\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/comments/interactions?commentId={{comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments", "interactions"],
+              "query": [
+                {
+                  "key": "commentId",
+                  "value": "{{comment_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Comment Interactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/comments/interactions?commentId={{comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments", "interactions"],
+              "query": [
+                {
+                  "key": "commentId",
+                  "value": "{{comment_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Comment Likes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/comments/interactions?commentId={{comment_id}}&type=likes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments", "interactions"],
+              "query": [
+                {
+                  "key": "commentId",
+                  "value": "{{comment_id}}"
+                },
+                {
+                  "key": "type",
+                  "value": "likes"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Comment Replies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/comments/interactions?commentId={{comment_id}}&type=replies",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments", "interactions"],
+              "query": [
+                {
+                  "key": "commentId",
+                  "value": "{{comment_id}}"
+                },
+                {
+                  "key": "type",
+                  "value": "replies"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/list?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "list"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Notifications as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notificationIds\": [\"notification_id_1\", \"notification_id_2\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/notifications/mark-read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "mark-read"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

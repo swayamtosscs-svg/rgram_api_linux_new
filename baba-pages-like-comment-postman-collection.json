@@ -1,0 +1,382 @@
+{
+  "info": {
+    "name": "Baba Pages Like & Comment API",
+    "description": "Collection for testing like and comment functionality for Baba Pages posts, videos, and stories",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Like API",
+      "item": [
+        {
+          "name": "Like Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"{{postId}}\",\n  \"contentType\": \"post\",\n  \"userId\": \"{{userId}}\",\n  \"action\": \"like\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "like"]
+            }
+          }
+        },
+        {
+          "name": "Unlike Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"{{postId}}\",\n  \"contentType\": \"post\",\n  \"userId\": \"{{userId}}\",\n  \"action\": \"unlike\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "like"]
+            }
+          }
+        },
+        {
+          "name": "Like Video/Reel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"{{videoId}}\",\n  \"contentType\": \"video\",\n  \"userId\": \"{{userId}}\",\n  \"action\": \"like\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "like"]
+            }
+          }
+        },
+        {
+          "name": "Like Story",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"{{storyId}}\",\n  \"contentType\": \"story\",\n  \"userId\": \"{{userId}}\",\n  \"action\": \"like\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "like"]
+            }
+          }
+        },
+        {
+          "name": "Get Like Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/like?contentId={{postId}}&contentType=post&userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "like"],
+              "query": [
+                {
+                  "key": "contentId",
+                  "value": "{{postId}}"
+                },
+                {
+                  "key": "contentType",
+                  "value": "post"
+                },
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comment API",
+      "item": [
+        {
+          "name": "Create Comment on Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"{{postId}}\",\n  \"contentType\": \"post\",\n  \"userId\": \"{{userId}}\",\n  \"content\": \"Great post! Very inspiring and spiritual.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "comments"]
+            }
+          }
+        },
+        {
+          "name": "Create Comment on Video",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"{{videoId}}\",\n  \"contentType\": \"video\",\n  \"userId\": \"{{userId}}\",\n  \"content\": \"Amazing video! Thank you for sharing this wisdom.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "comments"]
+            }
+          }
+        },
+        {
+          "name": "Create Comment on Story",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"{{storyId}}\",\n  \"contentType\": \"story\",\n  \"userId\": \"{{userId}}\",\n  \"content\": \"Beautiful story! Blessed to see this.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "comments"]
+            }
+          }
+        },
+        {
+          "name": "Get Comments for Post",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/comments?contentId={{postId}}&contentType=post&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "comments"],
+              "query": [
+                {
+                  "key": "contentId",
+                  "value": "{{postId}}"
+                },
+                {
+                  "key": "contentType",
+                  "value": "post"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Comments for Video",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/comments?contentId={{videoId}}&contentType=video&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "comments"],
+              "query": [
+                {
+                  "key": "contentId",
+                  "value": "{{videoId}}"
+                },
+                {
+                  "key": "contentType",
+                  "value": "video"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Comments for Story",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/comments?contentId={{storyId}}&contentType=story&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "comments"],
+              "query": [
+                {
+                  "key": "contentId",
+                  "value": "{{storyId}}"
+                },
+                {
+                  "key": "contentType",
+                  "value": "story"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Comment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"{{postId}}\",\n  \"contentType\": \"post\",\n  \"userId\": \"{{userId}}\",\n  \"content\": \"Updated comment content - this is much better!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/comments/{{commentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "comments", "{{commentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/comments/{{commentId}}?contentId={{postId}}&contentType=post&userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "comments", "{{commentId}}"],
+              "query": [
+                {
+                  "key": "contentId",
+                  "value": "{{postId}}"
+                },
+                {
+                  "key": "contentType",
+                  "value": "post"
+                },
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Comment",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/baba-pages/{{babaPageId}}/comments/{{commentId}}?contentId={{postId}}&contentType=post",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "baba-pages", "{{babaPageId}}", "comments", "{{commentId}}"],
+              "query": [
+                {
+                  "key": "contentId",
+                  "value": "{{postId}}"
+                },
+                {
+                  "key": "contentType",
+                  "value": "post"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "babaPageId",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j1",
+      "type": "string"
+    },
+    {
+      "key": "postId",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j2",
+      "type": "string"
+    },
+    {
+      "key": "videoId",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j3",
+      "type": "string"
+    },
+    {
+      "key": "storyId",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j4",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j5",
+      "type": "string"
+    },
+    {
+      "key": "commentId",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j6",
+      "type": "string"
+    }
+  ]
+}

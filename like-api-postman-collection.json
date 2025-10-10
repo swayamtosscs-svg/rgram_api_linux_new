@@ -1,0 +1,170 @@
+{
+  "info": {
+    "name": "Like API Collection",
+    "description": "API endpoints for liking posts, videos, reels, stories, and user assets",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Like Content",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"contentType\": \"post\",\n  \"contentId\": \"{{content_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/likes/like",
+          "host": ["{{base_url}}"],
+          "path": ["api", "likes", "like"]
+        },
+        "description": "Like a post, video, reel, story, or user asset"
+      }
+    },
+    {
+      "name": "Unlike Content",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"contentType\": \"post\",\n  \"contentId\": \"{{content_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/likes/unlike",
+          "host": ["{{base_url}}"],
+          "path": ["api", "likes", "unlike"]
+        },
+        "description": "Unlike a post, video, reel, story, or user asset"
+      }
+    },
+    {
+      "name": "Get Like Count",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/likes/count?contentType=post&contentId={{content_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "likes", "count"],
+          "query": [
+            {
+              "key": "contentType",
+              "value": "post"
+            },
+            {
+              "key": "contentId",
+              "value": "{{content_id}}"
+            }
+          ]
+        },
+        "description": "Get like count and recent likes for a content item"
+      }
+    },
+    {
+      "name": "Check Like Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/likes/status?contentType=post&contentId={{content_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "likes", "status"],
+          "query": [
+            {
+              "key": "contentType",
+              "value": "post"
+            },
+            {
+              "key": "contentId",
+              "value": "{{content_id}}"
+            }
+          ]
+        },
+        "description": "Check if current user has liked a specific content item"
+      }
+    },
+    {
+      "name": "Bulk Like Content",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"contentType\": \"post\",\n  \"contentIds\": [\"{{content_id_1}}\", \"{{content_id_2}}\", \"{{content_id_3}}\"]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/likes/bulk-like",
+          "host": ["{{base_url}}"],
+          "path": ["api", "likes", "bulk-like"]
+        },
+        "description": "Like multiple content items at once (max 50 items)"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "Base URL for the API"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "description": "JWT authentication token"
+    },
+    {
+      "key": "content_id",
+      "value": "",
+      "description": "ID of the content to like/unlike"
+    },
+    {
+      "key": "content_id_1",
+      "value": "",
+      "description": "First content ID for bulk operations"
+    },
+    {
+      "key": "content_id_2",
+      "value": "",
+      "description": "Second content ID for bulk operations"
+    },
+    {
+      "key": "content_id_3",
+      "value": "",
+      "description": "Third content ID for bulk operations"
+    }
+  ]
+}

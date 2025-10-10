@@ -1,0 +1,127 @@
+{
+  "info": {
+    "name": "Profile Picture API Collection - File Upload",
+    "description": "Complete collection for testing Profile Picture management APIs with real file uploads",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload Profile Picture (File Upload)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": [],
+              "description": "Select an image file (JPEG, PNG, GIF, WebP) - Max 5MB"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/user/upload-profile-picture",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user", "upload-profile-picture"]
+        },
+        "description": "Upload a profile picture file directly to Cloudinary. Select an image file from your computer. The API will automatically optimize and store it."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Profile Picture (Own)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/user/get-profile-picture",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user", "get-profile-picture"]
+        },
+        "description": "Get the authenticated user's profile picture information."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Profile Picture (By User ID)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/user/get-profile-picture?userId={{target_user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user", "get-profile-picture"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{target_user_id}}",
+              "description": "ID of the user whose profile picture you want to retrieve"
+            }
+          ]
+        },
+        "description": "Get profile picture information for a specific user by their ID."
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Profile Picture",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/user/delete-profile-picture",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user", "delete-profile-picture"]
+        },
+        "description": "Delete the authenticated user's profile picture from Cloudinary and update the database."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Base URL for the API (change to your production URL when deploying)"
+    },
+    {
+      "key": "jwt_token",
+      "value": "your_jwt_token_here",
+      "type": "string",
+      "description": "JWT token obtained from login API"
+    },
+    {
+      "key": "target_user_id",
+      "value": "target_user_id_here",
+      "type": "string",
+      "description": "User ID for testing get profile picture by user ID"
+    }
+  ]
+}

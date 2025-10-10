@@ -1,0 +1,445 @@
+{
+  "info": {
+    "name": "Signup API with Religion Selection",
+    "description": "Collection for testing the updated Signup API that includes religion selection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Available Religions",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/religions",
+          "host": ["{{base_url}}"],
+          "path": ["api", "religions"]
+        },
+        "description": "Get all available religions for signup"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Religions - Simple Format",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/religions?format=simple",
+          "host": ["{{base_url}}"],
+          "path": ["api", "religions"],
+          "query": [
+            {
+              "key": "format",
+              "value": "simple"
+            }
+          ]
+        },
+        "description": "Get religions in simple format for dropdowns"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Religions - Categories Format",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/religions?format=categories",
+          "host": ["{{base_url}}"],
+          "path": ["api", "religions"],
+          "query": [
+            {
+              "key": "format",
+              "value": "categories"
+            }
+          ]
+        },
+        "description": "Get religions with categories for content organization"
+      },
+      "response": []
+    },
+    {
+      "name": "Search Religions",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/religions?search=hindu",
+          "host": ["{{base_url}}"],
+          "path": ["api", "religions"],
+          "query": [
+            {
+              "key": "search",
+              "value": "hindu"
+            }
+          ]
+        },
+        "description": "Search religions by name, description, or categories"
+      },
+      "response": []
+    },
+    {
+      "name": "Basic Signup with Religion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"{{test_password}}\",\n  \"fullName\": \"{{test_full_name}}\",\n  \"religion\": \"hinduism\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        },
+        "description": "Basic user signup with religion selection"
+      },
+      "response": []
+    },
+    {
+      "name": "Signup with Custom Username",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email_2}}\",\n  \"password\": \"{{test_password}}\",\n  \"fullName\": \"{{test_full_name_2}}\",\n  \"username\": \"{{test_username}}\",\n  \"religion\": \"christianity\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        },
+        "description": "Signup with custom username and religion"
+      },
+      "response": []
+    },
+    {
+      "name": "Signup with Different Religion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email_3}}\",\n  \"password\": \"{{test_password}}\",\n  \"fullName\": \"{{test_full_name_3}}\",\n  \"religion\": \"islam\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        },
+        "description": "Signup with Islam religion"
+      },
+      "response": []
+    },
+    {
+      "name": "Signup with Buddhism",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email_4}}\",\n  \"password\": \"{{test_password}}\",\n  \"fullName\": \"{{test_full_name_4}}\",\n  \"religion\": \"buddhism\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        },
+        "description": "Signup with Buddhism religion"
+      },
+      "response": []
+    },
+    {
+      "name": "Signup with No Religion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email_5}}\",\n  \"password\": \"{{test_password}}\",\n  \"fullName\": \"{{test_full_name_5}}\",\n  \"religion\": \"none\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        },
+        "description": "Signup with no religion/atheist option"
+      },
+      "response": []
+    },
+    {
+      "name": "Signup Missing Religion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email_6}}\",\n  \"password\": \"{{test_password}}\",\n  \"fullName\": \"{{test_full_name_6}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        },
+        "description": "Signup without religion (should fail)"
+      },
+      "response": []
+    },
+    {
+      "name": "Signup Invalid Religion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email_7}}\",\n  \"password\": \"{{test_password}}\",\n  \"fullName\": \"{{test_full_name_7}}\",\n  \"religion\": \"invalid_religion\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        },
+        "description": "Signup with invalid religion (should fail)"
+      },
+      "response": []
+    },
+    {
+      "name": "Signup Missing Required Fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email_8}}\",\n  \"religion\": \"hinduism\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        },
+        "description": "Signup missing password and fullName (should fail)"
+      },
+      "response": []
+    },
+    {
+      "name": "Signup Weak Password",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email_9}}\",\n  \"password\": \"123\",\n  \"fullName\": \"{{test_full_name_9}}\",\n  \"religion\": \"hinduism\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        },
+        "description": "Signup with weak password (should fail)"
+      },
+      "response": []
+    },
+    {
+      "name": "Signup Duplicate Email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{existing_email}}\",\n  \"password\": \"{{test_password}}\",\n  \"fullName\": \"{{test_full_name_10}}\",\n  \"religion\": \"sikhism\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        },
+        "description": "Signup with existing email (should fail)"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "test_email",
+      "value": "test1@example.com",
+      "type": "string"
+    },
+    {
+      "key": "test_email_2",
+      "value": "test2@example.com",
+      "type": "string"
+    },
+    {
+      "key": "test_email_3",
+      "value": "test3@example.com",
+      "type": "string"
+    },
+    {
+      "key": "test_email_4",
+      "value": "test4@example.com",
+      "type": "string"
+    },
+    {
+      "key": "test_email_5",
+      "value": "test5@example.com",
+      "type": "string"
+    },
+    {
+      "key": "test_email_6",
+      "value": "test6@example.com",
+      "type": "string"
+    },
+    {
+      "key": "test_email_7",
+      "value": "test7@example.com",
+      "type": "string"
+    },
+    {
+      "key": "test_email_8",
+      "value": "test8@example.com",
+      "type": "string"
+    },
+    {
+      "key": "test_email_9",
+      "value": "test9@example.com",
+      "type": "string"
+    },
+    {
+      "key": "test_email_10",
+      "value": "test10@example.com",
+      "type": "string"
+    },
+    {
+      "key": "test_password",
+      "value": "TestPass123!",
+      "type": "string"
+    },
+    {
+      "key": "test_full_name",
+      "value": "Test User 1",
+      "type": "string"
+    },
+    {
+      "key": "test_full_name_2",
+      "value": "Test User 2",
+      "type": "string"
+    },
+    {
+      "key": "test_full_name_3",
+      "value": "Test User 3",
+      "type": "string"
+    },
+    {
+      "key": "test_full_name_4",
+      "value": "Test User 4",
+      "type": "string"
+    },
+    {
+      "key": "test_full_name_5",
+      "value": "Test User 5",
+      "type": "string"
+    },
+    {
+      "key": "test_full_name_6",
+      "value": "Test User 6",
+      "type": "string"
+    },
+    {
+      "key": "test_full_name_7",
+      "value": "Test User 7",
+      "type": "string"
+    },
+    {
+      "key": "test_full_name_8",
+      "value": "Test User 8",
+      "type": "string"
+    },
+    {
+      "key": "test_full_name_9",
+      "value": "Test User 9",
+      "type": "string"
+    },
+    {
+      "key": "test_full_name_10",
+      "value": "Test User 10",
+      "type": "string"
+    },
+    {
+      "key": "test_username",
+      "value": "testuser123",
+      "type": "string"
+    },
+    {
+      "key": "existing_email",
+      "value": "existing@example.com",
+      "type": "string"
+    }
+  ]
+}

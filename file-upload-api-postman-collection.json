@@ -1,0 +1,287 @@
+{
+  "info": {
+    "name": "RGram API - File Management",
+    "description": "Complete file upload, retrieval, and deletion API collection with Cloudinary integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload Files",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            }
+          ]
+        },
+        "url": {
+          "raw": "https://api-rgram1.vercel.app/api/files/upload",
+          "protocol": "https",
+          "host": ["api-rgram1", "vercel", "app"],
+          "path": ["api", "files", "upload"]
+        },
+        "description": "Upload multiple files to Cloudinary with automatic folder organization"
+      },
+      "response": []
+    },
+    {
+      "name": "List All Files",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://api-rgram1.vercel.app/api/files/list",
+          "protocol": "https",
+          "host": ["api-rgram1", "vercel", "app"],
+          "path": ["api", "files", "list"]
+        },
+        "description": "Get all files with pagination and filtering"
+      },
+      "response": []
+    },
+    {
+      "name": "List Images Only",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://api-rgram1.vercel.app/api/files/list?folder=images&type=image&page=1&limit=10",
+          "protocol": "https",
+          "host": ["api-rgram1", "vercel", "app"],
+          "path": ["api", "files", "list"],
+          "query": [
+            {
+              "key": "folder",
+              "value": "images"
+            },
+            {
+              "key": "type",
+              "value": "image"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        },
+        "description": "Get only image files with pagination"
+      },
+      "response": []
+    },
+    {
+      "name": "List Videos Only",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://api-rgram1.vercel.app/api/files/list?folder=videos&type=video&page=1&limit=10",
+          "protocol": "https",
+          "host": ["api-rgram1", "vercel", "app"],
+          "path": ["api", "files", "list"],
+          "query": [
+            {
+              "key": "folder",
+              "value": "videos"
+            },
+            {
+              "key": "type",
+              "value": "video"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        },
+        "description": "Get only video files with pagination"
+      },
+      "response": []
+    },
+    {
+      "name": "Search Files",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://api-rgram1.vercel.app/api/files/list?search=profile&page=1&limit=20",
+          "protocol": "https",
+          "host": ["api-rgram1", "vercel", "app"],
+          "path": ["api", "files", "list"],
+          "query": [
+            {
+              "key": "search",
+              "value": "profile"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "Search for files with specific context/metadata"
+      },
+      "response": []
+    },
+    {
+      "name": "Sort Files by Size",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://api-rgram1.vercel.app/api/files/list?sortBy=bytes&sortOrder=desc&page=1&limit=20",
+          "protocol": "https",
+          "host": ["api-rgram1", "vercel", "app"],
+          "path": ["api", "files", "list"],
+          "query": [
+            {
+              "key": "sortBy",
+              "value": "bytes"
+            },
+            {
+              "key": "sortOrder",
+              "value": "desc"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "Get files sorted by size in descending order"
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Single File",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"publicId\": \"rgram/images/file_id_here\",\n  \"resourceType\": \"image\"\n}"
+        },
+        "url": {
+          "raw": "https://api-rgram1.vercel.app/api/files/delete",
+          "protocol": "https",
+          "host": ["api-rgram1", "vercel", "app"],
+          "path": ["api", "files", "delete"]
+        },
+        "description": "Delete a single file from Cloudinary"
+      },
+      "response": []
+    },
+    {
+      "name": "Bulk Delete Files",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"files\": [\n    {\n      \"publicId\": \"rgram/images/file1\",\n      \"resourceType\": \"image\"\n    },\n    {\n      \"publicId\": \"rgram/videos/file2\",\n      \"resourceType\": \"video\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "https://api-rgram1.vercel.app/api/files/bulk-delete",
+          "protocol": "https",
+          "host": ["api-rgram1", "vercel", "app"],
+          "path": ["api", "files", "bulk-delete"]
+        },
+        "description": "Delete multiple files at once (max 50 files)"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "jwt_token",
+      "value": "your_jwt_token_here",
+      "type": "string",
+      "description": "JWT token received from Google OAuth or login"
+    },
+    {
+      "key": "base_url",
+      "value": "https://api-rgram1.vercel.app",
+      "type": "string",
+      "description": "Base URL for the RGram API"
+    }
+  ]
+}

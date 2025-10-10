@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video API Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .endpoint {
+            background-color: #f8f9fa;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 4px 4px 0;
+        }
+        .endpoint h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        .method {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .get {
+            background-color: #61affe;
+            color: white;
+        }
+        .post {
+            background-color: #49cc90;
+            color: white;
+        }
+        pre {
+            background-color: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .response {
+            margin-top: 20px;
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .loading {
+            display: none;
+            margin-top: 10px;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Video API Demo</h1>
+        <p>This page demonstrates the various video API endpoints available in the Apirgram API.</p>
+        <p style="margin-bottom: 20px;">
+            <a href="/VIDEO_API_DEMO_README.md" style="color: #4CAF50; text-decoration: none; font-weight: bold;">
+                📄 View Demo Documentation
+            </a>
+        </p>
+        
+        <div class="endpoint">
+            <h3><span class="method get">GET</span> /api/videos/categories</h3>
+            <p>Get video categories with counts and percentages.</p>
+            <button class="btn" onclick="fetchCategories()">Try it</button>
+            <div class="loading" id="categories-loading"><span class="spinner"></span> Loading...</div>
+            <div class="response" id="categories-response"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3><span class="method get">GET</span> /api/videos/religion</h3>
+            <p>Get videos filtered by religion with statistics.</p>
+            <select id="religion-select">
+                <option value="Islam">Islam</option>
+                <option value="Christianity">Christianity</option>
+                <option value="Hinduism">Hinduism</option>
+                <option value="Buddhism">Buddhism</option>
+                <option value="Judaism">Judaism</option>
+            </select>
+            <button class="btn" onclick="fetchReligionVideos()">Try it</button>
+            <div class="loading" id="religion-loading"><span class="spinner"></span> Loading...</div>
+            <div class="response" id="religion-response"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3><span class="method get">GET</span> /api/videos/religious-reels</h3>
+            <p>Get religious reels with filtering options.</p>
+            <select id="reels-religion-select">
+                <option value="">All Religions</option>
+                <option value="Islam">Islam</option>
+                <option value="Christianity">Christianity</option>
+                <option value="Hinduism">Hinduism</option>
+                <option value="Buddhism">Buddhism</option>
+                <option value="Judaism">Judaism</option>
+            </select>
+            <select id="reels-category-select">
+                <option value="">All Categories</option>
+                <option value="education">Education</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="inspiration">Inspiration</option>
+            </select>
+            <button class="btn" onclick="fetchReligiousReels()">Try it</button>
+            <div class="loading" id="reels-loading"><span class="spinner"></span> Loading...</div>
+            <div class="response" id="reels-response"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3><span class="method get">GET</span> /api/videos/fetch-religious-reels</h3>
+            <p>Alternative endpoint for fetching religious reels.</p>
+            <button class="btn" onclick="fetchAlternativeReels()">Try it</button>
+            <div class="loading" id="alt-reels-loading"><span class="spinner"></span> Loading...</div>
+            <div class="response" id="alt-reels-response"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3><span class="method post">POST</span> /api/videos/add-links</h3>
+            <p>Add external video links (e.g., YouTube Shorts) as video posts.</p>
+            <div style="margin-bottom: 15px;">
+                <label for="video-url">Video URL:</label>
+                <input type="text" id="video-url" style="width: 100%; padding: 8px; margin-top: 5px;" 
+                    value="https://youtube.com/shorts/aZuIkQXuIVw?si=DDWJDtjUevItgG03" 
+                    placeholder="Enter YouTube video URL">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="video-title">Title:</label>
+                <input type="text" id="video-title" style="width: 100%; padding: 8px; margin-top: 5px;" 
+                    value="I Talk To Him 🌸|| god status || Krishna Video" 
+                    placeholder="Enter video title">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="video-description">Description:</label>
+                <textarea id="video-description" style="width: 100%; padding: 8px; margin-top: 5px; height: 80px;" 
+                    placeholder="Enter video description">Beautiful Krishna devotional video with spiritual message.</textarea>
+            </div>
+            <div style="margin-bottom: 15px; display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="video-category">Category:</label>
+                    <select id="video-category" style="width: 100%; padding: 8px; margin-top: 5px;">
+                        <option value="general">General</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="education">Education</option>
+                        <option value="inspiration" selected>Inspiration</option>
+                        <option value="music">Music</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label for="video-religion">Religion:</label>
+                    <select id="video-religion" style="width: 100%; padding: 8px; margin-top: 5px;">
+                        <option value="Islam">Islam</option>
+                        <option value="Christianity">Christianity</option>
+                        <option value="Hinduism" selected>Hinduism</option>
+                        <option value="Buddhism">Buddhism</option>
+                        <option value="Judaism">Judaism</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="video-thumbnail">Thumbnail Preview:</label>
+                <div style="margin-top: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
+                    <img id="thumbnail-preview" src="https://i.ytimg.com/vi/aZuIkQXuIVw/hqdefault.jpg" 
+                        style="max-width: 100%; max-height: 200px; display: block; margin: 0 auto;">
+                </div>
+            </div>
+            <div style="color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                <strong>Note:</strong> This demo requires authentication. In a real implementation, you would need to provide a valid authentication token.
+            </div>
+            <button class="btn" onclick="addVideoLink()">Add Video</button>
+            <div class="loading" id="add-video-loading"><span class="spinner"></span> Loading...</div>
+            <div class="response" id="add-video-response"></div>
+        </div>
+    </div>
+
+    <script>
+        function showLoading(id) {
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function hideLoading(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function displayResponse(id, data) {
+            const responseElement = document.getElementById(id);
+            responseElement.innerHTML = `<pre><code>${JSON.stringify(data, null, 2)}</code></pre>`;
+        }
+
+        // Function to extract video ID from YouTube URL
+        function extractYouTubeVideoId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // Function to update thumbnail preview when video URL changes
+        function updateThumbnailPreview() {
+            const videoUrl = document.getElementById('video-url').value;
+            const videoId = extractYouTubeVideoId(videoUrl);
+            
+            if (videoId) {
+                const thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                document.getElementById('thumbnail-preview').src = thumbnailUrl;
+            } else {
+                document.getElementById('thumbnail-preview').src = '';
+            }
+        }
+
+        // Add event listener to update thumbnail when URL changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoUrlInput = document.getElementById('video-url');
+            if (videoUrlInput) {
+                videoUrlInput.addEventListener('input', updateThumbnailPreview);
+                // Initialize with default URL
+                updateThumbnailPreview();
+            }
+        });
+
+        async function fetchCategories() {
+            showLoading('categories-loading');
+            try {
+                const response = await fetch('/api/videos/categories');
+                const data = await response.json();
+                displayResponse('categories-response', data);
+            } catch (error) {
+                displayResponse('categories-response', { error: error.message });
+            } finally {
+                hideLoading('categories-loading');
+            }
+        }
+
+        async function fetchReligionVideos() {
+            showLoading('religion-loading');
+            const religion = document.getElementById('religion-select').value;
+            try {
+                const response = await fetch(`/api/videos/religion?religion=${religion}&page=1&limit=5`);
+                const data = await response.json();
+                displayResponse('religion-response', data);
+            } catch (error) {
+                displayResponse('religion-response', { error: error.message });
+            } finally {
+                hideLoading('religion-loading');
+            }
+        }
+
+        async function fetchReligiousReels() {
+            showLoading('reels-loading');
+            const religion = document.getElementById('reels-religion-select').value;
+            const category = document.getElementById('reels-category-select').value;
+            let url = '/api/videos/religious-reels?page=1&limit=5';
+            if (religion) url += `&religion=${religion}`;
+            if (category) url += `&category=${category}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayResponse('reels-response', data);
+            } catch (error) {
+                displayResponse('reels-response', { error: error.message });
+            } finally {
+                hideLoading('reels-loading');
+            }
+        }
+
+        async function fetchAlternativeReels() {
+            showLoading('alt-reels-loading');
+            try {
+                const response = await fetch('/api/videos/fetch-religious-reels?page=1&limit=5');
+                const data = await response.json();
+                displayResponse('alt-reels-response', data);
+            } catch (error) {
+                displayResponse('alt-reels-response', { error: error.message });
+            } finally {
+                hideLoading('alt-reels-loading');
+            }
+        }
+
+        async function addVideoLink() {
+            showLoading('add-video-loading');
+            
+            const videoUrl = document.getElementById('video-url').value;
+            const title = document.getElementById('video-title').value;
+            const description = document.getElementById('video-description').value;
+            const category = document.getElementById('video-category').value;
+            const religion = document.getElementById('video-religion').value;
+            
+            try {
+                // In a real implementation, you would include a valid token
+                // For demo purposes, we'll show what the request would look like
+                const requestBody = {
+                    links: [videoUrl],
+                    title: title,
+                    description: description,
+                    category: category,
+                    religion: religion
+                };
+                
+                // This will likely fail without proper authentication
+                const response = await fetch('/api/videos/add-links', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer YOUR_TOKEN_HERE' // This is a placeholder
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                const data = await response.json();
+                displayResponse('add-video-response', data);
+            } catch (error) {
+                // Show what the request would have been
+                displayResponse('add-video-response', { 
+                    note: "This is a demo. In a real implementation, you would need proper authentication.",
+                    error: error.message,
+                    requestThatWouldBeSent: {
+                        endpoint: "/api/videos/add-links",
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer YOUR_TOKEN_HERE"
+                        },
+                        body: {
+                            links: [videoUrl],
+                            title: title,
+                            description: description,
+                            category: category,
+                            religion: religion
+                        }
+                    }
+                });
+            } finally {
+                hideLoading('add-video-loading');
+            }
+        }
+    </script>
+</body>
+</html>

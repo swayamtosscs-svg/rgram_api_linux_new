@@ -1,0 +1,174 @@
+# Firebase Cloud Messaging (FCM) Environment Template
+
+This template contains all the required environment variables for Firebase Cloud Messaging push notifications.
+
+## Required Environment Variables
+
+Add these variables to your `.env.local` file:
+
+```env
+# Firebase Cloud Messaging Configuration
+FCM_PROJECT_ID=your-firebase-project-id
+FCM_PRIVATE_KEY_ID=your-private-key-id
+FCM_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour-Private-Key-Here\n-----END PRIVATE KEY-----\n"
+FCM_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
+FCM_CLIENT_ID=your-client-id
+```
+
+## How to Get Firebase Credentials
+
+### Step 1: Create Firebase Project
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Click "Create a project" or select existing project
+3. Follow the setup wizard
+
+### Step 2: Enable Cloud Messaging
+1. In Firebase Console, go to "Project Settings" (gear icon)
+2. Click on "Cloud Messaging" tab
+3. Note down your "Sender ID" (Project ID)
+
+### Step 3: Generate Service Account Key
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Select your Firebase project
+3. Go to "IAM & Admin" > "Service Accounts"
+4. Find "Firebase Admin SDK Service Agent"
+5. Click on the email address
+6. Go to "Keys" tab
+7. Click "Add Key" > "Create new key"
+8. Choose "JSON" format
+9. Download the JSON file
+
+### Step 4: Extract Values from JSON
+From the downloaded JSON file, extract these values:
+
+```json
+{
+  "type": "service_account",
+  "project_id": "your-project-id",           // → FCM_PROJECT_ID
+  "private_key_id": "key-id",               // → FCM_PRIVATE_KEY_ID
+  "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n", // → FCM_PRIVATE_KEY
+  "client_email": "firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com", // → FCM_CLIENT_EMAIL
+  "client_id": "123456789",                 // → FCM_CLIENT_ID
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-xxxxx%40your-project-id.iam.gserviceaccount.com"
+}
+```
+
+## Important Notes
+
+### Private Key Format
+- The `FCM_PRIVATE_KEY` must include the full private key with newlines
+- Use double quotes and escape newlines with `\n`
+- Example: `"-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC...\n-----END PRIVATE KEY-----\n"`
+
+### Security
+- Never commit the `.env.local` file to version control
+- Keep your service account key secure
+- Consider using environment-specific keys for different deployments
+
+### Testing
+After setting up the environment variables, you can test the configuration by:
+
+1. Registering an FCM token: `POST /api/notifications/register-fcm-token`
+2. Sending a test notification: `POST /api/notifications/send-push`
+
+## API Endpoints
+
+### Register FCM Token
+```http
+POST /api/notifications/register-fcm-token
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
+
+{
+  "fcmToken": "device-fcm-token-here",
+  "deviceType": "android",
+  "appVersion": "1.0.0"
+}
+```
+
+### Send Push Notification
+```http
+POST /api/notifications/send-push
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
+
+{
+  "recipientId": "user-id",
+  "title": "Notification Title",
+  "body": "Notification message",
+  "type": "like",
+  "imageUrl": "https://example.com/image.jpg",
+  "data": {
+    "postId": "post-id",
+    "customData": "value"
+  }
+}
+```
+
+### Create Notification with Push
+```http
+POST /api/notifications/create-with-push
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
+
+{
+  "recipientId": "user-id",
+  "type": "like",
+  "content": "Someone liked your post",
+  "relatedPostId": "post-id",
+  "sendPush": true
+}
+```
+
+### Update Notification Settings
+```http
+PUT /api/notifications/settings
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
+
+{
+  "pushNotifications": true,
+  "likeNotifications": true,
+  "commentNotifications": true,
+  "followNotifications": true,
+  "messageNotifications": true
+}
+```
+
+## Notification Types
+
+- `mention` - User mentioned in post/comment
+- `like` - Post/reel liked
+- `comment` - New comment on post
+- `reply` - Reply to comment
+- `share` - Post shared
+- `follow` - New follower
+- `follow_request` - Follow request received
+- `follow_accepted` - Follow request accepted
+- `story_view` - Story viewed
+- `block` - User blocked
+- `unblock` - User unblocked
+- `collaboration_request` - Collaboration request
+- `collaboration_accepted` - Collaboration accepted
+- `collaboration_rejected` - Collaboration rejected
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Invalid FCM Token**: Make sure the token is valid and not expired
+2. **Authentication Error**: Check if service account has proper permissions
+3. **Project ID Mismatch**: Ensure FCM_PROJECT_ID matches your Firebase project
+4. **Private Key Format**: Make sure private key includes proper newlines
+
+### Debug Mode
+Set `NODE_ENV=development` to see detailed error messages in API responses.
+
+### Logs
+Check server logs for FCM-related errors:
+- Token validation failures
+- Message sending failures
+- Topic subscription issues

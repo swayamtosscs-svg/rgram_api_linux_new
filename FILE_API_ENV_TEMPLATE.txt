@@ -1,0 +1,43 @@
+# 📁 File Upload API Environment Variables Template
+
+# Required for file upload, retrieval, and deletion APIs
+# Copy these variables to your .env file or Vercel environment
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+# Example values (replace with your actual Cloudinary credentials):
+# CLOUDINARY_CLOUD_NAME=myapp123
+# CLOUDINARY_API_KEY=123456789012345
+# CLOUDINARY_API_SECRET=abcdefghijklmnopqrstuvwxyz123456
+
+# Other required variables (if not already set):
+JWT_SECRET=your_jwt_secret_key_here
+MONGODB_URI=your_mongodb_connection_string
+CORS_ORIGIN=https://api-rgram1.vercel.app
+
+# Optional variables:
+NODE_ENV=production
+MAX_FILE_SIZE=104857600  # 100MB in bytes
+
+# How to get Cloudinary credentials:
+# 1. Go to https://cloudinary.com/
+# 2. Sign up or log in
+# 3. Go to Dashboard
+# 4. Copy your Cloud Name, API Key, and API Secret
+# 5. Paste them in the variables above
+
+# Security Notes:
+# - Never commit your .env file to version control
+# - Keep your API keys secure
+# - Use environment variables in production
+# - Rotate your API keys regularly
+
+# File Upload Features:
+# - Max file size: 100MB per file
+# - Supported types: Images, Videos, Audio, Documents, Text files
+# - Automatic folder organization in Cloudinary
+# - Secure user authentication required
+# - File ownership verification before deletion

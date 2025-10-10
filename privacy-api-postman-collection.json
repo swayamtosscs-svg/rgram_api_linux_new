@@ -1,0 +1,153 @@
+{
+  "info": {
+    "name": "Privacy Settings API",
+    "description": "Collection for testing Privacy Settings APIs that allow users to toggle account privacy between public and private",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Toggle Privacy (Simple)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/user/toggle-privacy",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user", "toggle-privacy"]
+        },
+        "description": "Simple API to toggle user account privacy between public and private. Automatically toggles current status."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Privacy Settings",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/user/privacy-settings",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user", "privacy-settings"]
+        },
+        "description": "Retrieve current privacy settings for the authenticated user."
+      },
+      "response": []
+    },
+    {
+      "name": "Toggle Privacy (Advanced)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"action\": \"toggle\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/user/privacy-settings",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user", "privacy-settings"]
+        },
+        "description": "Toggle current privacy status using the comprehensive privacy settings API."
+      },
+      "response": []
+    },
+    {
+      "name": "Set Privacy to Public",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"action\": \"set\",\n  \"isPrivate\": false\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/user/privacy-settings",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user", "privacy-settings"]
+        },
+        "description": "Set account privacy to public (isPrivate: false)."
+      },
+      "response": []
+    },
+    {
+      "name": "Set Privacy to Private",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"action\": \"set\",\n  \"isPrivate\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/user/privacy-settings",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user", "privacy-settings"]
+        },
+        "description": "Set account privacy to private (isPrivate: true)."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    }
+  ]
+}

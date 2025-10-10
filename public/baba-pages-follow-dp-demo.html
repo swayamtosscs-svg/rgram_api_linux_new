@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baba Pages Follow & DP Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #ff6b6b;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        
+        .file-input-wrapper:hover {
+            transform: translateY(-2px);
+        }
+        
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 1px solid #e1e5e9;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-following {
+            background: #28a745;
+        }
+        
+        .status-not-following {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🕉️ Baba Pages Follow & DP Demo</h1>
+            <p>Test the follow/unfollow and profile picture management APIs</p>
+        </div>
+        
+        <div class="content">
+            <div class="grid">
+                <!-- Authentication Section -->
+                <div class="card">
+                    <h2>🔐 Authentication</h2>
+                    <div class="form-group">
+                        <label for="jwtToken">JWT Token:</label>
+                        <input type="text" id="jwtToken" placeholder="Enter your JWT token">
+                    </div>
+                    <button class="btn" onclick="setToken()">Set Token</button>
+                    <div id="authResult" class="result" style="display: none;"></div>
+                </div>
+                
+                <!-- Page Management Section -->
+                <div class="card">
+                    <h2>📄 Page Management</h2>
+                    <div class="form-group">
+                        <label for="pageId">Page ID:</label>
+                        <input type="text" id="pageId" placeholder="Enter page ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="pageName">Page Name:</label>
+                        <input type="text" id="pageName" placeholder="Enter page name">
+                    </div>
+                    <button class="btn" onclick="createPage()">Create Page</button>
+                    <button class="btn btn-secondary" onclick="getPageDetails()">Get Page Details</button>
+                    <div id="pageResult" class="result" style="display: none;"></div>
+                </div>
+                
+                <!-- Follow/Unfollow Section -->
+                <div class="card">
+                    <h2>👥 Follow/Unfollow</h2>
+                    <div class="form-group">
+                        <label for="followPageId">Page ID:</label>
+                        <input type="text" id="followPageId" placeholder="Enter page ID to follow">
+                    </div>
+                    <button class="btn btn-success" onclick="followPage()">Follow Page</button>
+                    <button class="btn btn-danger" onclick="unfollowPage()">Unfollow Page</button>
+                    <button class="btn btn-secondary" onclick="checkFollowStatus()">Check Status</button>
+                    <div id="followResult" class="result" style="display: none;"></div>
+                </div>
+                
+                <!-- Profile Picture Section -->
+                <div class="card">
+                    <h2>🖼️ Profile Picture</h2>
+                    <div class="form-group">
+                        <label for="dpPageId">Page ID:</label>
+                        <input type="text" id="dpPageId" placeholder="Enter page ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="profilePicture">Select Image:</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="profilePicture" accept="image/*" onchange="handleFileSelect()">
+                            Choose File
+                        </div>
+                        <span id="fileName" style="margin-left: 10px; color: #666;"></span>
+                    </div>
+                    <button class="btn btn-success" onclick="uploadProfilePicture()">Upload DP</button>
+                    <button class="btn btn-danger" onclick="deleteProfilePicture()">Delete DP</button>
+                    <div id="dpResult" class="result" style="display: none;"></div>
+                </div>
+                
+                <!-- Followers Section -->
+                <div class="card">
+                    <h2>👥 Followers</h2>
+                    <div class="form-group">
+                        <label for="followersPageId">Page ID:</label>
+                        <input type="text" id="followersPageId" placeholder="Enter page ID">
+                    </div>
+                    <button class="btn" onclick="getFollowers()">Get Followers</button>
+                    <button class="btn btn-secondary" onclick="getFollowingPages()">Get Following Pages</button>
+                    <div id="followersResult" class="result" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.origin;
+        let jwtToken = '';
+        let selectedFile = null;
+
+        function setToken() {
+            jwtToken = document.getElementById('jwtToken').value;
+            if (jwtToken) {
+                showResult('authResult', 'Token set successfully!', 'success');
+            } else {
+                showResult('authResult', 'Please enter a valid token', 'error');
+            }
+        }
+
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+
+        function handleFileSelect() {
+            const fileInput = document.getElementById('profilePicture');
+            selectedFile = fileInput.files[0];
+            document.getElementById('fileName').textContent = selectedFile ? selectedFile.name : '';
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Authorization': `Bearer ${jwtToken}`,
+                        ...options.headers
+                    }
+                });
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, data: { error: error.message }, status: 0 };
+            }
+        }
+
+        async function createPage() {
+            const pageName = document.getElementById('pageName').value;
+            if (!pageName) {
+                showResult('pageResult', 'Please enter a page name', 'error');
+                return;
+            }
+
+            const result = await makeRequest(`${BASE_URL}/api/baba-pages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: pageName,
+                    description: 'Test page created from demo',
+                    location: 'Test Location',
+                    religion: 'Hinduism'
+                })
+            });
+
+            if (result.success) {
+                document.getElementById('pageId').value = result.data.data._id;
+                showResult('pageResult', JSON.stringify(result.data, null, 2), 'success');
+            } else {
+                showResult('pageResult', JSON.stringify(result.data, null, 2), 'error');
+            }
+        }
+
+        async function getPageDetails() {
+            const pageId = document.getElementById('pageId').value;
+            if (!pageId) {
+                showResult('pageResult', 'Please enter a page ID', 'error');
+                return;
+            }
+
+            const result = await makeRequest(`${BASE_URL}/api/baba-pages/${pageId}`);
+            showResult('pageResult', JSON.stringify(result.data, null, 2), result.success ? 'success' : 'error');
+        }
+
+        async function followPage() {
+            const pageId = document.getElementById('followPageId').value;
+            if (!pageId) {
+                showResult('followResult', 'Please enter a page ID', 'error');
+                return;
+            }
+
+            const result = await makeRequest(`${BASE_URL}/api/baba-pages/${pageId}/follow`, {
+                method: 'POST'
+            });
+
+            showResult('followResult', JSON.stringify(result.data, null, 2), result.success ? 'success' : 'error');
+        }
+
+        async function unfollowPage() {
+            const pageId = document.getElementById('followPageId').value;
+            if (!pageId) {
+                showResult('followResult', 'Please enter a page ID', 'error');
+                return;
+            }
+
+            const result = await makeRequest(`${BASE_URL}/api/baba-pages/${pageId}/follow`, {
+                method: 'DELETE'
+            });
+
+            showResult('followResult', JSON.stringify(result.data, null, 2), result.success ? 'success' : 'error');
+        }
+
+        async function checkFollowStatus() {
+            const pageId = document.getElementById('followPageId').value;
+            if (!pageId) {
+                showResult('followResult', 'Please enter a page ID', 'error');
+                return;
+            }
+
+            const result = await makeRequest(`${BASE_URL}/api/baba-pages/${pageId}/follow`);
+            showResult('followResult', JSON.stringify(result.data, null, 2), result.success ? 'success' : 'error');
+        }
+
+        async function uploadProfilePicture() {
+            const pageId = document.getElementById('dpPageId').value;
+            if (!pageId) {
+                showResult('dpResult', 'Please enter a page ID', 'error');
+                return;
+            }
+
+            if (!selectedFile) {
+                showResult('dpResult', 'Please select a file', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const result = await makeRequest(`${BASE_URL}/api/baba-pages/${pageId}/dp/upload`, {
+                method: 'POST',
+                body: formData,
+                headers: {} // Remove Content-Type header for FormData
+            });
+
+            showResult('dpResult', JSON.stringify(result.data, null, 2), result.success ? 'success' : 'error');
+        }
+
+        async function deleteProfilePicture() {
+            const pageId = document.getElementById('dpPageId').value;
+            if (!pageId) {
+                showResult('dpResult', 'Please enter a page ID', 'error');
+                return;
+            }
+
+            const result = await makeRequest(`${BASE_URL}/api/baba-pages/${pageId}/dp/delete`, {
+                method: 'DELETE'
+            });
+
+            showResult('dpResult', JSON.stringify(result.data, null, 2), result.success ? 'success' : 'error');
+        }
+
+        async function getFollowers() {
+            const pageId = document.getElementById('followersPageId').value;
+            if (!pageId) {
+                showResult('followersResult', 'Please enter a page ID', 'error');
+                return;
+            }
+
+            const result = await makeRequest(`${BASE_URL}/api/baba-pages/${pageId}/followers`);
+            showResult('followersResult', JSON.stringify(result.data, null, 2), result.success ? 'success' : 'error');
+        }
+
+        async function getFollowingPages() {
+            const result = await makeRequest(`${BASE_URL}/api/baba-pages/following`);
+            showResult('followersResult', JSON.stringify(result.data, null, 2), result.success ? 'success' : 'error');
+        }
+    </script>
+</body>
+</html>

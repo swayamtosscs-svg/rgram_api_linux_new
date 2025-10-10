@@ -1,0 +1,358 @@
+{
+  "info": {
+    "name": "Social Media API Collection",
+    "description": "Complete collection for testing social media API endpoints including friend requests, follow/unfollow, posts, and notifications",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Friend Requests",
+      "item": [
+        {
+          "name": "Send Friend Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+                         "body": {
+               "mode": "raw",
+               "raw": "{\n  \"senderId\": \"sender_user_id_here\",\n  \"recipientId\": \"recipient_user_id_here\",\n  \"message\": \"Hi, let us be friends!\"\n}"
+             },
+            "url": {
+              "raw": "{{baseUrl}}/api/friend-request/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "friend-request", "send"]
+            }
+          }
+        },
+                 {
+           "name": "Accept Friend Request",
+           "request": {
+             "method": "POST",
+             "header": [
+               {
+                 "key": "Content-Type",
+                 "value": "application/json"
+               }
+             ],
+             "body": {
+               "mode": "raw",
+               "raw": "{\n  \"requestId\": \"friend_request_id_here\",\n  \"senderId\": \"sender_user_id_here\",\n  \"recipientId\": \"recipient_user_id_here\"\n}"
+             },
+            "url": {
+              "raw": "{{baseUrl}}/api/friend-request/accept",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "friend-request", "accept"]
+            }
+          }
+        },
+                 {
+           "name": "Reject Friend Request",
+           "request": {
+             "method": "POST",
+             "header": [
+               {
+                 "key": "Content-Type",
+                 "value": "application/json"
+               }
+             ],
+             "body": {
+               "mode": "raw",
+               "raw": "{\n  \"requestId\": \"friend_request_id_here\",\n  \"senderId\": \"sender_user_id_here\",\n  \"recipientId\": \"recipient_user_id_here\"\n}"
+             },
+            "url": {
+              "raw": "{{baseUrl}}/api/friend-request/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "friend-request", "reject"]
+            }
+          }
+        },
+        {
+          "name": "List Friend Requests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/friend-request/list?type=received&status=pending&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "friend-request", "list"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "received"
+                },
+                {
+                  "key": "status",
+                  "value": "pending"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Follow/Unfollow",
+      "item": [
+        {
+          "name": "Follow User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/follow/user_id_here",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "follow", "user_id_here"]
+            }
+          }
+        },
+        {
+          "name": "Unfollow User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/follow/user_id_here",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "follow", "user_id_here"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Friends",
+      "item": [
+        {
+          "name": "Get Friends List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/friends/list?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "friends", "list"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Hello world! This is my first post.\",\n  \"images\": [\"https://example.com/image.jpg\"],\n  \"videos\": [],\n  \"type\": \"post\",\n  \"title\": \"My First Post\",\n  \"description\": \"A sample post description\",\n  \"category\": \"general\",\n  \"religion\": \"Hindu\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/posts/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "posts", "create"]
+            }
+          }
+        },
+        {
+          "name": "Create Post with Base64 Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Post with base64 image\",\n  \"images\": [\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ...\"],\n  \"type\": \"post\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/posts/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "posts", "create"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feed",
+      "item": [
+        {
+          "name": "Get Home Feed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/feed/home?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "feed", "home"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/list?page=1&limit=20&unreadOnly=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "list"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "unreadOnly",
+                  "value": "false"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Unread Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/list?page=1&limit=20&unreadOnly=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "list"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "unreadOnly",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notificationId\": \"notification_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/mark-read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "mark-read"]
+            }
+          }
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"markAll\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/mark-read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "mark-read"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

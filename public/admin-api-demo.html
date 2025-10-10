@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin API Demo</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    .container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .endpoint {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+    }
+    .endpoint:last-child {
+      border-bottom: none;
+    }
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .method {
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 4px;
+      margin-right: 10px;
+      color: white;
+      font-size: 14px;
+    }
+    .get {
+      background-color: #61affe;
+    }
+    .put {
+      background-color: #fca130;
+    }
+    .delete {
+      background-color: #f93e3e;
+    }
+    .url {
+      font-family: monospace;
+      font-size: 16px;
+    }
+    .description {
+      margin-bottom: 15px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .response {
+      margin-top: 15px;
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .auth-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #e8f4fd;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin API Demo</h1>
+  
+  <div class="auth-section">
+    <h2>Authentication</h2>
+    <div class="form-group">
+      <label for="auth-token">Admin Auth Token:</label>
+      <input type="text" id="auth-token" placeholder="Enter your admin auth token">
+    </div>
+    <p><small>Note: All requests will use this token for authentication.</small></p>
+  </div>
+
+  <div class="container">
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method get">GET</span>
+        <span class="url">/api/admin/users</span>
+      </div>
+      <div class="description">
+        <p>List or search all users in the system.</p>
+      </div>
+      <div class="form-group">
+        <label for="search-query">Search Query (optional):</label>
+        <input type="text" id="search-query" placeholder="Search by email, username, or full name">
+      </div>
+      <button onclick="fetchUsers()">Try it</button>
+      <div id="users-response" class="response"></div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method put">PUT</span>
+        <span class="url">/api/admin/verify-user/{id}</span>
+      </div>
+      <div class="description">
+        <p>Approve or reject user verification request.</p>
+      </div>
+      <div class="form-group">
+        <label for="user-id">User ID:</label>
+        <input type="text" id="user-id" placeholder="Enter user ID">
+      </div>
+      <div class="form-group">
+        <label for="user-approve">Action:</label>
+        <select id="user-approve">
+          <option value="true">Approve</option>
+          <option value="false">Reject</option>
+        </select>
+      </div>
+      <button onclick="verifyUser()">Try it</button>
+      <div id="verify-user-response" class="response"></div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method put">PUT</span>
+        <span class="url">/api/admin/verify-page/{id}</span>
+      </div>
+      <div class="description">
+        <p>Approve or reject page verification request.</p>
+      </div>
+      <div class="form-group">
+        <label for="page-id">Page ID:</label>
+        <input type="text" id="page-id" placeholder="Enter page ID">
+      </div>
+      <div class="form-group">
+        <label for="page-approve">Action:</label>
+        <select id="page-approve">
+          <option value="true">Approve</option>
+          <option value="false">Reject</option>
+        </select>
+      </div>
+      <button onclick="verifyPage()">Try it</button>
+      <div id="verify-page-response" class="response"></div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method put">PUT</span>
+        <span class="url">/api/admin/donation/{id}/approve</span>
+      </div>
+      <div class="description">
+        <p>Approve or reject donation request.</p>
+      </div>
+      <div class="form-group">
+        <label for="donation-id">Donation ID:</label>
+        <input type="text" id="donation-id" placeholder="Enter donation ID">
+      </div>
+      <div class="form-group">
+        <label for="donation-approve">Action:</label>
+        <select id="donation-approve">
+          <option value="true">Approve</option>
+          <option value="false">Reject</option>
+        </select>
+      </div>
+      <button onclick="approveDonation()">Try it</button>
+      <div id="approve-donation-response" class="response"></div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method get">GET</span>
+        <span class="url">/api/admin/reports</span>
+      </div>
+      <div class="description">
+        <p>Get list of flagged posts and comments.</p>
+      </div>
+      <button onclick="fetchReports()">Try it</button>
+      <div id="reports-response" class="response"></div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method delete">DELETE</span>
+        <span class="url">/api/admin/post/{id}</span>
+      </div>
+      <div class="description">
+        <p>Remove a flagged post.</p>
+      </div>
+      <div class="form-group">
+        <label for="post-id">Post ID:</label>
+        <input type="text" id="post-id" placeholder="Enter post ID">
+      </div>
+      <button onclick="removePost()">Try it</button>
+      <div id="remove-post-response" class="response"></div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method delete">DELETE</span>
+        <span class="url">/api/admin/comment/{id}</span>
+      </div>
+      <div class="description">
+        <p>Remove a flagged comment.</p>
+      </div>
+      <div class="form-group">
+        <label for="comment-id">Comment ID:</label>
+        <input type="text" id="comment-id" placeholder="Enter comment ID">
+      </div>
+      <button onclick="removeComment()">Try it</button>
+      <div id="remove-comment-response" class="response"></div>
+    </div>
+  </div>
+
+  <script>
+    // Base API URL
+    const API_BASE_URL = window.location.origin;
+
+    // Helper function to get the auth token
+    function getAuthToken() {
+      return document.getElementById('auth-token').value;
+    }
+
+    // Helper function to make API requests
+    async function makeRequest(url, method, body = null) {
+      const token = getAuthToken();
+      if (!token) {
+        return { error: 'Please enter an admin auth token' };
+      }
+
+      const options = {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      };
+
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+
+      try {
+        const response = await fetch(url, options);
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        return { error: error.message };
+      }
+    }
+
+    // Function to display response
+    function displayResponse(elementId, data) {
+      const element = document.getElementById(elementId);
+      element.textContent = JSON.stringify(data, null, 2);
+    }
+
+    // API endpoint functions
+    async function fetchUsers() {
+      const query = document.getElementById('search-query').value;
+      const url = `${API_BASE_URL}/api/admin/users${query ? `?q=${encodeURIComponent(query)}` : ''}`;
+      const data = await makeRequest(url, 'GET');
+      displayResponse('users-response', data);
+    }
+
+    async function verifyUser() {
+      const userId = document.getElementById('user-id').value;
+      if (!userId) {
+        displayResponse('verify-user-response', { error: 'Please enter a user ID' });
+        return;
+      }
+
+      const approve = document.getElementById('user-approve').value === 'true';
+      const url = `${API_BASE_URL}/api/admin/verify-user/${userId}`;
+      const data = await makeRequest(url, 'PUT', { approve });
+      displayResponse('verify-user-response', data);
+    }
+
+    async function verifyPage() {
+      const pageId = document.getElementById('page-id').value;
+      if (!pageId) {
+        displayResponse('verify-page-response', { error: 'Please enter a page ID' });
+        return;
+      }
+
+      const approve = document.getElementById('page-approve').value === 'true';
+      const url = `${API_BASE_URL}/api/admin/verify-page/${pageId}`;
+      const data = await makeRequest(url, 'PUT', { approve });
+      displayResponse('verify-page-response', data);
+    }
+
+    async function approveDonation() {
+      const donationId = document.getElementById('donation-id').value;
+      if (!donationId) {
+        displayResponse('approve-donation-response', { error: 'Please enter a donation ID' });
+        return;
+      }
+
+      const approve = document.getElementById('donation-approve').value === 'true';
+      const url = `${API_BASE_URL}/api/admin/donation/${donationId}/approve`;
+      const data = await makeRequest(url, 'PUT', { approve });
+      displayResponse('approve-donation-response', data);
+    }
+
+    async function fetchReports() {
+      const url = `${API_BASE_URL}/api/admin/reports`;
+      const data = await makeRequest(url, 'GET');
+      displayResponse('reports-response', data);
+    }
+
+    async function removePost() {
+      const postId = document.getElementById('post-id').value;
+      if (!postId) {
+        displayResponse('remove-post-response', { error: 'Please enter a post ID' });
+        return;
+      }
+
+      const url = `${API_BASE_URL}/api/admin/post/${postId}`;
+      const data = await makeRequest(url, 'DELETE');
+      displayResponse('remove-post-response', data);
+    }
+
+    async function removeComment() {
+      const commentId = document.getElementById('comment-id').value;
+      if (!commentId) {
+        displayResponse('remove-comment-response', { error: 'Please enter a comment ID' });
+        return;
+      }
+
+      const url = `${API_BASE_URL}/api/admin/comment/${commentId}`;
+      const data = await makeRequest(url, 'DELETE');
+      displayResponse('remove-comment-response', data);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+{
+  "info": {
+    "name": "Images API - Local Storage",
+    "description": "Complete collection for testing the Images API with local storage",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://103.14.120.163:3000",
+      "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "testuser",
+      "type": "string"
+    },
+    {
+      "key": "imageId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Images Overview",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/images",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images"]
+        }
+      }
+    },
+    {
+      "name": "Get Statistics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/images?stats=true",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images"],
+          "query": [
+            {
+              "key": "stats",
+              "value": "true"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Upload Image",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "username",
+              "value": "{{username}}",
+              "type": "text"
+            },
+            {
+              "key": "title",
+              "value": "Test Image",
+              "type": "text"
+            },
+            {
+              "key": "description",
+              "value": "This is a test image upload",
+              "type": "text"
+            },
+            {
+              "key": "tags",
+              "value": "[\"test\", \"api\", \"image\"]",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/images/upload",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images", "upload"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.success && response.data.imageId) {",
+              "        pm.collectionVariables.set('imageId', response.data.imageId);",
+              "        console.log('Image ID saved:', response.data.imageId);",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get User Images",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/images/retrieve?username={{username}}&page=1&limit=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images", "retrieve"],
+          "query": [
+            {
+              "key": "username",
+              "value": "{{username}}"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Specific Image",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/images/retrieve?id={{imageId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images", "retrieve"],
+          "query": [
+            {
+              "key": "id",
+              "value": "{{imageId}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Advanced Search",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"tags\": [\"test\", \"api\"],\n  \"mimeType\": \"image/jpeg\",\n  \"minSize\": 1000,\n  \"maxSize\": 10000000,\n  \"dateFrom\": \"2024-01-01\",\n  \"dateTo\": \"2024-12-31\",\n  \"page\": 1,\n  \"limit\": 10,\n  \"sortBy\": \"createdAt\",\n  \"sortOrder\": \"desc\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/images/retrieve",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images", "retrieve"]
+        }
+      }
+    },
+    {
+      "name": "Get User Image Summary",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/images?username={{username}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images"],
+          "query": [
+            {
+              "key": "username",
+              "value": "{{username}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete Image",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/images/delete?id={{imageId}}&username={{username}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images", "delete"],
+          "query": [
+            {
+              "key": "id",
+              "value": "{{imageId}}"
+            },
+            {
+              "key": "username",
+              "value": "{{username}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Check Image Details",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/images/delete?id={{imageId}}&username={{username}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images", "delete"],
+          "query": [
+            {
+              "key": "id",
+              "value": "{{imageId}}"
+            },
+            {
+              "key": "username",
+              "value": "{{username}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

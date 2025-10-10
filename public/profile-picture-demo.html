@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Picture API Demo - File Upload</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .profile-preview {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .profile-preview img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .profile-preview .no-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: #e9ecef;
+            border: 4px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 3rem;
+            margin: 0 auto;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-wrapper .file-input-label {
+            display: block;
+            padding: 12px;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .file-input-wrapper:hover .file-input-label {
+            background: #f8f9ff;
+            border-color: #5a6fd8;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .file-info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            color: #0d47a1;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .file-info h4 {
+            margin-bottom: 5px;
+            color: #1565c0;
+        }
+
+        .file-info p {
+            margin: 2px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 Profile Picture API Demo</h1>
+            <p>Upload real image files directly - No base64 conversion needed!</p>
+        </div>
+
+        <div class="content">
+            <!-- Authentication Section -->
+            <div class="section">
+                <h2>🔐 Authentication</h2>
+                <div class="form-group">
+                    <label for="jwtToken">JWT Token:</label>
+                    <input type="text" id="jwtToken" placeholder="Enter your JWT token here" />
+                </div>
+                <div class="form-group">
+                    <label for="baseUrl">Base URL:</label>
+                    <input type="text" id="baseUrl" value="http://localhost:3000" />
+                </div>
+                <button class="btn" onclick="testConnection()">Test Connection</button>
+                <div id="connectionStatus"></div>
+            </div>
+
+            <!-- Profile Picture Preview -->
+            <div class="section">
+                <h2>🖼️ Profile Picture Preview</h2>
+                <div class="profile-preview">
+                    <div id="profileImage" class="no-image">👤</div>
+                </div>
+                <button class="btn btn-secondary" onclick="getProfilePicture()">Refresh Preview</button>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="section">
+                <h2>⬆️ Upload Profile Picture</h2>
+                <div class="form-group">
+                    <label for="imageFile">Select Image File:</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="imageFile" accept="image/*" onchange="handleFileSelect(event)" />
+                        <label for="imageFile" class="file-input-label">
+                            📁 Click to select an image file (JPEG, PNG, GIF, WebP)
+                        </label>
+                    </div>
+                </div>
+                <div id="fileInfo"></div>
+                <button class="btn btn-success" id="uploadBtn" onclick="uploadProfilePicture()" disabled>
+                    Upload Profile Picture
+                </button>
+                <div id="uploadResult"></div>
+            </div>
+
+            <!-- Get Profile Picture Section -->
+            <div class="section">
+                <h2>📥 Get Profile Picture</h2>
+                <div class="form-group">
+                    <label for="targetUserId">User ID (optional):</label>
+                    <input type="text" id="targetUserId" placeholder="Leave empty to get your own profile picture" />
+                </div>
+                <button class="btn btn-secondary" onclick="getProfilePicture()">Get Profile Picture</button>
+                <div id="getResult"></div>
+            </div>
+
+            <!-- Delete Section -->
+            <div class="section">
+                <h2>🗑️ Delete Profile Picture</h2>
+                <p>This will permanently delete your profile picture from Cloudinary and update your profile.</p>
+                <button class="btn btn-danger" onclick="deleteProfilePicture()">Delete Profile Picture</button>
+                <div id="deleteResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let currentUserData = null;
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                
+                // Display file information
+                const fileInfo = document.getElementById('fileInfo');
+                fileInfo.innerHTML = `
+                    <div class="file-info">
+                        <h4>📋 File Selected</h4>
+                        <p><strong>Name:</strong> ${file.name}</p>
+                        <p><strong>Size:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                        <p><strong>Type:</strong> ${file.type}</p>
+                        <p><strong>Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}</p>
+                    </div>
+                `;
+                
+                document.getElementById('uploadBtn').disabled = false;
+            }
+        }
+
+        // Test connection
+        async function testConnection() {
+            const token = document.getElementById('jwtToken').value;
+            const baseUrl = document.getElementById('baseUrl').value;
+            
+            if (!token) {
+                showStatus('connectionStatus', 'Please enter a JWT token', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/api/user/get-profile-picture`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    showStatus('connectionStatus', '✅ Connection successful!', 'success');
+                    const data = await response.json();
+                    currentUserData = data.data;
+                    updateProfilePreview(data.data.avatar);
+                } else {
+                    showStatus('connectionStatus', '❌ Connection failed: ' + response.status, 'error');
+                }
+            } catch (error) {
+                showStatus('connectionStatus', '❌ Connection error: ' + error.message, 'error');
+            }
+        }
+
+        // Upload profile picture using FormData
+        async function uploadProfilePicture() {
+            if (!selectedFile) {
+                showResult('uploadResult', 'Please select a file first', 'error');
+                return;
+            }
+
+            const token = document.getElementById('jwtToken').value;
+            const baseUrl = document.getElementById('baseUrl').value;
+            
+            if (!token) {
+                showResult('uploadResult', 'Please enter a JWT token', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('uploadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>Uploading...';
+
+            try {
+                // Create FormData and append the file
+                const formData = new FormData();
+                formData.append('image', selectedFile);
+                
+                const response = await fetch(`${baseUrl}/api/user/upload-profile-picture`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                        // Don't set Content-Type for FormData, let the browser set it
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('uploadResult', JSON.stringify(data, null, 2), 'success');
+                    currentUserData = data.data;
+                    updateProfilePreview(data.data.avatar);
+                    // Refresh profile picture
+                    getProfilePicture();
+                } else {
+                    showResult('uploadResult', JSON.stringify(data, null, 2), 'error');
+                }
+            } catch (error) {
+                showResult('uploadResult', 'Upload failed: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Upload Profile Picture';
+            }
+        }
+
+        // Get profile picture
+        async function getProfilePicture() {
+            const token = document.getElementById('jwtToken').value;
+            const baseUrl = document.getElementById('baseUrl').value;
+            const targetUserId = document.getElementById('targetUserId').value;
+            
+            if (!token) {
+                showResult('getResult', 'Please enter a JWT token', 'error');
+                return;
+            }
+
+            try {
+                const url = targetUserId 
+                    ? `${baseUrl}/api/user/get-profile-picture?userId=${targetUserId}`
+                    : `${baseUrl}/api/user/get-profile-picture`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('getResult', JSON.stringify(data, null, 2), 'success');
+                    if (!targetUserId) {
+                        currentUserData = data.data;
+                        updateProfilePreview(data.data.avatar);
+                    }
+                } else {
+                    showResult('getResult', JSON.stringify(data, null, 2), 'error');
+                }
+            } catch (error) {
+                showResult('getResult', 'Failed to get profile picture: ' + error.message, 'error');
+            }
+        }
+
+        // Delete profile picture
+        async function deleteProfilePicture() {
+            const token = document.getElementById('jwtToken').value;
+            const baseUrl = document.getElementById('baseUrl').value;
+            
+            if (!token) {
+                showResult('deleteResult', 'Please enter a JWT token', 'error');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to delete your profile picture? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/api/user/delete-profile-picture`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('deleteResult', JSON.stringify(data, null, 2), 'success');
+                    currentUserData = data.data;
+                    updateProfilePreview(null);
+                    // Refresh profile picture
+                    getProfilePicture();
+                } else {
+                    showResult('deleteResult', JSON.stringify(data, null, 2), 'error');
+                }
+            } catch (error) {
+                showResult('deleteResult', 'Failed to delete profile picture: ' + error.message, 'error');
+            }
+        }
+
+        // Utility functions
+        function updateProfilePreview(avatarUrl) {
+            const profileImage = document.getElementById('profileImage');
+            if (avatarUrl) {
+                profileImage.innerHTML = `<img src="${avatarUrl}" alt="Profile Picture" />`;
+            } else {
+                profileImage.innerHTML = '<div class="no-image">👤</div>';
+            }
+        }
+
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default values
+            const token = localStorage.getItem('jwt_token');
+            if (token) {
+                document.getElementById('jwtToken').value = token;
+            }
+            
+            // Auto-save token
+            document.getElementById('jwtToken').addEventListener('input', function() {
+                localStorage.setItem('jwt_token', this.value);
+            });
+        });
+    </script>
+</body>
+</html>

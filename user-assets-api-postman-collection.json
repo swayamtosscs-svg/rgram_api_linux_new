@@ -1,0 +1,373 @@
+{
+  "info": {
+    "name": "User Assets API",
+    "description": "Complete API collection for managing user assets (images and videos) with local storage",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload Asset",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "userId",
+              "value": "64f1a2b3c4d5e6f7g8h9i0j1",
+              "type": "text",
+              "description": "User's MongoDB ObjectId"
+            },
+            {
+              "key": "title",
+              "value": "My Photo",
+              "type": "text",
+              "description": "Asset title (optional)"
+            },
+            {
+              "key": "description",
+              "value": "A beautiful sunset photo",
+              "type": "text",
+              "description": "Asset description (optional)"
+            },
+            {
+              "key": "tags",
+              "value": "[\"sunset\", \"nature\", \"photography\"]",
+              "type": "text",
+              "description": "JSON array of tags (optional)"
+            },
+            {
+              "key": "isPublic",
+              "value": "true",
+              "type": "text",
+              "description": "Public visibility (optional, defaults to true)"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/user-assets/upload",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user-assets", "upload"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get User Assets Overview",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/user-assets?userId={{userId}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user-assets"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}",
+              "description": "User's MongoDB ObjectId"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Retrieve All Assets",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/user-assets/retrieve?userId={{userId}}&page=1&limit=10",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user-assets", "retrieve"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}",
+              "description": "User's MongoDB ObjectId"
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Page number"
+            },
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "Items per page"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Retrieve Images Only",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/user-assets/retrieve?userId={{userId}}&type=image&page=1&limit=10",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user-assets", "retrieve"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}",
+              "description": "User's MongoDB ObjectId"
+            },
+            {
+              "key": "type",
+              "value": "image",
+              "description": "Filter by file type"
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Page number"
+            },
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "Items per page"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Retrieve Videos Only",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/user-assets/retrieve?userId={{userId}}&type=video&page=1&limit=10",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user-assets", "retrieve"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}",
+              "description": "User's MongoDB ObjectId"
+            },
+            {
+              "key": "type",
+              "value": "video",
+              "description": "Filter by file type"
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Page number"
+            },
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "Items per page"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Assets",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/user-assets/retrieve?userId={{userId}}&search=sunset&page=1&limit=10",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user-assets", "retrieve"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}",
+              "description": "User's MongoDB ObjectId"
+            },
+            {
+              "key": "search",
+              "value": "sunset",
+              "description": "Search term"
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Page number"
+            },
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "Items per page"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Tags",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/user-assets/retrieve?userId={{userId}}&tags=nature,photography&page=1&limit=10",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user-assets", "retrieve"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}",
+              "description": "User's MongoDB ObjectId"
+            },
+            {
+              "key": "tags",
+              "value": "nature,photography",
+              "description": "Comma-separated tags"
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Page number"
+            },
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "Items per page"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Single Asset",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/user-assets/retrieve?assetId={{assetId}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user-assets", "retrieve"],
+          "query": [
+            {
+              "key": "assetId",
+              "value": "{{assetId}}",
+              "description": "Asset's MongoDB ObjectId"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Asset Metadata",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assetId\": \"{{assetId}}\",\n  \"userId\": \"{{userId}}\",\n  \"title\": \"Updated Photo Title\",\n  \"description\": \"Updated description with more details\",\n  \"tags\": [\"updated\", \"tags\", \"example\"],\n  \"isPublic\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/user-assets",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user-assets"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Single Asset",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/user-assets/delete?assetId={{assetId}}&userId={{userId}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user-assets", "delete"],
+          "query": [
+            {
+              "key": "assetId",
+              "value": "{{assetId}}",
+              "description": "Asset's MongoDB ObjectId"
+            },
+            {
+              "key": "userId",
+              "value": "{{userId}}",
+              "description": "User's MongoDB ObjectId (for ownership verification)"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Bulk Delete Assets",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assetIds\": [\"{{assetId1}}\", \"{{assetId2}}\", \"{{assetId3}}\"],\n  \"userId\": \"{{userId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/user-assets/delete",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user-assets", "delete"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "Base URL for the API"
+    },
+    {
+      "key": "userId",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j1",
+      "description": "Sample user ID for testing"
+    },
+    {
+      "key": "assetId",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j2",
+      "description": "Sample asset ID for testing"
+    },
+    {
+      "key": "assetId1",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j2",
+      "description": "Sample asset ID 1 for bulk operations"
+    },
+    {
+      "key": "assetId2",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j3",
+      "description": "Sample asset ID 2 for bulk operations"
+    },
+    {
+      "key": "assetId3",
+      "value": "64f1a2b3c4d5e6f7g8h9i0j4",
+      "description": "Sample asset ID 3 for bulk operations"
+    }
+  ]
+}

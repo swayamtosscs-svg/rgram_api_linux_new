@@ -1,0 +1,218 @@
+{
+  "info": {
+    "name": "Push Notifications Test Collection",
+    "description": "Test push notifications APIs with mock tokens",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "user-id-here",
+      "type": "string"
+    },
+    {
+      "key": "mock_fcm_token",
+      "value": "mock-device-token-12345",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Register Mock FCM Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fcmToken\": \"{{mock_fcm_token}}\",\n  \"deviceType\": \"android\",\n  \"appVersion\": \"1.0.0\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/notifications/register-fcm-token",
+          "host": ["{{base_url}}"],
+          "path": ["api", "notifications", "register-fcm-token"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Send Push Notification (Mock)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipientId\": \"{{user_id}}\",\n  \"title\": \"🔥 Test Notification\",\n  \"body\": \"This is a test push notification!\",\n  \"type\": \"general\",\n  \"data\": {\n    \"testData\": \"Mock notification for testing\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/notifications/send-push",
+          "host": ["{{base_url}}"],
+          "path": ["api", "notifications", "send-push"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Create Notification with Push (Mock)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipientId\": \"{{user_id}}\",\n  \"type\": \"like\",\n  \"content\": \"Test user liked your post\",\n  \"relatedPostId\": \"test-post-123\",\n  \"sendPush\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/notifications/create-with-push",
+          "host": ["{{base_url}}"],
+          "path": ["api", "notifications", "create-with-push"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Update Notification Settings",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pushNotifications\": true,\n  \"emailNotifications\": true,\n  \"likeNotifications\": true,\n  \"commentNotifications\": true,\n  \"followNotifications\": true,\n  \"messageNotifications\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/notifications/settings",
+          "host": ["{{base_url}}"],
+          "path": ["api", "notifications", "settings"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Get Notifications",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/notifications/list?page=1&limit=10",
+          "host": ["{{base_url}}"],
+          "path": ["api", "notifications", "list"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Test Like Notification",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipientId\": \"{{user_id}}\",\n  \"type\": \"like\",\n  \"content\": \"John Doe liked your post\",\n  \"relatedPostId\": \"post-123\",\n  \"sendPush\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/notifications/create-with-push",
+          "host": ["{{base_url}}"],
+          "path": ["api", "notifications", "create-with-push"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7. Test Comment Notification",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipientId\": \"{{user_id}}\",\n  \"type\": \"comment\",\n  \"content\": \"John Doe commented: Great post!\",\n  \"relatedPostId\": \"post-123\",\n  \"relatedCommentId\": \"comment-456\",\n  \"sendPush\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/notifications/create-with-push",
+          "host": ["{{base_url}}"],
+          "path": ["api", "notifications", "create-with-push"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8. Test Follow Notification",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipientId\": \"{{user_id}}\",\n  \"type\": \"follow\",\n  \"content\": \"John Doe started following you\",\n  \"sendPush\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/notifications/create-with-push",
+          "host": ["{{base_url}}"],
+          "path": ["api", "notifications", "create-with-push"]
+        }
+      },
+      "response": []
+    }
+  ]
+}

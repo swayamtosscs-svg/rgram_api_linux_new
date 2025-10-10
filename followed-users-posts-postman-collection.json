@@ -1,0 +1,236 @@
+{
+  "info": {
+    "name": "Followed Users Posts API",
+    "description": "API collection for testing posts from followed users with Cloudinary integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get Posts from Followed Users",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/posts/followed-users?page=1&limit=10",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts", "followed-users"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Page number for pagination"
+            },
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "Number of posts per page"
+            }
+          ]
+        },
+        "description": "Get posts from users that the authenticated user follows. This excludes the user's own posts and only shows posts from followed users with Cloudinary image URLs."
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/posts/followed-users?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "followed-users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Posts from followed users retrieved successfully\",\n  \"data\": {\n    \"posts\": [\n      {\n        \"_id\": \"post_id_here\",\n        \"author\": {\n          \"_id\": \"user_id_here\",\n          \"username\": \"followed_user\",\n          \"fullName\": \"Followed User Name\",\n          \"avatar\": \"https://res.cloudinary.com/your-cloud/image/upload/v1234567890/avatar.jpg\",\n          \"isPrivate\": false,\n          \"followersCount\": 100,\n          \"followingCount\": 50,\n          \"postsCount\": 25\n        },\n        \"content\": \"This is a post from a followed user\",\n        \"images\": [\n          \"https://res.cloudinary.com/your-cloud/image/upload/v1234567890/post_image.jpg\"\n        ],\n        \"videos\": [],\n        \"type\": \"post\",\n        \"likes\": [],\n        \"likesCount\": 0,\n        \"comments\": [],\n        \"commentsCount\": 0,\n        \"shares\": [],\n        \"sharesCount\": 0,\n        \"saves\": [],\n        \"savesCount\": 0,\n        \"isActive\": true,\n        \"createdAt\": \"2024-01-01T00:00:00.000Z\",\n        \"updatedAt\": \"2024-01-01T00:00:00.000Z\",\n        \"_metadata\": {\n          \"hasImages\": true,\n          \"hasVideos\": false,\n          \"hasContent\": true,\n          \"totalMediaCount\": 1\n        }\n      }\n    ],\n    \"pagination\": {\n      \"currentPage\": 1,\n      \"totalPages\": 5,\n      \"totalPosts\": 50,\n      \"hasNextPage\": true,\n      \"hasPrevPage\": false,\n      \"limit\": 10\n    },\n    \"_info\": {\n      \"followingCount\": 10,\n      \"requestedBy\": \"current_user_id\",\n      \"timestamp\": \"2024-01-01T00:00:00.000Z\"\n    }\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get Posts from Followed Users - Page 2",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/posts/followed-users?page=2&limit=5",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts", "followed-users"],
+          "query": [
+            {
+              "key": "page",
+              "value": "2"
+            },
+            {
+              "key": "limit",
+              "value": "5"
+            }
+          ]
+        },
+        "description": "Get second page of posts from followed users with smaller limit"
+      }
+    },
+    {
+      "name": "Get Posts from Followed Users - No Follows",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/posts/followed-users",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts", "followed-users"]
+        },
+        "description": "Test when user is not following anyone (should return empty array)"
+      }
+    },
+    {
+      "name": "Unauthorized Request (No Token)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/posts/followed-users",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts", "followed-users"]
+        },
+        "description": "Test without authentication token (should return 401)"
+      },
+      "response": [
+        {
+          "name": "Unauthorized Response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/followed-users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "followed-users"]
+            }
+          },
+          "status": "Unauthorized",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Authentication required\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Invalid Token",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid_token_here"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/posts/followed-users",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts", "followed-users"]
+        },
+        "description": "Test with invalid JWT token (should return 401)"
+      }
+    },
+    {
+      "name": "Method Not Allowed (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/posts/followed-users",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts", "followed-users"]
+        },
+        "description": "Test POST method (should return 405 Method Not Allowed)"
+      }
+    }
+  ]
+}
+
+
