@@ -9,7 +9,10 @@ console.log('MONGODB_URI from env:', MONGODB_URI);
 console.log('NODE_ENV:', process.env.NODE_ENV);
 
 // Use MongoDB Atlas connection directly
-MONGODB_URI = 'mongodb+srv://tossitswayam:Qwert123%23%24@cluster0.tpk0nle.mongodb.net/api_rgram?retryWrites=true&w=majority';
+if (!MONGODB_URI) {
+  MONGODB_URI = 'mongodb://swayamUser:swayamPass@localhost:27017/swayam?authSource=admin';
+  console.log('⚠️  Using fallback local MongoDB connection');
+}
 
 // Ensure MONGODB_URI is defined
 if (!MONGODB_URI) {
