@@ -1,0 +1,250 @@
+{
+  "info": {
+    "name": "Reels Management API",
+    "description": "Comprehensive reel management API with local storage functionality",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload Reel",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "caption",
+              "value": "Check out this amazing reel!",
+              "type": "text"
+            },
+            {
+              "key": "video",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "isPublic",
+              "value": "true",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/reels-management/upload",
+          "host": ["{{base_url}}"],
+          "path": ["api", "reels-management", "upload"]
+        }
+      }
+    },
+    {
+      "name": "Retrieve All Reels",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/reels-management/retrieve?limit=10&offset=0",
+          "host": ["{{base_url}}"],
+          "path": ["api", "reels-management", "retrieve"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Retrieve Specific Reel",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/reels-management/retrieve?reelId={{reel_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "reels-management", "retrieve"],
+          "query": [
+            {
+              "key": "reelId",
+              "value": "{{reel_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Retrieve User Reels",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/reels-management/retrieve?userId={{user_id}}&limit=10",
+          "host": ["{{base_url}}"],
+          "path": ["api", "reels-management", "retrieve"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{user_id}}"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete Reel",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/reels-management/delete?reelId={{reel_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "reels-management", "delete"],
+          "query": [
+            {
+              "key": "reelId",
+              "value": "{{reel_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Like Reel",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/reels-management/like?reelId={{reel_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "reels-management", "like"],
+          "query": [
+            {
+              "key": "reelId",
+              "value": "{{reel_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Unlike Reel",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/reels-management/unlike?reelId={{reel_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "reels-management", "unlike"],
+          "query": [
+            {
+              "key": "reelId",
+              "value": "{{reel_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Add Comment to Reel",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"comment\": \"This is an amazing reel!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/reels-management/comment?reelId={{reel_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "reels-management", "comment"],
+          "query": [
+            {
+              "key": "reelId",
+              "value": "{{reel_id}}"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "jwt_token",
+      "value": "your-jwt-token-here"
+    },
+    {
+      "key": "reel_id",
+      "value": "your-reel-id-here"
+    },
+    {
+      "key": "user_id",
+      "value": "your-user-id-here"
+    }
+  ]
+}

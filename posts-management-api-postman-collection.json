@@ -1,0 +1,250 @@
+{
+  "info": {
+    "name": "Posts Management API",
+    "description": "Comprehensive post management API with local storage functionality",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload Post",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "caption",
+              "value": "Hello World!",
+              "type": "text"
+            },
+            {
+              "key": "media",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "isPublic",
+              "value": "true",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/posts-management/upload",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts-management", "upload"]
+        }
+      }
+    },
+    {
+      "name": "Retrieve All Posts",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/posts-management/retrieve?limit=10&offset=0",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts-management", "retrieve"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Retrieve Specific Post",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/posts-management/retrieve?postId={{post_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts-management", "retrieve"],
+          "query": [
+            {
+              "key": "postId",
+              "value": "{{post_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Retrieve User Posts",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/posts-management/retrieve?userId={{user_id}}&limit=10",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts-management", "retrieve"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{user_id}}"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete Post",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/posts-management/delete?postId={{post_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts-management", "delete"],
+          "query": [
+            {
+              "key": "postId",
+              "value": "{{post_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Like Post",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/posts-management/like?postId={{post_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts-management", "like"],
+          "query": [
+            {
+              "key": "postId",
+              "value": "{{post_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Unlike Post",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/posts-management/unlike?postId={{post_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts-management", "unlike"],
+          "query": [
+            {
+              "key": "postId",
+              "value": "{{post_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Add Comment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"comment\": \"This is a great post!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/posts-management/comment?postId={{post_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "posts-management", "comment"],
+          "query": [
+            {
+              "key": "postId",
+              "value": "{{post_id}}"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "jwt_token",
+      "value": "your-jwt-token-here"
+    },
+    {
+      "key": "post_id",
+      "value": "your-post-id-here"
+    },
+    {
+      "key": "user_id",
+      "value": "your-user-id-here"
+    }
+  ]
+}
