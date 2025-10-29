@@ -264,3 +264,10 @@ curl -X DELETE "http://localhost:3000/api/reels-management/delete?reelId=reel-id
 8. **Views**: View count is automatically incremented when retrieving specific reels
 9. **Thumbnails**: Thumbnail paths are generated for each reel (implementation needed)
 10. **Duration**: Video duration tracking (implementation needed)
+
+
+
+
+
+
+

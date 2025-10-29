@@ -7,6 +7,8 @@ import mongoose from 'mongoose';
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
+import Notification from '@/lib/models/Notification';
+import User from '@/lib/models/User';
 
 export const config = {
   api: {
@@ -226,6 +228,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     thread.unreadCount.set(objectIds.toUserId.toString(), currentUnread + 1);
     
     await thread.save();
+
+    // Create notification for recipient
+    try {
+      const sender = await User.findById(objectIds.userId).select('username fullName').lean();
+      if (sender) {
+        const notificationContent = messageType === 'text' 
+          ? `${sender.fullName || sender.username} sent you a message: ${content.trim().substring(0, 50)}${content.trim().length > 50 ? '...' : ''}`
+          : `${sender.fullName || sender.username} sent you a ${messageType}`;
+        
+        await (Notification as any).createNotification(
+          objectIds.toUserId.toString(),
+          objectIds.userId.toString(),
+          'message',
+          notificationContent,
+          undefined,
+          undefined,
+          undefined,
+          message._id.toString()
+        );
+      }
+    } catch (notificationError) {
+      console.error('Error creating notification:', notificationError);
+      // Don't fail the request if notification creation fails
+    }
 
     // Populate message with sender info for response
     const populatedMessage = await Message.findById(message._id)

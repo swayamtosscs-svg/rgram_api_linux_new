@@ -4,11 +4,12 @@ export interface INotification extends Document {
   _id: string;
   recipient: mongoose.Types.ObjectId;
   sender: mongoose.Types.ObjectId;
-  type: 'mention' | 'like' | 'comment' | 'reply' | 'share' | 'collaboration_request' | 'collaboration_accepted' | 'collaboration_rejected' | 'follow' | 'follow_request' | 'follow_accepted' | 'story_view' | 'block' | 'unblock';
+  type: 'mention' | 'like' | 'comment' | 'reply' | 'share' | 'collaboration_request' | 'collaboration_accepted' | 'collaboration_rejected' | 'follow' | 'follow_request' | 'follow_accepted' | 'story_view' | 'block' | 'unblock' | 'message';
   content: string;
   relatedPost?: mongoose.Types.ObjectId;
   relatedComment?: mongoose.Types.ObjectId;
   relatedStory?: mongoose.Types.ObjectId;
+  relatedMessage?: mongoose.Types.ObjectId;
   isRead: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -28,7 +29,7 @@ const NotificationSchema = new Schema<INotification>({
   },
   type: {
     type: String,
-    enum: ['mention', 'like', 'comment', 'reply', 'share', 'collaboration_request', 'collaboration_accepted', 'collaboration_rejected', 'follow', 'follow_request', 'follow_accepted', 'story_view', 'block', 'unblock'],
+    enum: ['mention', 'like', 'comment', 'reply', 'share', 'collaboration_request', 'collaboration_accepted', 'collaboration_rejected', 'follow', 'follow_request', 'follow_accepted', 'story_view', 'block', 'unblock', 'message'],
     required: true
   },
   content: {
@@ -46,6 +47,10 @@ const NotificationSchema = new Schema<INotification>({
   relatedStory: {
     type: Schema.Types.ObjectId,
     ref: 'Post'
+  },
+  relatedMessage: {
+    type: Schema.Types.ObjectId,
+    ref: 'Message'
   },
   isRead: {
     type: Boolean,
@@ -70,7 +75,8 @@ NotificationSchema.statics.createNotification = async function(
   content: string,
   relatedPostId?: string,
   relatedCommentId?: string,
-  relatedStoryId?: string
+  relatedStoryId?: string,
+  relatedMessageId?: string
 ) {
   const notification = new this({
     recipient: recipientId,
@@ -79,7 +85,8 @@ NotificationSchema.statics.createNotification = async function(
     content,
     relatedPost: relatedPostId,
     relatedComment: relatedCommentId,
-    relatedStory: relatedStoryId
+    relatedStory: relatedStoryId,
+    relatedMessage: relatedMessageId
   });
   
   return await notification.save();

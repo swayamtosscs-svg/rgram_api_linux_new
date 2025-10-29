@@ -5,6 +5,8 @@ import { verifyToken } from '@/lib/middleware/auth';
 import { validateAndCreateObjectIds, isValidObjectId } from '../../../lib/utils/objectId';
 import mongoose from 'mongoose';
 import fs from 'fs';
+import Notification from '@/lib/models/Notification';
+import User from '@/lib/models/User';
 
 export const config = {
   api: {
@@ -152,6 +154,30 @@ async function sendTextMessage(req: NextApiRequest, res: NextApiResponse, userId
     
     await thread.save();
 
+    // Create notification for recipient
+    try {
+      const sender = await User.findById(objectIds.userId).select('username fullName').lean();
+      if (sender) {
+        const notificationContent = messageType === 'text' 
+          ? `${sender.fullName || sender.username} sent you a message: ${content.trim().substring(0, 50)}${content.trim().length > 50 ? '...' : ''}`
+          : `${sender.fullName || sender.username} sent you a ${messageType}`;
+        
+        await (Notification as any).createNotification(
+          objectIds.toUserId.toString(),
+          objectIds.userId.toString(),
+          'message',
+          notificationContent,
+          undefined,
+          undefined,
+          undefined,
+          message._id.toString()
+        );
+      }
+    } catch (notificationError) {
+      console.error('Error creating notification:', notificationError);
+      // Don't fail the request if notification creation fails
+    }
+
     // Populate message with sender info for response
     const populatedMessage = await Message.findById(message._id)
       .populate('sender', 'username fullName avatar')
@@ -180,12 +206,82 @@ async function sendTextMessage(req: NextApiRequest, res: NextApiResponse, userId
 
 // Get Messages
 async function getMessages(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { threadId, limit = 50, before, after } = req.query;
+  const { threadId, userId: targetUserId, limit = 50, before, after } = req.query;
 
+  // If userId is provided, return all conversations for that user
+  if (targetUserId) {
+    try {
+      // Verify the requesting user matches the userId
+      if (targetUserId !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only access your own conversations'
+        });
+      }
+
+      // Get all threads for this user
+      const threads = await ChatThread.find({ participants: userId })
+        .populate('participants', 'username fullName avatar')
+        .populate('lastMessage', 'content messageType sender createdAt')
+        .sort({ lastMessageAt: -1 })
+        .limit(Number(limit))
+        .lean();
+
+      // Format threads with last message preview
+      const formattedThreads = threads.map(thread => {
+        const otherParticipant = thread.participants.find(
+          (p: any) => p._id.toString() !== userId
+        );
+        
+        let unreadCount = 0;
+        if (thread.unreadCount) {
+          if (typeof thread.unreadCount.get === 'function') {
+            unreadCount = thread.unreadCount.get(userId) || 0;
+          } else {
+            unreadCount = thread.unreadCount[userId] || 0;
+          }
+        }
+
+        return {
+          threadId: thread._id,
+          otherParticipant: otherParticipant ? {
+            id: otherParticipant._id,
+            username: otherParticipant.username,
+            fullName: otherParticipant.fullName,
+            avatar: otherParticipant.avatar
+          } : null,
+          lastMessage: thread.lastMessage ? {
+            content: thread.lastMessage.content,
+            messageType: thread.lastMessage.messageType,
+            createdAt: thread.lastMessage.createdAt
+          } : null,
+          unreadCount,
+          lastMessageAt: thread.lastMessageAt
+        };
+      });
+
+      return res.json({
+        success: true,
+        data: {
+          conversations: formattedThreads,
+          total: threads.length
+        }
+      });
+    } catch (error: any) {
+      console.error('Get conversations error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to get conversations',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+  }
+
+  // If threadId is provided, return messages for that thread
   if (!threadId) {
     return res.status(400).json({
       success: false,
-      message: 'threadId is required'
+      message: 'Either threadId or userId is required'
     });
   }
 
